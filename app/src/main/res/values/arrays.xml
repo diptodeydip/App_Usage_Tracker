@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+
+    <string-array name="sorting_order">
+        <item>Usage time</item>
+        <item>Last time used</item>
+        <item>App name</item>
+    </string-array>
+</resources>
