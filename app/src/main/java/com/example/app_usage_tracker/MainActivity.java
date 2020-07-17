@@ -25,6 +25,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -47,6 +48,10 @@ import android.widget.TextView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.Toast;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 
@@ -77,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements OnItemSelectedLis
     private LayoutInflater mInflater;
     private UsageStatsAdapter mAdapter;
     private PackageManager mPm;
+    private static final int EXTERNAL_STORAGE_CODE = 1;
 
     //private Toolbar tbar;
 
@@ -317,6 +323,7 @@ public class MainActivity extends AppCompatActivity implements OnItemSelectedLis
 
         mUsageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
         requestPermissionsManually();
+        startAlarm();
         mInflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mPm = getPackageManager();
 
@@ -353,9 +360,6 @@ public class MainActivity extends AppCompatActivity implements OnItemSelectedLis
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void requestPermissionsManually() {
-        List<UsageStats> stats = mUsageStatsManager
-                .queryUsageStats(UsageStatsManager.INTERVAL_DAILY, 0, System.currentTimeMillis());
-        boolean isEmpty = stats.isEmpty();
 
         //AutoStartHelper.getInstance().getAutoStartPermission(this);
 
@@ -373,6 +377,20 @@ public class MainActivity extends AppCompatActivity implements OnItemSelectedLis
 //            this.startActivity(intent);
 //        }
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED
+                    || checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+                String[] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE};
+                requestPermissions(permissions, EXTERNAL_STORAGE_CODE);
+            }
+        }
+
+        List<UsageStats> stats = mUsageStatsManager
+                .queryUsageStats(UsageStatsManager.INTERVAL_DAILY, 0, System.currentTimeMillis());
+        boolean isEmpty = stats.isEmpty();
+
+
         if (isEmpty) {
             Toast.makeText(MainActivity.this,
                     "Allow App Usage Access",
@@ -380,9 +398,20 @@ public class MainActivity extends AppCompatActivity implements OnItemSelectedLis
                     .show();
             startActivity(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS));
         }
-        else{
-            //startWorkManager();
-            startAlarm();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case EXTERNAL_STORAGE_CODE: {
+                if (grantResults.length > 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+                } else {
+                    Toast.makeText(this, "Please allow these permissions", Toast.LENGTH_SHORT).show();
+                    requestPermissionsManually();
+                }
+                break;
+            }
         }
     }
 
@@ -393,16 +422,23 @@ public class MainActivity extends AppCompatActivity implements OnItemSelectedLis
         alarmMgr = (AlarmManager)this.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(this, MyBroadcastReceiver.class);
 
+        Calendar calendar = Calendar.getInstance();
+        //  calendar.add(Calendar.DAY_OF_YEAR, -1);
+        calendar.set(Calendar.SECOND, 0);
+
+        long alarmtime = calendar.getTimeInMillis() + 1000 * 5;
+
+
 //        PendingIntent alarmUp = PendingIntent.getBroadcast(this, 0,
 //                intent,
 //                PendingIntent.FLAG_NO_CREATE);
-
-        //Flag_No_Create dile jodi Intent already created na thake tokhon null return kore
+//
+//        //Flag_No_Create dile jodi Intent already created na thake tokhon null return kore
 //
 //        if (alarmUp == null)
 //        {
             alarmIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-            alarmMgr.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 5 * 1000, alarmIntent);
+            alarmMgr.set(AlarmManager.RTC_WAKEUP, alarmtime, alarmIntent);
             Toast.makeText(this, "Alarm is Set",Toast.LENGTH_LONG).show();
 //        }
 //        else{
@@ -410,54 +446,6 @@ public class MainActivity extends AppCompatActivity implements OnItemSelectedLis
 //        }
     }
 
-//    private void startWorkManager(){
-//        //Work Manager test
-//        Data data = new Data.Builder()
-//                .putString("input_data", "Data for Testing")
-//                .build();
-//
-//        Constraints constraints = new Constraints.Builder()
-//                .setRequiredNetworkType(NetworkType.CONNECTED)
-//                .build();
-//
-////        final OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(StoreData.class)
-////                .setInputData(data)
-////                .setConstraints(constraints)
-////                .build();
-//
-//        //Minimum interval time is 15 minute....
-//        final PeriodicWorkRequest request = new PeriodicWorkRequest.Builder(StoreData.class,15, TimeUnit.MINUTES,15, TimeUnit.MINUTES)
-//                .setInputData(data)
-//                .setConstraints(constraints)
-//                .setBackoffCriteria(BackoffPolicy.LINEAR, PeriodicWorkRequest.MIN_BACKOFF_MILLIS, TimeUnit.MILLISECONDS)
-//                .addTag("tagname")
-//                .build();
-//
-//
-//        WorkManager.getInstance().enqueueUniquePeriodicWork("Test", ExistingPeriodicWorkPolicy.KEEP,request);
-//        WorkManager.getInstance().getWorkInfoByIdLiveData(request.getId())
-//                .observe(this, new Observer<WorkInfo>() {
-//                    @Override
-//                    public void onChanged(@Nullable WorkInfo workInfo) {
-//                        if (workInfo != null) {
-//                            if (workInfo.getState().isFinished()) {
-//                                Data data1 = workInfo.getOutputData();
-//                                String output = data1.getString("output_data");
-//                                Toast.makeText(MainActivity.this,
-//                                        output,
-//                                        Toast.LENGTH_SHORT)
-//                                        .show();
-//                            }
-//                            String status = workInfo.getState().name();
-//                            Toast.makeText(MainActivity.this,
-//                                    status,
-//                                    Toast.LENGTH_SHORT)
-//                                    .show();
-//                        }
-//                    }
-//                });
-//        //Work manager test end
-//    }
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override

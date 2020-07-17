@@ -6,6 +6,16 @@ import android.content.Context;
 import android.os.Build;
 
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.work.Data;
@@ -23,32 +33,20 @@ public class StoreData extends Worker {
     @Override
     public Result doWork() {
         Data data = getInputData();
-        String desc = data.getString("input_data");
-        displayNotification("Test", desc);
 
-        Data data1 = new Data.Builder()
-                .putString("output_data", "Task Finished Successfully")
-                .build();
+        saveToFirebase(data.getString("jsonString"));
 
-        return Result.success(data1);
+        return Result.success();
     }
 
-    private void displayNotification(String task, String desc) {
 
-        NotificationManager manager =
-                (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
+    void saveToFirebase(String jsonString){
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference myRef = database.getReference("User1");
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel("dip", "Dipto", NotificationManager.IMPORTANCE_DEFAULT);
-            manager.createNotificationChannel(channel);
-        }
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), "dip")
-                .setContentTitle(task)
-                .setContentText(desc)
-                .setSmallIcon(R.mipmap.ic_launcher);
-
-        manager.notify(1, builder.build());
+        Map<String, Object> userMap = new Gson().fromJson(jsonString, new TypeToken<HashMap<String, Object>>() {}.getType());
+        myRef.setValue(userMap);
 
     }
+
 }
