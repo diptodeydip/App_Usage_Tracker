@@ -69,7 +69,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
             usageTime = DateUtils.formatElapsedTime(map.get("com.facebook.katana").timeInForeground / 1000);
         }catch (Exception e){}
 
-        JSONObject usageDetails = readJSON();
+        JSONObject usageDetails = readJSON("History.json");
         if(usageDetails==null)usageDetails = new JSONObject();
 
 
@@ -79,7 +79,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
 //            Toast.makeText(context,x,Toast.LENGTH_LONG).show();
         }
 
-        saveToPhone(usageDetails);
+        saveToPhone(usageDetails,"History.json");
 
         //to save in firebase database
         //startWork(usageDetails.toString());
@@ -124,12 +124,11 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     }
 
 
-    void saveToPhone(JSONObject ob){
+    public static void saveToPhone(JSONObject ob , String fileName){
         try {
             File path = Environment.getExternalStorageDirectory();
             File dir = new File(path + "/AppUsageTracker/");
             dir.mkdirs();
-            String fileName = "details.json";
             File file = new File(dir, fileName);
             FileWriter fw = new FileWriter(file.getAbsoluteFile());
             BufferedWriter bw = new BufferedWriter(fw);
@@ -140,12 +139,12 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         }
     }
 
-    private JSONObject readJSON(){
+    public static JSONObject readJSON(String fileName){
         JSONObject ob;
 
         try
         {
-            File file = new File( Environment.getExternalStorageDirectory() + "/" + "AppUsageTracker/details.json");
+            File file = new File( Environment.getExternalStorageDirectory() + "/" + "AppUsageTracker/"+fileName);
 
             StringBuilder data = new StringBuilder();
                 BufferedReader br = new BufferedReader(new FileReader(file));

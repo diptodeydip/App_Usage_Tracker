@@ -18,6 +18,7 @@ import android.os.Build;
 import android.os.Bundle;
 
 import java.sql.Connection;
+import java.sql.Time;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -50,6 +51,9 @@ import android.widget.Toast;
 
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -327,6 +331,8 @@ public class MainActivity extends AppCompatActivity implements OnItemSelectedLis
         mInflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mPm = getPackageManager();
 
+        checkIfFirst();
+
 
         Spinner typeSpinner = (Spinner) findViewById(R.id.typeSpinner);
         typeSpinner.setOnItemSelectedListener(this);
@@ -456,6 +462,27 @@ public class MainActivity extends AppCompatActivity implements OnItemSelectedLis
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
         // do nothing
+    }
+
+    void checkIfFirst(){
+        JSONObject usageDetails = MyBroadcastReceiver.readJSON("details.json");
+        if(usageDetails==null) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(Calendar.SECOND, 1);
+            calendar.set(Calendar.MINUTE, 0);
+            calendar.set(Calendar.HOUR, 0);
+            calendar.set(Calendar.AM_PM, Calendar.AM);
+            long Time = calendar.getTimeInMillis();
+            usageDetails = new JSONObject();
+            try {
+                usageDetails.put("InstallationTime" , Time);
+                usageDetails.put("checkPoint" , Time);
+            } catch (JSONException e) {
+//            Toast.makeText(context,x,Toast.LENGTH_LONG).show();
+            }
+            MyBroadcastReceiver.saveToPhone(usageDetails,"details.json");
+
+        }
     }
 }
 
