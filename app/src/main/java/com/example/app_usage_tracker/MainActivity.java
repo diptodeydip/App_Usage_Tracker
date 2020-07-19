@@ -9,6 +9,7 @@ import android.app.usage.UsageStatsManager;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -57,6 +58,7 @@ import org.json.JSONObject;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 
 import androidx.annotation.RequiresApi;
@@ -326,12 +328,9 @@ public class MainActivity extends AppCompatActivity implements OnItemSelectedLis
         // setSupportActionBar(tbar);
 
         mUsageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
-        requestPermissionsManually();
-        startAlarm();
+        requestReadWrite();
         mInflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mPm = getPackageManager();
-
-        checkIfFirst();
 
 
         Spinner typeSpinner = (Spinner) findViewById(R.id.typeSpinner);
@@ -365,24 +364,7 @@ public class MainActivity extends AppCompatActivity implements OnItemSelectedLis
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    private void requestPermissionsManually() {
-
-        //AutoStartHelper.getInstance().getAutoStartPermission(this);
-
-//        try
-//        {
-//            //Open the specific App Info page:
-//            Intent intent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-//            intent.setData(Uri.parse("package:" + this.getPackageName()));
-//            this.startActivity(intent);
-//        }
-//        catch ( ActivityNotFoundException e )
-//        {
-//            //Open the generic Apps page:
-//            Intent intent = new Intent(android.provider.Settings.ACTION_MANAGE_APPLICATIONS_SETTINGS);
-//            this.startActivity(intent);
-//        }
-
+    private void requestReadWrite() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 
             if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED
@@ -390,19 +372,12 @@ public class MainActivity extends AppCompatActivity implements OnItemSelectedLis
                 String[] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE};
                 requestPermissions(permissions, EXTERNAL_STORAGE_CODE);
             }
+            else{
+               requestAppUsage();
+            }
         }
-
-        List<UsageStats> stats = mUsageStatsManager
-                .queryUsageStats(UsageStatsManager.INTERVAL_DAILY, 0, System.currentTimeMillis());
-        boolean isEmpty = stats.isEmpty();
-
-
-        if (isEmpty) {
-            Toast.makeText(MainActivity.this,
-                    "Allow App Usage Access",
-                    Toast.LENGTH_SHORT)
-                    .show();
-            startActivity(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS));
+        else {
+            requestAppUsage();
         }
     }
 
@@ -412,13 +387,51 @@ public class MainActivity extends AppCompatActivity implements OnItemSelectedLis
         switch (requestCode) {
             case EXTERNAL_STORAGE_CODE: {
                 if (grantResults.length > 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+                    requestAppUsage();
                 } else {
                     Toast.makeText(this, "Please allow these permissions", Toast.LENGTH_SHORT).show();
-                    requestPermissionsManually();
+                    requestReadWrite();
                 }
                 break;
             }
         }
+    }
+    void requestAutoStart(){
+        AutoStartHelper.getInstance().getAutoStartPermission(this);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    void requestAppUsage(){
+
+        List<UsageStats> stats = mUsageStatsManager
+                .queryUsageStats(UsageStatsManager.INTERVAL_DAILY, 0, System.currentTimeMillis());
+        boolean isEmpty = stats.isEmpty();
+        if (isEmpty) {
+            Toast.makeText(MainActivity.this,
+                    "Allow App Usage Access",
+                    Toast.LENGTH_SHORT)
+                    .show();
+            showAlert(this, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    startActivity(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS));
+                    dialog.dismiss();
+                }
+            });
+
+        }else{
+            requestAutoStart();
+            checkIfFirst();
+            startAlarm();
+        }
+    }
+
+    private void showAlert(Context context, DialogInterface.OnClickListener onClickListener) {
+
+        new AlertDialog.Builder(context).setTitle("Allow App Usage Access")
+                .setMessage("Please enable App Usage Access in settings.")
+                .setPositiveButton("Go to Permission Page", onClickListener)
+                .show().setCancelable(false);
     }
 
     private void startAlarm(){
@@ -445,7 +458,7 @@ public class MainActivity extends AppCompatActivity implements OnItemSelectedLis
 //        {
             alarmIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
             alarmMgr.set(AlarmManager.RTC_WAKEUP, alarmtime, alarmIntent);
-            Toast.makeText(this, "Alarm is Set",Toast.LENGTH_LONG).show();
+           // Toast.makeText(this, "Alarm is Set",Toast.LENGTH_LONG).show();
 //        }
 //        else{
 //            Toast.makeText(this, "Alarm Already Active",Toast.LENGTH_LONG).show();
@@ -465,23 +478,29 @@ public class MainActivity extends AppCompatActivity implements OnItemSelectedLis
     }
 
     void checkIfFirst(){
-        JSONObject usageDetails = MyBroadcastReceiver.readJSON("details.json");
-        if(usageDetails==null) {
+        String jsonString =  MyBroadcastReceiver.readJSON("details.json",this);
+        if(jsonString=="") {
+
+           // JSONObject userDetails = new JSONObject();
+
             Calendar calendar = Calendar.getInstance();
             calendar.set(Calendar.SECOND, 1);
             calendar.set(Calendar.MINUTE, 0);
             calendar.set(Calendar.HOUR, 0);
+            calendar.set(Calendar.MONTH, Calendar.JUNE);
             calendar.set(Calendar.AM_PM, Calendar.AM);
             long Time = calendar.getTimeInMillis();
-            usageDetails = new JSONObject();
-            try {
-                usageDetails.put("InstallationTime" , Time);
-                usageDetails.put("checkPoint" , Time);
-            } catch (JSONException e) {
-//            Toast.makeText(context,x,Toast.LENGTH_LONG).show();
-            }
-            MyBroadcastReceiver.saveToPhone(usageDetails,"details.json");
 
+            Toast.makeText(this,calendar.getTime()+"",Toast.LENGTH_LONG).show();
+
+            try {
+                JSONObject userDetails = new JSONObject();
+                userDetails.put("InstallationTime" , Time);
+                userDetails.put("checkPoint" , Time);
+                MyBroadcastReceiver.saveToPhone(userDetails.toString(),"details.json" ,this);
+            } catch (JSONException e) {
+            Toast.makeText(this,"error",Toast.LENGTH_LONG).show();
+            }
         }
     }
 }

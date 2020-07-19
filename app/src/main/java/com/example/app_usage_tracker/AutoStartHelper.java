@@ -1,11 +1,13 @@
 package com.example.app_usage_tracker;
 
+import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 
 import java.util.List;
@@ -13,6 +15,13 @@ import java.util.List;
 import androidx.appcompat.app.AlertDialog;
 
 public class AutoStartHelper {
+
+    /***
+     * Samsung
+     */
+    private final String BRAND_SAMSUNG = "samsung";
+    private String PACKAGE_SAMSUNG_MAIN = "com.samsung.android.lool";
+    private String PACKAGE_SAMSUNG_COMPONENT = "com.samsung.android.sm.ui.battery.BatteryActivity";
 
     /***
      * Xiaomi
@@ -84,6 +93,9 @@ public class AutoStartHelper {
 
         String build_info = Build.BRAND.toLowerCase();
         switch (build_info) {
+            case BRAND_SAMSUNG:
+                autoStartSamsung(context);
+                break;
             case BRAND_ASUS:
                 autoStartAsus(context);
                 break;
@@ -105,9 +117,32 @@ public class AutoStartHelper {
             case BRAND_NOKIA:
                 autoStartNokia(context);
                 break;
-
+            default:
+                general(context);
         }
 
+    }
+
+    private void general(final Context context){
+
+        showAlert(context, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                try
+                {
+                    //Open the specific App Info page:
+                    Intent intent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    intent.setData(Uri.parse("package:" + context.getPackageName()));
+                    context.startActivity(intent);
+                }
+                catch ( ActivityNotFoundException e )
+                {
+                    //Open the generic Apps page:
+                    Intent intent = new Intent(android.provider.Settings.ACTION_MANAGE_APPLICATIONS_SETTINGS);
+                    context.startActivity(intent);
+                }
+            }
+        });
     }
 
     private void autoStartAsus(final Context context) {
@@ -131,11 +166,36 @@ public class AutoStartHelper {
 
     }
 
+    private void autoStartSamsung(final Context context) {
+        if (isPackageExists(context, PACKAGE_SAMSUNG_MAIN)) {
+            showAlert(context, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+
+                    try {
+                        // PrefUtil.writeBoolean(context, PrefUtil.PREF_KEY_APP_AUTO_START, true);
+                        startIntent(context, PACKAGE_SAMSUNG_MAIN, PACKAGE_SAMSUNG_COMPONENT);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    dialog.dismiss();
+                }
+            });
+
+        }
+
+
+    }
+
     private void showAlert(Context context, DialogInterface.OnClickListener onClickListener) {
 
         new AlertDialog.Builder(context).setTitle("Allow AutoStart")
                 .setMessage("Please enable auto start in settings.")
-                .setPositiveButton("Allow", onClickListener).show().setCancelable(false);
+                .setPositiveButton("Go to Permission Page", onClickListener)
+                .setNegativeButton("Already Given", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        }})
+                .show().setCancelable(true);
     }
 
     private void autoStartXiaomi(final Context context) {

@@ -11,6 +11,9 @@ import android.app.usage.UsageStatsManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -24,6 +27,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -55,38 +59,95 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
 
+        String jsonString =  readJSON("details.json",context);
 
-        long hour_in_mil = 1000*60*60*1; // In Milliseconds
-        long end_time = System.currentTimeMillis();
-        long start_time = end_time - hour_in_mil;
+        if(jsonString!="") {
 
-        HashMap<String, AppUsageInfo> map = getUsageStatistics(start_time,end_time,context);
-
-        ArrayList<AppUsageInfo> smallInfoList = new ArrayList<>(map.values());
-
-        String usageTime =     "";
-        try {
-            usageTime = DateUtils.formatElapsedTime(map.get("com.facebook.katana").timeInForeground / 1000);
-        }catch (Exception e){}
-
-        JSONObject usageDetails = readJSON("History.json");
-        if(usageDetails==null)usageDetails = new JSONObject();
+            PackageManager mPm = context.getPackageManager();
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(Calendar.SECOND, 1);
+            calendar.set(Calendar.MINUTE, 0);
+            long goalPoint = calendar.getTimeInMillis();
 
 
-        try {
-            usageDetails.put("Facebook",usageTime);
-        } catch (JSONException e) {
-//            Toast.makeText(context,x,Toast.LENGTH_LONG).show();
+            //Getting checkpoint and goalpoint
+
+            long checkPoint = 0;
+            JSONObject userDetails = new JSONObject();
+
+            try {
+                userDetails = new JSONObject(jsonString);
+                checkPoint = userDetails.getLong("checkPoint");
+                if (checkPoint + 60 * 1000 * 60 <= goalPoint)
+                    userDetails.put("checkPoint", goalPoint);
+            } catch (JSONException e) {
+            }
+
+            // get the existing / create new jsonarray
+            jsonString = readJSON("History.json", context);
+            JSONObject usageDetails = new JSONObject();
+            if (jsonString != "") {
+                try {
+                    usageDetails = new JSONObject(jsonString);
+                } catch (Exception e) {
+                    return;
+                }
+            }
+
+
+            long hour_milis = 60 * 1000 * 60;
+
+            for (long start_time = checkPoint; start_time + hour_milis <= goalPoint; start_time += hour_milis) {
+                HashMap<String, AppUsageInfo> map = getUsageStatistics(start_time, start_time + hour_milis, context);
+                ArrayList<AppUsageInfo> smallInfoList = new ArrayList<>(map.values());
+                JSONObject usage = new JSONObject();
+                try {
+                    usage.put("Time_Range", getCurrentTimeStamp(start_time) + "-" + getCurrentTimeStamp(start_time + hour_milis));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                for (int i = 0; i < smallInfoList.size(); i++) {
+                    ApplicationInfo appInfo = null;
+                    try {
+                        appInfo = mPm.getApplicationInfo(smallInfoList.get(i).packageName, 0);
+                        String label = appInfo.loadLabel(mPm).toString();
+                        usage.put(label, smallInfoList.get(i).timeInForeground);
+                        usage.put(label + "_Launched", smallInfoList.get(i).launchCount);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                }
+                try {
+                    usageDetails.put(System.currentTimeMillis() + "", usage);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+
+            HashMap<String, AppUsageInfo> map = getUsageStatistics(System.currentTimeMillis() - 24 * 60 * 60 * 1000, System.currentTimeMillis(), context);
+            String usageTime = "0";
+            int launched = 0;
+            try {
+                usageTime = DateUtils.formatElapsedTime(map.get("com.facebook.katana").timeInForeground / 1000);
+                launched = map.get("com.facebook.katana").launchCount;
+            } catch (Exception e) {
+            }
+
+
+            saveToPhone(usageDetails.toString(), "History.json", context);
+            saveToPhone(userDetails.toString(), "details.json", context);
+            //to save in firebase database
+            //startWork(usageDetails.toString());
+            try {
+                saveToFirebase(usageDetails.toString());
+            } catch (Exception e) {
+            }
+
+            displayNotification("Firebase", "FaceBook launched " + launched + " Times and usage time " + usageTime, context);
         }
-
-        saveToPhone(usageDetails,"History.json");
-
-        //to save in firebase database
-        //startWork(usageDetails.toString());
-        saveToFirebase(usageDetails.toString());
-
-        displayNotification("Facebook Usage", usageTime,context);
-
+        //End if
         startAlarm(context);
     }
 
@@ -112,7 +173,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         DatabaseReference myRef = database.getReference("User1");
 
         Map<String, Object> userMap = new Gson().fromJson(jsonString, new TypeToken<HashMap<String, Object>>() {}.getType());
-        myRef.setValue(userMap);
+        myRef.updateChildren(userMap);
 
     }
 
@@ -124,27 +185,29 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     }
 
 
-    public static void saveToPhone(JSONObject ob , String fileName){
+    public static void saveToPhone(String json , String fileName, Context context){
         try {
-            File path = Environment.getExternalStorageDirectory();
+           // File path = Environment.getExternalStorageDirectory();   //ei path e file rakhle app uninstall korlei folder exist korbe
+//            PackageInfo p =context.getPackageManager().getPackageInfo(context.getPackageName(),0);
+//            String path = p.applicationInfo.dataDir;
+            String path = context.getExternalFilesDir(Environment.getDataDirectory().getAbsolutePath()).getAbsolutePath();
             File dir = new File(path + "/AppUsageTracker/");
             dir.mkdirs();
             File file = new File(dir, fileName);
             FileWriter fw = new FileWriter(file.getAbsoluteFile());
             BufferedWriter bw = new BufferedWriter(fw);
-            bw.write(ob.toString());
+            bw.write(json);
             bw.close();
         } catch (Exception e) {
-
+            //Toast.makeText(context, "ok1",Toast.LENGTH_LONG).show();
         }
     }
 
-    public static JSONObject readJSON(String fileName){
-        JSONObject ob;
-
+    public static String readJSON(String fileName , Context context){
         try
         {
-            File file = new File( Environment.getExternalStorageDirectory() + "/" + "AppUsageTracker/"+fileName);
+            String path = context.getExternalFilesDir(Environment.getDataDirectory().getAbsolutePath()).getAbsolutePath();
+            File file = new File( path + "/" + "AppUsageTracker/"+fileName);
 
             StringBuilder data = new StringBuilder();
                 BufferedReader br = new BufferedReader(new FileReader(file));
@@ -155,10 +218,10 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
                 }
                 br.close();
 
-            ob = new JSONObject(data.toString());
-            return ob;
+            return data.toString();
         } catch (Exception e) {
-            return null;
+            //Toast.makeText(context, "ok2",Toast.LENGTH_LONG).show();
+            return "";
         }
     }
 
@@ -169,6 +232,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
         Intent notificationIntent = new Intent(context, MainActivity.class);
+        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(context,
                 1, notificationIntent, 0);
 
@@ -226,7 +290,10 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
                         UsageEvents.Event E0 = entry.getValue().get(i);
                         UsageEvents.Event E1 = entry.getValue().get(i + 1);
 
-                        if (E1.getEventType() == 1 || E0.getEventType() == 1) {
+                        if (E1.getEventType() == 1 ) {
+                            map.get(E1.getPackageName()).launchCount++;
+                        }
+                        if (E0.getEventType() == 1) {
                             map.get(E1.getPackageName()).launchCount++;
                         }
 
@@ -243,6 +310,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
                 }
                 //shesher event jodi app starting hoy  tahole app starting time and end_time er diiferece add korlaam
                 if (entry.getValue().get(totalEvents - 1).getEventType() == 1) {
+                    map.get(entry.getValue().get(totalEvents - 1).getPackageName()).launchCount++;
                     long diff = end_time - entry.getValue().get(totalEvents - 1).getTimeStamp();
                     map.get(entry.getValue().get(totalEvents - 1).getPackageName()).timeInForeground += diff;
                 }

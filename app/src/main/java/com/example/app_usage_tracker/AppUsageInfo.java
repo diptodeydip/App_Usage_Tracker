@@ -6,7 +6,7 @@ class AppUsageInfo {
     Drawable appIcon; // You may add get this usage data also, if you wish.
     String appName, packageName;
     long timeInForeground = 0;
-    int launchCount;
+    int launchCount=0;
 
     AppUsageInfo(String pName) {
         this.packageName=pName;
