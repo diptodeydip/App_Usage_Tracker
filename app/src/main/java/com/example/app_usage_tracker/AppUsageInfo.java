@@ -7,6 +7,7 @@ class AppUsageInfo {
     String appName, packageName;
     long timeInForeground = 0;
     int launchCount=0;
+    long lastTimeUsed = 0;
 
     AppUsageInfo(String pName) {
         this.packageName=pName;

@@ -7,4 +7,23 @@
         <item>Last time used</item>
         <item>App name</item>
     </string-array>
+
+    <string-array name="history">
+        <item>Today</item>
+        <item>Yesterday</item>
+        <item>2 Days Ago</item>
+        <item>3 Days Ago</item>
+        <item>4 Days Ago</item>
+        <item>5 Days Ago</item>
+        <item>6 Days Ago</item>
+        <item>Yesterday-Today</item>
+        <item>2 Days Ago-Today</item>
+        <item>3 Days Ago-Today</item>
+        <item>4 Days Ago-Today</item>
+        <item>5 Days Ago-Today</item>
+        <item>6 Days Ago-Today</item>
+
+
+
+    </string-array>
 </resources>

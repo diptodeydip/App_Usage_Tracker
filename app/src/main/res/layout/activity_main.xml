@@ -5,62 +5,24 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_gravity="center_vertical"
+    android:gravity="center_vertical"
     tools:context=".MainActivity">
 <!-- <include layout="@layout/toolbar"/>-->
-
-    <TextView
-        android:text="Sort By"
-        android:textAlignment="center"
-        android:layout_gravity="center_horizontal"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-    <Spinner
-        android:id="@+id/typeSpinner"
+    <Button
+        android:id="@+id/history"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:entries="@array/sorting_order"
-        android:layout_marginBottom="20dp"/>
-
-    <LinearLayout
-        android:orientation="horizontal"
+        android:text="Check History"
+        android:textAllCaps="false"
+        android:visibility="gone"
+        />
+    <Button
+        android:id="@+id/target"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-        <TextView
-            android:text="App"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:layout_width="100dp"
-            android:paddingEnd="6dip"
-            android:paddingStart="6dip"
-            android:paddingRight="6dip"
-            android:paddingLeft="6dip"
-            android:textStyle="bold"
-            android:layout_height="wrap_content" />
-        <TextView
-            android:text="last time Used"
-            android:textStyle="bold"
-            android:paddingEnd="6dip"
-            android:paddingStart="6dip"
-            android:paddingRight="6dip"
-            android:paddingLeft="6dip"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:layout_width="150dp"
-            android:layout_height="wrap_content" />
-        <TextView
-            android:text="Usage Time"
-            android:textStyle="bold"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:layout_width="150dp"
-            android:paddingEnd="6dip"
-            android:paddingStart="6dip"
-            android:paddingRight="6dip"
-            android:paddingLeft="6dip"
-            android:layout_marginBottom="50dp"
-            android:layout_height="wrap_content" />
-    </LinearLayout>
-    <ListView android:id="@+id/pkg_list"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:drawSelectorOnTop="false" />
+        android:layout_height="wrap_content"
+        android:text="Set Target"
+        android:textAllCaps="false"
+        android:visibility="gone"
+        />
 </LinearLayout>

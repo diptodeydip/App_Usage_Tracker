@@ -59,13 +59,15 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
 
+        startAlarm(context);
+
         String jsonString =  readJSON("details.json",context);
 
         if(jsonString!="") {
 
             PackageManager mPm = context.getPackageManager();
             Calendar calendar = Calendar.getInstance();
-            calendar.set(Calendar.SECOND, 1);
+            calendar.set(Calendar.SECOND, 0);
             calendar.set(Calendar.MINUTE, 0);
             long goalPoint = calendar.getTimeInMillis();
 
@@ -78,8 +80,6 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
             try {
                 userDetails = new JSONObject(jsonString);
                 checkPoint = userDetails.getLong("checkPoint");
-                if (checkPoint + 60 * 1000 * 60 <= goalPoint)
-                    userDetails.put("checkPoint", goalPoint);
             } catch (JSONException e) {
             }
 
@@ -98,6 +98,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
             long hour_milis = 60 * 1000 * 60;
 
             for (long start_time = checkPoint; start_time + hour_milis <= goalPoint; start_time += hour_milis) {
+
                 HashMap<String, AppUsageInfo> map = getUsageStatistics(start_time, start_time + hour_milis, context);
                 ArrayList<AppUsageInfo> smallInfoList = new ArrayList<>(map.values());
                 JSONObject usage = new JSONObject();
@@ -136,6 +137,13 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
             }
 
 
+            if (checkPoint + 60 * 1000 * 60 <= goalPoint) {
+                try {
+                    userDetails.put("checkPoint", goalPoint);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
             saveToPhone(usageDetails.toString(), "History.json", context);
             saveToPhone(userDetails.toString(), "details.json", context);
             //to save in firebase database
@@ -145,10 +153,12 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
             } catch (Exception e) {
             }
 
+
+
             displayNotification("Firebase", "FaceBook launched " + launched + " Times and usage time " + usageTime, context);
         }
         //End if
-        startAlarm(context);
+
     }
 
     void startWork(String jsonString){
@@ -252,7 +262,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    private  HashMap<String, AppUsageInfo> getUsageStatistics(long start_time, long end_time, Context context) {
+    public static  HashMap<String, AppUsageInfo> getUsageStatistics(long start_time, long end_time, Context context) {
 
         UsageEvents.Event currentEvent;
       //  List<UsageEvents.Event> allEvents = new ArrayList<>();
@@ -314,6 +324,9 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
                     long diff = end_time - entry.getValue().get(totalEvents - 1).getTimeStamp();
                     map.get(entry.getValue().get(totalEvents - 1).getPackageName()).timeInForeground += diff;
                 }
+
+                map.get(entry.getValue().get(totalEvents - 1).getPackageName()).lastTimeUsed =  entry.getValue().get(totalEvents - 1).getTimeStamp();
+
             }
             return map;
         } else {
@@ -331,7 +344,6 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
 
         Calendar calendar = Calendar.getInstance();
         //  calendar.add(Calendar.DAY_OF_YEAR, -1);
-        calendar.set(Calendar.SECOND, 0);
 
         long alarmtime = calendar.getTimeInMillis() + 1000 * 5;
 
