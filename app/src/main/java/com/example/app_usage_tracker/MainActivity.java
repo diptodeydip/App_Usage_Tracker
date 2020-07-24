@@ -65,8 +65,13 @@ public class MainActivity extends AppCompatActivity{
 
         end_time = calendar.getTimeInMillis();
 
+
         target  = findViewById(R.id.target);
         history = findViewById(R.id.history);
+        mUsageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
+        requestReadWrite();
+
+
 
         history.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -74,12 +79,17 @@ public class MainActivity extends AppCompatActivity{
                 startActivity(new Intent(MainActivity.this,UsagePage.class));
             }
         });
+        target.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(MainActivity.this,SetTarget.class));
+            }
+        });
 
         //tbar = findViewById(R.id.mytoolbar);
         // setSupportActionBar(tbar);
 
-        mUsageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
-        requestReadWrite();
+
 
     }
 
@@ -203,6 +213,8 @@ public class MainActivity extends AppCompatActivity{
             // JSONObject userDetails = new JSONObject();
 
             Calendar calendar = Calendar.getInstance();
+            long installationTime = calendar.getTimeInMillis();
+
             calendar.set(Calendar.SECOND, 0);
             calendar.set(Calendar.MINUTE, 0);
             calendar.set(Calendar.HOUR, 0);
@@ -216,7 +228,7 @@ public class MainActivity extends AppCompatActivity{
 
             try {
                 JSONObject userDetails = new JSONObject();
-                userDetails.put("InstallationTime" , Time);
+                userDetails.put("InstallationTime" , installationTime);
                 userDetails.put("checkPoint" , Time);
                 MyBroadcastReceiver.saveToPhone(userDetails.toString(),"details.json" ,this);
             } catch (JSONException e) {

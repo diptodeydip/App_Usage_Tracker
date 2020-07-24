@@ -22,8 +22,10 @@
         <item>4 Days Ago-Today</item>
         <item>5 Days Ago-Today</item>
         <item>6 Days Ago-Today</item>
+    </string-array>
 
-
-
+    <string-array name="targetType">
+        <item>Daily</item>
+        <item>Weekly</item>
     </string-array>
 </resources>
