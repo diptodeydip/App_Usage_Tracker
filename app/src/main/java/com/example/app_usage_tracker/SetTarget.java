@@ -18,6 +18,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -52,7 +53,6 @@ public class SetTarget extends AppCompatActivity {
         final JSONObject targetDetails[] = {new JSONObject()};
         String jsonString =  MyBroadcastReceiver.readJSON("TargetDetails.json",this);
 
-        final JSONObject[] appWiseDetails = {new JSONObject()};
 
         if(jsonString!="") {
             try {
@@ -113,6 +113,7 @@ public class SetTarget extends AppCompatActivity {
         set.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 if(TextUtils.isEmpty(hourET.getText().toString())){
                     hourET.setError("Hour field is empty");
                 }
@@ -122,6 +123,7 @@ public class SetTarget extends AppCompatActivity {
                 else{
                     hour[0] = Integer.parseInt(hourET.getText().toString());
                     minute[0] = Integer.parseInt(minuteET.getText().toString());
+                    final JSONObject[] appWiseDetails = {new JSONObject()};
 
                     try {
                         appWiseDetails[0] = (JSONObject) targetDetails[0].get(appName[0]);
@@ -137,6 +139,7 @@ public class SetTarget extends AppCompatActivity {
                     try {
                         targetDetails[0].put(appName[0],appWiseDetails[0]);
                         MyBroadcastReceiver.saveToPhone(targetDetails[0].toString(), "TargetDetails.json", getApplicationContext());
+                        Toast.makeText(getApplicationContext(), "Target is set",Toast.LENGTH_LONG).show();
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }

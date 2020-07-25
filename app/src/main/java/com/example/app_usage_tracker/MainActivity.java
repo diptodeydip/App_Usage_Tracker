@@ -36,6 +36,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity{
 
+    //start_time and end_time is for showing custom usage data in UsagePage.class
     public static long start_time,end_time;
     private UsageStatsManager mUsageStatsManager;
     private static final int EXTERNAL_STORAGE_CODE = 1;
@@ -148,9 +149,7 @@ public class MainActivity extends AppCompatActivity{
             }
         }
     }
-    void requestAutoStart(){
-        AutoStartHelper.getInstance().getAutoStartPermission(this);
-    }
+
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     void requestAppUsage(){
@@ -178,6 +177,10 @@ public class MainActivity extends AppCompatActivity{
             target.setVisibility(View.VISIBLE);
             history.setVisibility(View.VISIBLE);
         }
+    }
+
+    void requestAutoStart(){
+        AutoStartHelper.getInstance().getAutoStartPermission(this);
     }
 
     private void showAlert(Context context, DialogInterface.OnClickListener onClickListener) {

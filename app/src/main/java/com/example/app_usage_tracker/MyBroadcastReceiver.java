@@ -20,6 +20,7 @@ import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Environment;
 import android.text.format.DateUtils;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.google.firebase.database.DatabaseReference;
@@ -42,8 +43,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
@@ -60,104 +63,9 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
 
         startAlarm(context);
+        doWork(context);
 
-        String jsonString =  readJSON("details.json",context);
-
-        if(jsonString!="") {
-
-            PackageManager mPm = context.getPackageManager();
-            Calendar calendar = Calendar.getInstance();
-            calendar.set(Calendar.SECOND, 0);
-            calendar.set(Calendar.MINUTE, 0);
-            long goalPoint = calendar.getTimeInMillis();
-
-
-            //Getting checkpoint and goalpoint
-
-            long checkPoint = 0;
-            JSONObject userDetails = new JSONObject();
-
-            try {
-                userDetails = new JSONObject(jsonString);
-                checkPoint = userDetails.getLong("checkPoint");
-            } catch (JSONException e) {
-            }
-
-            // get the existing / create new jsonarray
-            jsonString = readJSON("History.json", context);
-            JSONObject usageDetails = new JSONObject();
-            if (jsonString != "") {
-                try {
-                    usageDetails = new JSONObject(jsonString);
-                } catch (Exception e) {
-                    return;
-                }
-            }
-
-
-            long hour_milis = 60 * 1000 * 60;
-
-            for (long start_time = checkPoint; start_time + hour_milis <= goalPoint; start_time += hour_milis) {
-
-                HashMap<String, AppUsageInfo> map = getUsageStatistics(start_time, start_time + hour_milis, context);
-                ArrayList<AppUsageInfo> smallInfoList = new ArrayList<>(map.values());
-                JSONObject usage = new JSONObject();
-                try {
-                    usage.put("Time_Range", getCurrentTimeStamp(start_time) + "-" + getCurrentTimeStamp(start_time + hour_milis));
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                for (int i = 0; i < smallInfoList.size(); i++) {
-                    ApplicationInfo appInfo = null;
-                    try {
-                        appInfo = mPm.getApplicationInfo(smallInfoList.get(i).packageName, 0);
-                        String label = appInfo.loadLabel(mPm).toString();
-                        usage.put(label, smallInfoList.get(i).timeInForeground);
-                        usage.put(label + "_Launched", smallInfoList.get(i).launchCount);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-
-                }
-                try {
-                    usageDetails.put(System.currentTimeMillis() + "", usage);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-
-
-            HashMap<String, AppUsageInfo> map = getUsageStatistics(System.currentTimeMillis() - 24 * 60 * 60 * 1000, System.currentTimeMillis(), context);
-            String usageTime = "0";
-            int launched = 0;
-            try {
-                usageTime = DateUtils.formatElapsedTime(map.get("com.facebook.katana").timeInForeground / 1000);
-                launched = map.get("com.facebook.katana").launchCount;
-            } catch (Exception e) {
-            }
-
-
-            if (checkPoint + 60 * 1000 * 60 <= goalPoint) {
-                try {
-                    userDetails.put("checkPoint", goalPoint);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-            saveToPhone(usageDetails.toString(), "History.json", context);
-            saveToPhone(userDetails.toString(), "details.json", context);
-            //to save in firebase database
-            //startWork(usageDetails.toString());
-            try {
-                saveToFirebase(usageDetails.toString());
-            } catch (Exception e) {
-            }
-
-
-
-            displayNotification("Firebase", "FaceBook launched " + launched + " Times and usage time " + usageTime, context);
-        }
-        //End if
+        checkTarget(context);
 
     }
 
@@ -177,6 +85,8 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
 
         WorkManager.getInstance().enqueue(request);
     }
+
+
 
     void saveToFirebase(String jsonString){
         FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -248,6 +158,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel("dip", "Dipto", NotificationManager.IMPORTANCE_DEFAULT);
+            assert manager != null;
             manager.createNotificationChannel(channel);
         }
 
@@ -257,6 +168,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentIntent(pendingIntent);
 
+        assert manager != null;
         manager.notify(1, builder.build());
 
     }
@@ -264,8 +176,10 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public static  HashMap<String, AppUsageInfo> getUsageStatistics(long start_time, long end_time, Context context) {
 
+
         UsageEvents.Event currentEvent;
-      //  List<UsageEvents.Event> allEvents = new ArrayList<>();
+        //  List<UsageEvents.Event> allEvents = new ArrayList<>();
+
         HashMap<String, AppUsageInfo> map = new HashMap<>();
         HashMap<String, List<UsageEvents.Event>> sameEvents = new HashMap<>();
 
@@ -282,10 +196,12 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
                 usageEvents.getNextEvent(currentEvent);
                 if (currentEvent.getEventType() == UsageEvents.Event.ACTIVITY_RESUMED ||
                         currentEvent.getEventType() == UsageEvents.Event.ACTIVITY_PAUSED) {
-                  //  allEvents.add(currentEvent);
-                    String key = currentEvent.getPackageName();
+                    //  allEvents.add(currentEvent);
+
+                    String key= getAppName(currentEvent.getPackageName(),context);
+
                     if (map.get(key) == null) {
-                        map.put(key, new AppUsageInfo(key));
+                        map.put(key, new AppUsageInfo(currentEvent.getPackageName()));
                         sameEvents.put(key,new ArrayList<UsageEvents.Event>());
                     }
                     sameEvents.get(key).add(currentEvent);
@@ -301,38 +217,51 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
                         UsageEvents.Event E1 = entry.getValue().get(i + 1);
 
                         if (E1.getEventType() == 1 ) {
-                            map.get(E1.getPackageName()).launchCount++;
+                            map.get(getAppName(E1.getPackageName(), context)).launchCount++;
                         }
                         if (E0.getEventType() == 1) {
-                            map.get(E1.getPackageName()).launchCount++;
+                            map.get(getAppName(E1.getPackageName(), context)).launchCount++;
                         }
 
                         if (E0.getEventType() == 1 && E1.getEventType() == 2) {
                             long diff = E1.getTimeStamp() - E0.getTimeStamp();
-                            map.get(E0.getPackageName()).timeInForeground += diff;
+                            map.get(getAppName(E0.getPackageName(), context)).timeInForeground += diff;
                         }
                     }
                 }
                 // shurur event jodi app closing hoy taile start_time and app closing time er difference add korlam
                 if (entry.getValue().get(0).getEventType() == 2) {
                     long diff = entry.getValue().get(0).getTimeStamp() - start_time;
-                    map.get(entry.getValue().get(0).getPackageName()).timeInForeground += diff;
+                    map.get(getAppName(entry.getValue().get(0).getPackageName(), context)).timeInForeground += diff;
                 }
                 //shesher event jodi app starting hoy  tahole app starting time and end_time er diiferece add korlaam
                 if (entry.getValue().get(totalEvents - 1).getEventType() == 1) {
-                    map.get(entry.getValue().get(totalEvents - 1).getPackageName()).launchCount++;
+                    map.get(getAppName(entry.getValue().get(totalEvents - 1).getPackageName(), context)).launchCount++;
                     long diff = end_time - entry.getValue().get(totalEvents - 1).getTimeStamp();
-                    map.get(entry.getValue().get(totalEvents - 1).getPackageName()).timeInForeground += diff;
+                    map.get(getAppName(entry.getValue().get(totalEvents - 1).getPackageName(), context)).timeInForeground += diff;
                 }
 
-                map.get(entry.getValue().get(totalEvents - 1).getPackageName()).lastTimeUsed =  entry.getValue().get(totalEvents - 1).getTimeStamp();
+                map.get(getAppName(entry.getValue().get(totalEvents - 1).getPackageName(), context)).lastTimeUsed =  entry.getValue().get(totalEvents - 1).getTimeStamp();
 
             }
             return map;
         } else {
             Toast.makeText(context, "Sorry...", Toast.LENGTH_SHORT).show();
         }
-         return null;
+        return null;
+    }
+
+    public static String getAppName(String packageName, Context context){
+        String appName = packageName;
+        PackageManager mPm = context.getPackageManager();
+        ApplicationInfo appInfo = null;
+        try{
+            appInfo = mPm.getApplicationInfo(packageName, 0);
+            appName = appInfo.loadLabel(mPm).toString();
+        }
+        catch (Exception e){}
+
+        return appName;
     }
 
     private void startAlarm(Context context){
@@ -345,7 +274,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         Calendar calendar = Calendar.getInstance();
         //  calendar.add(Calendar.DAY_OF_YEAR, -1);
 
-        long alarmtime = calendar.getTimeInMillis() + 1000 * 5;
+        long alarmtime = calendar.getTimeInMillis() + 1000 * 60 * 60;
 
 //        PendingIntent alarmUp = PendingIntent.getBroadcast(context, 0,
 //                intent,
@@ -362,5 +291,187 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
 //        else{
 //            Toast.makeText(context, "Alarm Already Active",Toast.LENGTH_LONG).show();
 //        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    void doWork(Context context){
+        String jsonString =  readJSON("details.json",context);
+
+        if(jsonString!="") {
+
+            PackageManager mPm = context.getPackageManager();
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(Calendar.SECOND, 0);
+            calendar.set(Calendar.MINUTE, 0);
+            long goalPoint = calendar.getTimeInMillis();
+
+
+            //Getting checkpoint and goalpoint
+
+            long checkPoint = 0;
+            JSONObject userDetails = new JSONObject();
+
+            try {
+                userDetails = new JSONObject(jsonString);
+                checkPoint = userDetails.getLong("checkPoint");
+            } catch (JSONException e) {
+            }
+
+            // get the existing / create new jsonarray
+            jsonString = readJSON("History.json", context);
+            JSONObject usageDetails = new JSONObject();
+            if (jsonString != "") {
+                try {
+                    usageDetails = new JSONObject(jsonString);
+                } catch (Exception e) {
+                    return;
+                }
+            }
+
+
+            long hour_milis = 60 * 1000 * 60;
+
+            for (long start_time = checkPoint; start_time + hour_milis <= goalPoint; start_time += hour_milis) {
+
+                HashMap<String, AppUsageInfo> map = getUsageStatistics(start_time, start_time + hour_milis, context);
+                assert map != null;
+                ArrayList<AppUsageInfo> smallInfoList = new ArrayList<>(map.values());
+                JSONObject usage = new JSONObject();
+                try {
+                    usage.put("Time_Range", getCurrentTimeStamp(start_time) + "-" + getCurrentTimeStamp(start_time + hour_milis));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                for (int i = 0; i < smallInfoList.size(); i++) {
+                    ApplicationInfo appInfo = null;
+                    try {
+                        appInfo = mPm.getApplicationInfo(smallInfoList.get(i).packageName, 0);
+                        String label = appInfo.loadLabel(mPm).toString();
+                        usage.put(label, smallInfoList.get(i).timeInForeground);
+                        usage.put(label + "_Launched", smallInfoList.get(i).launchCount);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                }
+                try {
+                    usageDetails.put(System.currentTimeMillis() + "", usage);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+
+            HashMap<String, AppUsageInfo> map = getUsageStatistics(System.currentTimeMillis() - 24 * 60 * 60 * 1000, System.currentTimeMillis(), context);
+            String usageTime = "0";
+            int launched = 0;
+            try {
+                usageTime = DateUtils.formatElapsedTime(map.get("Facebook").timeInForeground / 1000);
+                launched = map.get("Facebook").launchCount;
+            } catch (Exception e) {
+            }
+
+
+            if (checkPoint + 60 * 1000 * 60 <= goalPoint) {
+                try {
+                    userDetails.put("checkPoint", goalPoint);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+            saveToPhone(usageDetails.toString(), "History.json", context);
+            saveToPhone(userDetails.toString(), "details.json", context);
+            //to save in firebase database
+            //startWork(usageDetails.toString());
+            try {
+                saveToFirebase(usageDetails.toString());
+            } catch (Exception e) {
+            }
+
+
+
+            displayNotification("Firebase", "FaceBook launched " + launched + " Times and usage time " + usageTime, context);
+        }
+        //End if
+    }
+    
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    void checkTarget(Context context){
+        JSONObject targetDetails = new JSONObject();
+        String jsonString =  readJSON("TargetDetails.json",context);
+
+        if(!jsonString.equals("")) {
+            try {
+                targetDetails = new JSONObject(jsonString);
+                Iterator<String> keys = targetDetails.keys();
+                long dailyTargetStartTime,dailyTargetEndTime,weeklyTargetStartTime,weeklyTargetEndTime;
+
+                Calendar calendar = Calendar.getInstance();
+                calendar.set(Calendar.SECOND, 0);
+                calendar.set(Calendar.MINUTE,0);
+                calendar.set(Calendar.HOUR,0);
+                calendar.set(Calendar.AM_PM,Calendar.AM);
+                dailyTargetStartTime = calendar.getTimeInMillis();
+                Log.w("Weekly1", getCurrentTimeStamp(dailyTargetStartTime)+" ");
+                calendar.set(Calendar.SECOND, 59);
+                calendar.set(Calendar.MINUTE,59);
+                calendar.set(Calendar.HOUR,11);
+                calendar.set(Calendar.AM_PM,Calendar.PM);
+                dailyTargetEndTime = calendar.getTimeInMillis();
+                Log.w("Weekly2", getCurrentTimeStamp(dailyTargetEndTime)+" ");
+                calendar.set(Calendar.SECOND, 0);
+                calendar.set(Calendar.MINUTE,0);
+                calendar.set(Calendar.HOUR,0);
+                calendar.set(Calendar.AM_PM,Calendar.AM);
+                calendar.set(Calendar.DAY_OF_WEEK,Calendar.SUNDAY);
+                weeklyTargetStartTime = calendar.getTimeInMillis();
+                Log.w("Weekly3", getCurrentTimeStamp(weeklyTargetStartTime)+" ");
+                calendar.set(Calendar.SECOND, 59);
+                calendar.set(Calendar.MINUTE,59);
+                calendar.set(Calendar.HOUR,11);
+                calendar.set(Calendar.AM_PM,Calendar.PM);
+                calendar.set(Calendar.DAY_OF_WEEK,Calendar.SATURDAY);
+                weeklyTargetEndTime = calendar.getTimeInMillis();
+                Log.w("Weekly4", getCurrentTimeStamp(weeklyTargetEndTime)+" ");
+
+
+                HashMap<String, AppUsageInfo> dailyData = getUsageStatistics(dailyTargetStartTime, dailyTargetEndTime, context);
+                HashMap<String, AppUsageInfo> weeklyData = getUsageStatistics(weeklyTargetStartTime, weeklyTargetEndTime, context);
+
+
+                String noti = "";
+
+                while(keys.hasNext()) {
+                    String key = keys.next();
+                    JSONObject ob = (JSONObject) targetDetails.get(key);
+                    if (ob!=null) {
+
+                        if(ob.get("targetType").toString().equals("Daily")){
+                            AppUsageInfo temp;
+                            temp = dailyData.get(key);
+                            if(temp!=null && temp.timeInForeground > ob.getLong("targetInMilis")){
+                                noti = key + "usage exceeded target (used: "+temp.timeInForeground+" target: "+ob.getLong("targetInMilis")+")"+"\n" ;
+                            }
+
+
+                        }
+                        else if(ob.get("targetType").toString().equals("Weekly")){
+                            AppUsageInfo temp;
+                            temp = weeklyData.get(key);
+                            if(temp!=null && temp.timeInForeground > ob.getLong("targetInMilis")){
+                                noti = key + "usage exceeded target (used: "+temp.timeInForeground+" target: "+ob.getLong("targetInMilis")+")\n" ;
+                                Log.w("Weekly", key+" "+noti);
+                            }
+                        }
+                    }
+
+                }
+
+                if(!noti.equals(""))
+                displayNotification("Target Info", noti, context);
+                
+                
+            } catch (JSONException e) {}
+        }
     }
 }

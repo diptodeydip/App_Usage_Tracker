@@ -98,6 +98,10 @@ public class UsagePage extends AppCompatActivity  {
         //tbar = findViewById(R.id.mytoolbar);
         // setSupportActionBar(tbar);
 
+        ListView listView = (ListView) findViewById(R.id.pkg_list);
+        mAdapter = new UsageStatsAdapter(this);
+        listView.setAdapter(mAdapter);
+
         Spinner typeSpinner = (Spinner) findViewById(R.id.typeSpinner);
         typeSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
             @Override
@@ -126,10 +130,7 @@ public class UsagePage extends AppCompatActivity  {
             public void onNothingSelected(AdapterView<?> adapterView) {}
         });
 
-        ListView listView = (ListView) findViewById(R.id.pkg_list);
 
-        mAdapter = new UsageStatsAdapter(this);
-        listView.setAdapter(mAdapter);
     }
 
     @Override
