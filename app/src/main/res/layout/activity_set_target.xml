@@ -32,6 +32,7 @@
             android:text="Hour:"/>
 
         <EditText
+            android:id="@+id/hour"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:hint="5"
@@ -45,6 +46,7 @@
             android:text="Minute:"/>
 
         <EditText
+            android:id="@+id/minute"
              android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:hint="30"
@@ -58,6 +60,7 @@
 
 
     <Button
+        android:id="@+id/set"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Set"
