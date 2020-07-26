@@ -50,17 +50,6 @@ public class SetTarget extends AppCompatActivity {
         Button set = findViewById(R.id.set);
 
 
-        final JSONObject targetDetails[] = {new JSONObject()};
-        String jsonString =  MyBroadcastReceiver.readJSON("TargetDetails.json",this);
-
-
-        if(jsonString!="") {
-            try {
-                targetDetails[0] = new JSONObject(jsonString);
-            } catch (JSONException e) {}
-        }
-
-
 
         ArrayList<String> list = new ArrayList<>();
 
@@ -121,6 +110,15 @@ public class SetTarget extends AppCompatActivity {
                     minuteET.setError("Minute field is empty");
                 }
                 else{
+
+                    final JSONObject targetDetails[] = {new JSONObject()};
+                    String jsonString =  MyBroadcastReceiver.readJSON("TargetDetails.json",getApplicationContext());
+                    if(jsonString!="") {
+                        try {
+                            targetDetails[0] = new JSONObject(jsonString);
+                        } catch (JSONException e) {}
+                    }
+
                     hour[0] = Integer.parseInt(hourET.getText().toString());
                     minute[0] = Integer.parseInt(minuteET.getText().toString());
                     final JSONObject[] appWiseDetails = {new JSONObject()};
@@ -130,8 +128,14 @@ public class SetTarget extends AppCompatActivity {
                     } catch (JSONException e) {}
 
                     try {
-                        appWiseDetails[0].put("targetInMilis",hour[0]*minute[0]*60*1000);
-                        appWiseDetails[0].put("targetType",targetType[0]);
+                        if(targetType[0]=="Daily"){
+                            appWiseDetails[0].put("dailyTargetInMilis",hour[0]*60*1000*60+minute[0]*60*1000);
+                            appWiseDetails[0].put("Daily","Active");
+                        }
+                        else{
+                            appWiseDetails[0].put("weeklyTargetInMilis",hour[0]*60*1000*60+minute[0]*60*1000);
+                            appWiseDetails[0].put("Weekly","Active");
+                        }
                     } catch (JSONException ex) {
                         ex.printStackTrace();
                     }

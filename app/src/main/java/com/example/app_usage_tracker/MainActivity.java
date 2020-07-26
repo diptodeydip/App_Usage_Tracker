@@ -20,6 +20,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -65,7 +66,6 @@ public class MainActivity extends AppCompatActivity{
         calendar.set(Calendar.AM_PM, Calendar.PM);
 
         end_time = calendar.getTimeInMillis();
-
 
         target  = findViewById(R.id.target);
         history = findViewById(R.id.history);
@@ -203,7 +203,7 @@ public class MainActivity extends AppCompatActivity{
 
         long alarmtime = calendar.getTimeInMillis() + 1000 * 5;
 
-        alarmIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        alarmIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
         alarmMgr.set(AlarmManager.RTC_WAKEUP, alarmtime, alarmIntent);
 
     }
@@ -239,5 +239,6 @@ public class MainActivity extends AppCompatActivity{
             }
         }
     }
+
 
 }
