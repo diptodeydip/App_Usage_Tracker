@@ -160,10 +160,6 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         PendingIntent pendingIntent = PendingIntent.getActivity(context,
                 1, notificationIntent, 0);
 
-        Intent notificationIntent1 = new Intent(context, MyBroadcastReceiver.class);
-
-        PendingIntent pendingIntent1 = PendingIntent.getBroadcast(context,
-                1, notificationIntent, 0);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel("dip", "Dipto", NotificationManager.IMPORTANCE_HIGH);
@@ -176,7 +172,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
                // .setContentTitle(task)
                 //.setContentText(desc)
                 .setSmallIcon(R.mipmap.ic_launcher)
-                //.setContentIntent(pendingIntent)
+                .setContentIntent(pendingIntent)
                 .setDefaults(Notification.DEFAULT_ALL)
                 //.addAction(R.mipmap.ic_launcher,"click",notificationIntent1)
                 //.setTicker("testing it")

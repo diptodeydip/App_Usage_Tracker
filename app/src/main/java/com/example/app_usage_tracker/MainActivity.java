@@ -172,7 +172,6 @@ public class MainActivity extends AppCompatActivity{
 
         }else{
             requestAutoStart();
-            checkIfFirst();
             startAlarm();
             target.setVisibility(View.VISIBLE);
             history.setVisibility(View.VISIBLE);
@@ -205,40 +204,11 @@ public class MainActivity extends AppCompatActivity{
 
         alarmIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
         alarmMgr.set(AlarmManager.RTC_WAKEUP, alarmtime, alarmIntent);
-
+        Toast.makeText(this,"ALARM SET",Toast.LENGTH_LONG).show();
     }
 
 
-    void checkIfFirst(){
-        String jsonString =  MyBroadcastReceiver.readJSON("details.json",this);
-        if(jsonString=="") {
 
-            // JSONObject userDetails = new JSONObject();
-
-            Calendar calendar = Calendar.getInstance();
-            long installationTime = calendar.getTimeInMillis();
-
-            calendar.set(Calendar.SECOND, 0);
-            calendar.set(Calendar.MINUTE, 0);
-            calendar.set(Calendar.HOUR, 0);
-            calendar.add(Calendar.DAY_OF_WEEK,1);
-            calendar.add(Calendar.WEEK_OF_MONTH,-1);
-            calendar.set(Calendar.AM_PM, Calendar.AM);
-
-            long Time = calendar.getTimeInMillis();
-
-
-
-            try {
-                JSONObject userDetails = new JSONObject();
-                userDetails.put("InstallationTime" , installationTime);
-                userDetails.put("checkPoint" , Time);
-                MyBroadcastReceiver.saveToPhone(userDetails.toString(),"details.json" ,this);
-            } catch (JSONException e) {
-                Toast.makeText(this,"error",Toast.LENGTH_LONG).show();
-            }
-        }
-    }
 
 
 }
