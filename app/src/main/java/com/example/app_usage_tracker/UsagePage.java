@@ -1,9 +1,11 @@
 package com.example.app_usage_tracker;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.content.ActivityNotFoundException;
@@ -15,6 +17,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 
@@ -86,6 +89,8 @@ public class UsagePage extends AppCompatActivity  {
 
 
     private UsageStatsAdapter mAdapter;
+    ListView listView;
+    public int sortPosition = 0;
     //private Toolbar tbar;
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -98,7 +103,8 @@ public class UsagePage extends AppCompatActivity  {
         //tbar = findViewById(R.id.mytoolbar);
         // setSupportActionBar(tbar);
 
-        ListView listView = (ListView) findViewById(R.id.pkg_list);
+
+        listView = (ListView) findViewById(R.id.pkg_list);
         mAdapter = new UsageStatsAdapter(this);
         listView.setAdapter(mAdapter);
 
@@ -110,6 +116,7 @@ public class UsagePage extends AppCompatActivity  {
                 {
                     MainActivity.sortFlag = position;
                     mAdapter.sortList(position);
+                    sortPosition = position;
                 }
             }
             @Override
@@ -154,6 +161,7 @@ public class UsagePage extends AppCompatActivity  {
                 return true;
         }
     }
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     void setStartEndTime(int position){
         if(position == 0){
             setRange(0,0);
@@ -184,6 +192,7 @@ public class UsagePage extends AppCompatActivity  {
         }
     }
     //Kundin theke kundin porjonto set kora
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     void setRange(int daysAgoStart, int daysAgoEnd){
         Calendar calendar = Calendar.getInstance();
             calendar.set(Calendar.SECOND, 0);
@@ -201,9 +210,49 @@ public class UsagePage extends AppCompatActivity  {
         calendar1.set(Calendar.AM_PM, Calendar.PM);
         MainActivity.end_time = calendar1.getTimeInMillis();
         Toast.makeText(this,calendar.getTime()+"",Toast.LENGTH_LONG).show();
-            recreate();
-          //  mAdapter.notifyDataSetChanged();
 
+        AsyncTaskRunner runner = new AsyncTaskRunner();
+        runner.execute();
+            //recreate();
+          //  mAdapter.notifyDataSetChanged();
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    private class AsyncTaskRunner extends AsyncTask<Context, String, String> {
+
+        private String resp;
+        ProgressDialog progressDialog;
+
+
+        @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+        @Override
+        protected void onPostExecute(String result) {
+          //  mAdapter.notifyDataSetChanged();
+            mAdapter.sortList(sortPosition);
+            progressDialog.dismiss();
+        }
+
+        @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+        @Override
+        protected String doInBackground(Context... contexts) {
+            Map<String, AppUsageInfo> lUsageStatsMap = MyBroadcastReceiver.getUsageStatistics(MainActivity.start_time,MainActivity.end_time,mAdapter.context);
+            mAdapter.mPackageStats.clear();
+
+            if (!lUsageStatsMap.isEmpty() ) {
+               mAdapter.mPackageStats.addAll(lUsageStatsMap.values());
+               mAdapter.getLabel(lUsageStatsMap);
+            }
+            return null;
+        }
+        @Override
+        protected void onPreExecute() {
+            progressDialog = ProgressDialog.show(UsagePage.this,
+                    "Wait",
+                    "Collecting Stats");
+        }
+        @Override
+        protected void onProgressUpdate(String... text) {
+        }
     }
 }
 

@@ -65,12 +65,14 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
 
         //Broadcast receiver onReceive starts on UI thread . thatsy screen gets frozen.. to solve this new thread is created
+        startAlarm(context);
         new Thread(() -> { // Lambda Expression
 
             doWork(context);
             checkTarget(context);
+            saveUserInfo(context);
         }).start();
-        startAlarm(context);
+
     }
 
     void startWork(String jsonString){
@@ -188,7 +190,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    public static  HashMap<String, AppUsageInfo> getUsageStatistics(long start_time, long end_time, Context context) {
+    public static HashMap<String, AppUsageInfo> getUsageStatistics(long start_time, long end_time, Context context) {
 
 
         UsageEvents.Event currentEvent;
@@ -310,8 +312,17 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     void doWork(Context context){
         String jsonString =  readJSON("details.json",context);
+        String regNo="";
+        try {
 
-        if(jsonString!="") {
+            String jsonString1 = readJSON("userInfo.json",context);
+            JSONObject ob = new JSONObject(jsonString1);
+            regNo = (String) ob.get("Registration_No");
+            Log.w(regNo,jsonString1);
+        }catch (Exception e){}
+
+
+        if(!jsonString.equals("")) {
 
             PackageManager mPm = context.getPackageManager();
             Calendar calendar = Calendar.getInstance();
@@ -398,7 +409,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
             //to save in firebase database
             //startWork(usageDetails.toString());
             try {
-               // saveToFirebase(usageDetails.toString(),"Usage/User1");
+                saveToFirebase(usageDetails.toString(),"Usage/"+regNo);
             } catch (Exception e) {
             }
 
@@ -413,6 +424,13 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     void checkTarget(Context context){
         JSONObject targetDetails = new JSONObject();
         String jsonString =  readJSON("TargetDetails.json",context);
+
+        String regNo="";
+        try {
+            String jsonString1 =  readJSON("userInfo.json",context);
+            JSONObject ob = new JSONObject(jsonString1);
+            regNo = (String) ob.get("Registration_No");
+        }catch (Exception e){}
 
         if(!jsonString.equals("")) {
             try {
@@ -518,10 +536,21 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
                saveToPhone(targetDetails.toString(),"TargetDetails.json",context);
 
                 try {
-                    saveToFirebase(targetDetails.toString(),"TargetInfo/User1");
+                    saveToFirebase(targetDetails.toString(),"TargetInfo/"+regNo);
                 } catch (Exception e) {}
 
             } catch (JSONException e) {}
         }
+    }
+
+    void saveUserInfo(Context context){
+        String regNo="";
+        try {
+            String jsonString1 =  readJSON("userInfo.json",context);
+            JSONObject ob = new JSONObject(jsonString1);
+            regNo = (String) ob.get("Registration_No");
+            saveToFirebase(ob.toString(),"UserInfo/"+regNo);
+        }catch (Exception e){}
+
     }
 }

@@ -17,11 +17,18 @@ import org.json.JSONObject;
 import java.util.Calendar;
 
 public class Info extends AppCompatActivity {
+    Calendar calendar;
+    long installationTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_info);
+
+        calendar = Calendar.getInstance();
+        installationTime = calendar.getTimeInMillis();
+
+
         checkIfFirst();
 
         EditText name,email,age,regNo,cgpa;
@@ -77,6 +84,7 @@ public class Info extends AppCompatActivity {
                         userInfo.put("Cgpa" , cgpa.getText().toString());
                         userInfo.put("Age" , age.getText().toString());
                         userInfo.put("Gender" , gender[0]);
+                        userInfo.put("InstallationTime",installationTime);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -95,9 +103,6 @@ public class Info extends AppCompatActivity {
         if(jsonString=="") {
 
             // JSONObject userDetails = new JSONObject();
-
-            Calendar calendar = Calendar.getInstance();
-            long installationTime = calendar.getTimeInMillis();
 
             calendar.set(Calendar.SECOND, 0);
             calendar.set(Calendar.MINUTE, 0);
