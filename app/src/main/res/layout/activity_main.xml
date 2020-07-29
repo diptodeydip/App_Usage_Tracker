@@ -26,4 +26,12 @@
         android:textAllCaps="false"
         android:visibility="gone"
         />
+    <Button
+        android:id="@+id/targetStat"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Target History"
+        android:textAllCaps="false"
+        android:visibility="gone"
+        />
 </LinearLayout>

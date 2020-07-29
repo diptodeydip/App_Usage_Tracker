@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity{
     public static long start_time,end_time;
     private UsageStatsManager mUsageStatsManager;
     private static final int EXTERNAL_STORAGE_CODE = 1;
-    Button target,history;
+    Button target,history,targetHistory;
     public static int sortFlag = 0 , historyFlag = 0;
 
 
@@ -54,6 +54,7 @@ public class MainActivity extends AppCompatActivity{
 
         Calendar calendar = Calendar.getInstance();
         //  calendar.add(Calendar.DAY_OF_YEAR, -1);
+        calendar.set(Calendar.MILLISECOND,0);
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.HOUR, 0);
@@ -63,12 +64,14 @@ public class MainActivity extends AppCompatActivity{
         calendar.set(Calendar.HOUR, 11);
         calendar.set(Calendar.MINUTE, 59);
         calendar.set(Calendar.SECOND, 59);
+        calendar.set(Calendar.MILLISECOND,999);
         calendar.set(Calendar.AM_PM, Calendar.PM);
 
         end_time = calendar.getTimeInMillis();
 
         target  = findViewById(R.id.target);
         history = findViewById(R.id.history);
+        targetHistory = findViewById(R.id.targetStat);
         mUsageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
         requestReadWrite();
 
@@ -84,6 +87,12 @@ public class MainActivity extends AppCompatActivity{
             @Override
             public void onClick(View view) {
                 startActivity(new Intent(MainActivity.this,SetTarget.class));
+            }
+        });
+        targetHistory.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(MainActivity.this,TargetStats.class));
             }
         });
 
@@ -175,6 +184,7 @@ public class MainActivity extends AppCompatActivity{
             startAlarm();
             target.setVisibility(View.VISIBLE);
             history.setVisibility(View.VISIBLE);
+            targetHistory.setVisibility(View.VISIBLE);
         }
     }
 

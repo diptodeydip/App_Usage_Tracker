@@ -195,6 +195,7 @@ public class UsagePage extends AppCompatActivity  {
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     void setRange(int daysAgoStart, int daysAgoEnd){
         Calendar calendar = Calendar.getInstance();
+            calendar.set(Calendar.MILLISECOND,0);
             calendar.set(Calendar.SECOND, 0);
             calendar.set(Calendar.MINUTE, 0);
             calendar.set(Calendar.HOUR, 0);
@@ -206,6 +207,7 @@ public class UsagePage extends AppCompatActivity  {
         calendar1.set(Calendar.HOUR, 11);
         calendar1.set(Calendar.MINUTE, 59);
         calendar1.set(Calendar.SECOND, 59);
+        calendar.set(Calendar.MILLISECOND,999);
         calendar1.add(Calendar.DAY_OF_MONTH,(-1)*daysAgoEnd);
         calendar1.set(Calendar.AM_PM, Calendar.PM);
         MainActivity.end_time = calendar1.getTimeInMillis();
@@ -239,8 +241,9 @@ public class UsagePage extends AppCompatActivity  {
             mAdapter.mPackageStats.clear();
 
             if (!lUsageStatsMap.isEmpty() ) {
+                mAdapter.getLabel(lUsageStatsMap);
                mAdapter.mPackageStats.addAll(lUsageStatsMap.values());
-               mAdapter.getLabel(lUsageStatsMap);
+
             }
             return null;
         }

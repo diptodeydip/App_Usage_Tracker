@@ -92,7 +92,10 @@ class UsageStatsAdapter extends BaseAdapter {
         final AppUsageInfo pkgStats = mPackageStats.get(position);
         if (pkgStats != null) {
             label = mAppLabelMap.get(pkgStats.packageName);
-            holder.pkgName.setText(label);
+            if(label!=null)
+                holder.pkgName.setText(label);
+            else
+                holder.pkgName.setText(pkgStats.packageName);
             holder.lastTimeUsed.setText(DateUtils.formatSameDayTime(pkgStats.lastTimeUsed,
                     System.currentTimeMillis(), DateFormat.MEDIUM, DateFormat.MEDIUM));
             //  holder.lastTimeUsed.setText(MyBroadcastReceiver.getCurrentTimeStamp(pkgStats.lastTimeUsed));
@@ -161,10 +164,10 @@ class UsageStatsAdapter extends BaseAdapter {
                 ApplicationInfo appInfo = mPm.getApplicationInfo(pkgStats.packageName, 0);
                 String label = appInfo.loadLabel(mPm).toString();
                 mAppLabelMap.put(pkgStats.packageName, label);
-                mAppLabelComparator = new AppNameComparator(mAppLabelMap);
             } catch (PackageManager.NameNotFoundException e) {
                 // This package may be gone.
             }
         }
+        mAppLabelComparator = new AppNameComparator(mAppLabelMap);
     }
 }

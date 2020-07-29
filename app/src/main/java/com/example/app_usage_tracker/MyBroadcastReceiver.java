@@ -290,7 +290,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         Calendar calendar = Calendar.getInstance();
         //  calendar.add(Calendar.DAY_OF_YEAR, -1);
 
-        long alarmtime = calendar.getTimeInMillis() + 1000 * 60;
+        long alarmtime = calendar.getTimeInMillis() + 1000 * 5;
 
 //        PendingIntent alarmUp = PendingIntent.getBroadcast(context, 0,
 //                intent,
@@ -326,6 +326,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
 
             PackageManager mPm = context.getPackageManager();
             Calendar calendar = Calendar.getInstance();
+            calendar.set(Calendar.MILLISECOND,0);
             calendar.set(Calendar.SECOND, 0);
             calendar.set(Calendar.MINUTE, 0);
             long goalPoint = calendar.getTimeInMillis();
@@ -372,8 +373,15 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
                     try {
                         appInfo = mPm.getApplicationInfo(smallInfoList.get(i).packageName, 0);
                         String label = appInfo.loadLabel(mPm).toString();
-                        usage.put(label, smallInfoList.get(i).timeInForeground);
-                        usage.put(label + "_Launched", smallInfoList.get(i).launchCount);
+                        if (label != null) {
+                            usage.put(label, smallInfoList.get(i).timeInForeground);
+                            usage.put(label + "_Launched", smallInfoList.get(i).launchCount);
+                        }
+                        else{
+                            usage.put(smallInfoList.get(i).packageName, smallInfoList.get(i).timeInForeground);
+                            usage.put(smallInfoList.get(i).packageName + "_Launched", smallInfoList.get(i).launchCount);
+                        }
+
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -439,18 +447,21 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
                 long dailyTargetStartTime,dailyTargetEndTime,weeklyTargetStartTime,weeklyTargetEndTime;
 
                 Calendar calendar = Calendar.getInstance();
+                calendar.set(Calendar.MILLISECOND,0);
                 calendar.set(Calendar.SECOND, 0);
                 calendar.set(Calendar.MINUTE,0);
                 calendar.set(Calendar.HOUR,0);
                 calendar.set(Calendar.AM_PM,Calendar.AM);
                 dailyTargetStartTime = calendar.getTimeInMillis();
                 Log.w("Weekly1", getCurrentTimeStamp(dailyTargetStartTime)+" ");
+                calendar.set(Calendar.MILLISECOND,999);
                 calendar.set(Calendar.SECOND, 59);
                 calendar.set(Calendar.MINUTE,59);
                 calendar.set(Calendar.HOUR,11);
                 calendar.set(Calendar.AM_PM,Calendar.PM);
                 dailyTargetEndTime = calendar.getTimeInMillis();
                 Log.w("Weekly2", getCurrentTimeStamp(dailyTargetEndTime)+" ");
+                calendar.set(Calendar.MILLISECOND,0);
                 calendar.set(Calendar.SECOND, 0);
                 calendar.set(Calendar.MINUTE,0);
                 calendar.set(Calendar.HOUR,0);
@@ -458,6 +469,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
                 calendar.set(Calendar.DAY_OF_WEEK,Calendar.SUNDAY);
                 weeklyTargetStartTime = calendar.getTimeInMillis();
                 Log.w("Weekly3", getCurrentTimeStamp(weeklyTargetStartTime)+" ");
+                calendar.set(Calendar.MILLISECOND,999);
                 calendar.set(Calendar.SECOND, 59);
                 calendar.set(Calendar.MINUTE,59);
                 calendar.set(Calendar.HOUR,11);
@@ -488,20 +500,25 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
                         assert dailyData != null;
                         temp = dailyData.get(key);
                        // if(temp!=null && temp.timeInForeground > ob.getLong("dailyTargetInMilis"))
-                        if(temp!=null){
+
 //                                noti += key + " daily usage exceeded target (used: "+DateUtils.formatElapsedTime(temp.timeInForeground / 1000)
 //                                        +" target: "+DateUtils.formatElapsedTime(ob.getLong("dailyTargetInMilis") / 1000)+")\n" ;
                             JSONObject dateInfo = new JSONObject();
                             dateInfo.put("dailyTargetInMilis",ob.getLong("dailyTargetInMilis"));
-                            double percentage =  ((double)temp.timeInForeground/(double)ob.getLong("dailyTargetInMilis"))*100.0;
+                            double percentage;
+                            if(temp!=null) percentage = ((double)temp.timeInForeground/(double)ob.getLong("dailyTargetInMilis"))*100.0;
+                            else percentage = 0.00;
                             dateInfo.put("usageInPercentage", percentage );
                             dateInfo.put("Time_Range", getCurrentTimeStamp(dailyTargetStartTime)+"--"+getCurrentTimeStamp(dailyTargetEndTime) );
                             JSONObject date = new JSONObject();
+                            try {
+                                date = ob.getJSONObject("DailyInfo");
+                            }catch (Exception e){}
                             date.put(dailyTargetStartTime+"",dateInfo);
                             ob.put("DailyInfo",date);
                             String formattedPercentage = String.format("%.2f", percentage);
                             noti.append(formattedPercentage).append("% of daily target for ").append(key).append(" is used\n");
-                        }
+
                     }
 
                     boolean checkWeekly = false;
@@ -513,18 +530,22 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
                         AppUsageInfo temp;
                         assert weeklyData != null;
                         temp = weeklyData.get(key);
-                        if(temp!=null){
+
                             JSONObject dateInfo = new JSONObject();
                             dateInfo.put("weeklyTargetInMilis",ob.getLong("weeklyTargetInMilis"));
-                            double percentage = ((double)temp.timeInForeground/(double)ob.getLong("weeklyTargetInMilis"))*100.0;
+                            double percentage;
+                            if(temp!=null) percentage = ((double)temp.timeInForeground/(double)ob.getLong("weeklyTargetInMilis"))*100.0;
+                            else percentage = 0.00;
                             dateInfo.put("usageInPercentage", percentage );
                             dateInfo.put("Time_Range", getCurrentTimeStamp(weeklyTargetStartTime)+"--"+getCurrentTimeStamp(weeklyTargetEndTime) );
                             JSONObject date = new JSONObject();
+                            try {
+                                date = ob.getJSONObject("WeeklyInfo");
+                            }catch (Exception e){}
                             date.put(weeklyTargetStartTime+"",dateInfo);
                             ob.put("WeeklyInfo",date);
                             String formattedPercentage = String.format("%.2f", percentage);
                             noti.append(formattedPercentage).append("% of weekly target for ").append(key).append(" is used\n");
-                        }
                     }
                     targetDetails.put(key,ob);
                    // Log.w("Weekly5", getCurrentTimeStamp(weeklyTargetEndTime)+" ");
