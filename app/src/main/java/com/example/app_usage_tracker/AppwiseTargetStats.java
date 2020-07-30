@@ -63,18 +63,18 @@ public class AppwiseTargetStats extends AppCompatActivity {
 
     void setListView(String type) {
         JSONObject targetDetails = new JSONObject();
-        String jsonString = MyBroadcastReceiver.readJSON("TargetDetails.json", this);
+        String jsonString = MyBroadcastReceiver.readJSON("TargetMetaDetails.json", this);
 
             try {
                 targetDetails = new JSONObject(jsonString);
-                JSONObject appDetails = targetDetails.getJSONObject(TargetStats.appName);
+                JSONObject appDetails = targetDetails.getJSONObject(MyBroadcastReceiver.removeDot(TargetStats.appName));
 
 
                 try {
                     if(type=="DailyInfo"){
                         status.setText("Daily Target: "+appDetails.get("Daily").toString());
                         if(appDetails.get("Daily").toString().equals("Active")){
-                            targetTime.setText("Current Target Time: "+DateUtils.formatElapsedTime(appDetails.getLong("dailyTargetInMilis") / 1000));
+                            targetTime.setText("Current Target Time: "+MyBroadcastReceiver.getHourMinuteSec(appDetails.getLong("dailyTargetInMilis")));
                             status.setTextColor(Color.GREEN);
                             targetTime.setVisibility(View.VISIBLE);
                         }
@@ -86,7 +86,7 @@ public class AppwiseTargetStats extends AppCompatActivity {
                     else{
                         status.setText("Weekly Target: "+appDetails.get("Weekly").toString());
                         if(appDetails.get("Weekly").toString().equals("Active")){
-                            targetTime.setText("Current Target Time: "+DateUtils.formatElapsedTime(appDetails.getLong("weeklyTargetInMilis") / 1000));
+                            targetTime.setText("Current Target Time: "+MyBroadcastReceiver.getHourMinuteSec(appDetails.getLong("weeklyTargetInMilis")));
                             status.setTextColor(Color.GREEN);
                             targetTime.setVisibility(View.VISIBLE);
                         }
@@ -117,9 +117,9 @@ public class AppwiseTargetStats extends AppCompatActivity {
                         JSONObject details = appTargetDeatils.getJSONObject(key);
                         value = "Time Range: "+details.getString("Time_Range").toString()+"\n";
                         if(type=="WeeklyInfo"){
-                            value+= "Target at range: "+DateUtils.formatElapsedTime(details.getLong("weeklyTargetInMilis") / 1000)+"\n";
+                            value+= "Target at range: "+MyBroadcastReceiver.getHourMinuteSec(appDetails.getLong("weeklyTargetInMilis"))+"\n";
                         }else{
-                            value+= "Target at range: "+DateUtils.formatElapsedTime(details.getLong("dailyTargetInMilis") / 1000)+"\n";
+                            value+= "Target at range: "+MyBroadcastReceiver.getHourMinuteSec(appDetails.getLong("dailyTargetInMilis"))+"\n";
                         }
                         double percentage = details.getDouble("usageInPercentage");
                         value += "Used "+String.format("%.2f", percentage)+"% of target\n";

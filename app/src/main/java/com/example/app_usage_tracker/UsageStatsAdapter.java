@@ -68,7 +68,7 @@ class UsageStatsAdapter extends BaseAdapter {
         // A ViewHolder keeps references to children views to avoid unneccessary calls
         // to findViewById() on each row.
         AppViewHolder holder;
-        String label;
+        String label = null;
         // When convertView is not null, we can reuse it directly, there is no need
         // to reinflate it. We only inflate a new View when the convertView supplied
         // by ListView is null.
@@ -99,8 +99,9 @@ class UsageStatsAdapter extends BaseAdapter {
             holder.lastTimeUsed.setText(DateUtils.formatSameDayTime(pkgStats.lastTimeUsed,
                     System.currentTimeMillis(), DateFormat.MEDIUM, DateFormat.MEDIUM));
             //  holder.lastTimeUsed.setText(MyBroadcastReceiver.getCurrentTimeStamp(pkgStats.lastTimeUsed));
-            holder.usageTime.setText(
-                    DateUtils.formatElapsedTime(pkgStats.timeInForeground / 1000));
+//            holder.usageTime.setText(
+//                    DateUtils.formatElapsedTime(pkgStats.timeInForeground / 1000));
+            holder.usageTime.setText(MyBroadcastReceiver.getHourMinuteSec(pkgStats.timeInForeground));
         } else {
             Log.w(TAG, "No usage stats info for package:" + position);
         }

@@ -36,7 +36,7 @@ public class SetTarget extends AppCompatActivity {
 
         final PackageManager pm = getPackageManager();
         //get a list of installed apps.
-        List<PackageInfo> packages = pm.getInstalledPackages(0);
+        List<PackageInfo> packages = pm.getInstalledPackages(PackageManager.GET_META_DATA);
 
         final String[] appName = new String[1];
         final String[] targetType = new String[1];
@@ -55,7 +55,10 @@ public class SetTarget extends AppCompatActivity {
 
         for(int i =0; i<packages.size();i++){
             if((packages.get(i).applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0){
-                list.add(packages.get(i).applicationInfo.loadLabel(pm).toString());
+                String label = packages.get(i).applicationInfo.loadLabel(pm).toString();
+                if(label!=null)
+                list.add(label);
+                else list.add(packages.get(i).packageName);
             }
         }
         final String[] arraySpinner = new String[list.size()];
@@ -112,7 +115,7 @@ public class SetTarget extends AppCompatActivity {
                 else{
 
                     final JSONObject targetDetails[] = {new JSONObject()};
-                    String jsonString =  MyBroadcastReceiver.readJSON("TargetDetails.json",getApplicationContext());
+                    String jsonString =  MyBroadcastReceiver.readJSON("TargetMetaDetails.json",getApplicationContext());
                     if(jsonString!="") {
                         try {
                             targetDetails[0] = new JSONObject(jsonString);
@@ -124,7 +127,7 @@ public class SetTarget extends AppCompatActivity {
                     final JSONObject[] appWiseDetails = {new JSONObject()};
 
                     try {
-                        appWiseDetails[0] = (JSONObject) targetDetails[0].get(appName[0]);
+                        appWiseDetails[0] = (JSONObject) targetDetails[0].get(MyBroadcastReceiver.removeDot(appName[0]));
                     } catch (JSONException e) {}
 
                     try {
@@ -141,8 +144,8 @@ public class SetTarget extends AppCompatActivity {
                     }
 
                     try {
-                        targetDetails[0].put(appName[0],appWiseDetails[0]);
-                        MyBroadcastReceiver.saveToPhone(targetDetails[0].toString(), "TargetDetails.json", getApplicationContext());
+                        targetDetails[0].put(MyBroadcastReceiver.removeDot(appName[0]),appWiseDetails[0]);
+                        MyBroadcastReceiver.saveToPhone(targetDetails[0].toString(), "TargetMetaDetails.json", getApplicationContext());
                         Toast.makeText(getApplicationContext(), "Target is set",Toast.LENGTH_LONG).show();
                     } catch (JSONException e) {
                         e.printStackTrace();

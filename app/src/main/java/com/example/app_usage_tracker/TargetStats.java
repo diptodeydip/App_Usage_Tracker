@@ -48,7 +48,7 @@ public class TargetStats extends AppCompatActivity {
 
     void setListView() {
         JSONObject targetDetails = new JSONObject();
-        String jsonString = MyBroadcastReceiver.readJSON("TargetDetails.json", this);
+        String jsonString = MyBroadcastReceiver.readJSON("TargetMetaDetails.json", this);
 
         if (!jsonString.equals("")) {
             try {
@@ -57,7 +57,7 @@ public class TargetStats extends AppCompatActivity {
                 while(keys.hasNext()) {
                     String key = keys.next();
                     listItems.add(key);
-                    Toast.makeText(getApplicationContext(), "" + key, Toast.LENGTH_SHORT).show();
+                   // Toast.makeText(getApplicationContext(), "" + key, Toast.LENGTH_SHORT).show();
                 }
             } catch (Exception e) {
             }

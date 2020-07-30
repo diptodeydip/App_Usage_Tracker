@@ -1,11 +1,13 @@
 package com.example.app_usage_tracker;
 
 
+import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.app.usage.UsageEvents;
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
@@ -18,6 +20,7 @@ import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Environment;
 import android.text.format.DateUtils;
@@ -49,6 +52,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
@@ -60,38 +64,19 @@ import androidx.work.WorkManager;
 
 public class MyBroadcastReceiver extends BroadcastReceiver {
     private UsageStatsManager mUsageStatsManager;
+    Context contextG;
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void onReceive(Context context, Intent intent) {
 
+        contextG = context;
         //Broadcast receiver onReceive starts on UI thread . thatsy screen gets frozen.. to solve this new thread is created
-        startAlarm(context);
         new Thread(() -> { // Lambda Expression
-
-            doWork(context);
-            checkTarget(context);
-            saveUserInfo(context);
+            AsyncTaskRunner runner = new AsyncTaskRunner();
+            runner.execute();
         }).start();
 
     }
-
-    void startWork(String jsonString){
-        Data data = new Data.Builder()
-                .putString("jsonString",jsonString)
-                .build();
-
-        Constraints constraints = new Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.CONNECTED)
-                .build();
-
-//        final OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(StoreData.class)
-//                .setInputData(data)
-//                .setConstraints(constraints)
-//                .build();
-
-      //  WorkManager.getInstance().enqueue(request);
-    }
-
 
 
     void saveToFirebase(String jsonString,String path){
@@ -109,6 +94,14 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         String strDate = sdf.format(now);
         return strDate;
     }
+
+    public static String getHourMinuteSec(long x) {
+        String hms = String.format("%02d:%02d:%02d", TimeUnit.MILLISECONDS.toHours(x),
+                TimeUnit.MILLISECONDS.toMinutes(x) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(x)),
+                TimeUnit.MILLISECONDS.toSeconds(x) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(x)));
+        return hms;
+    }
+
 
 
     public static void saveToPhone(String json , String fileName, Context context){
@@ -152,7 +145,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     }
 
 
-    private void displayNotification(String task, String desc , Context context) {
+    private  void displayNotification(String task, String desc, Context context) {
 
         NotificationManager manager =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -290,7 +283,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         Calendar calendar = Calendar.getInstance();
         //  calendar.add(Calendar.DAY_OF_YEAR, -1);
 
-        long alarmtime = calendar.getTimeInMillis() + 1000 * 5;
+        long alarmtime = calendar.getTimeInMillis() + 1000 * 60 * 60;
 
 //        PendingIntent alarmUp = PendingIntent.getBroadcast(context, 0,
 //                intent,
@@ -374,12 +367,12 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
                         appInfo = mPm.getApplicationInfo(smallInfoList.get(i).packageName, 0);
                         String label = appInfo.loadLabel(mPm).toString();
                         if (label != null) {
-                            usage.put(label, smallInfoList.get(i).timeInForeground);
-                            usage.put(label + "_Launched", smallInfoList.get(i).launchCount);
+                            usage.put(removeDot(label), smallInfoList.get(i).timeInForeground);
+                            usage.put(removeDot(label) + "_Launched", smallInfoList.get(i).launchCount);
                         }
                         else{
-                            usage.put(smallInfoList.get(i).packageName, smallInfoList.get(i).timeInForeground);
-                            usage.put(smallInfoList.get(i).packageName + "_Launched", smallInfoList.get(i).launchCount);
+                            usage.put(removeDot(smallInfoList.get(i).packageName), smallInfoList.get(i).timeInForeground);
+                            usage.put(removeDot(smallInfoList.get(i).packageName) + "_Launched", smallInfoList.get(i).launchCount);
                         }
 
                     } catch (Exception e) {
@@ -395,16 +388,6 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
             }
 
 
-//            HashMap<String, AppUsageInfo> map = getUsageStatistics(System.currentTimeMillis() - 24 * 60 * 60 * 1000, System.currentTimeMillis(), context);
-//            String usageTime = "0";
-//            int launched = 0;
-//            try {
-//                usageTime = DateUtils.formatElapsedTime(map.get("Facebook").timeInForeground / 1000);
-//                launched = map.get("Facebook").launchCount;
-//            } catch (Exception e) {
-//            }
-
-
             if (checkPoint + 60 * 1000 * 60 <= goalPoint) {
                 try {
                     userDetails.put("checkPoint", goalPoint);
@@ -415,7 +398,6 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
             saveToPhone(usageDetails.toString(), "History.json", context);
             saveToPhone(userDetails.toString(), "details.json", context);
             //to save in firebase database
-            //startWork(usageDetails.toString());
             try {
                 saveToFirebase(usageDetails.toString(),"Usage/"+regNo);
             } catch (Exception e) {
@@ -427,11 +409,11 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         }
         //End if
     }
-    
+
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    void checkTarget(Context context){
-        JSONObject targetDetails = new JSONObject();
-        String jsonString =  readJSON("TargetDetails.json",context);
+    public  void checkTargetLocally(Context context){
+        JSONObject targetMetaDetails = new JSONObject();
+        String jsonString =  readJSON("targetMetaDetails.json",context);
 
         String regNo="";
         try {
@@ -440,129 +422,185 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
             regNo = (String) ob.get("Registration_No");
         }catch (Exception e){}
 
-        if(!jsonString.equals("")) {
-            try {
-                targetDetails = new JSONObject(jsonString);
-                Iterator<String> keys = targetDetails.keys();
-                long dailyTargetStartTime,dailyTargetEndTime,weeklyTargetStartTime,weeklyTargetEndTime;
-
-                Calendar calendar = Calendar.getInstance();
-                calendar.set(Calendar.MILLISECOND,0);
-                calendar.set(Calendar.SECOND, 0);
-                calendar.set(Calendar.MINUTE,0);
-                calendar.set(Calendar.HOUR,0);
-                calendar.set(Calendar.AM_PM,Calendar.AM);
-                dailyTargetStartTime = calendar.getTimeInMillis();
-                Log.w("Weekly1", getCurrentTimeStamp(dailyTargetStartTime)+" ");
-                calendar.set(Calendar.MILLISECOND,999);
-                calendar.set(Calendar.SECOND, 59);
-                calendar.set(Calendar.MINUTE,59);
-                calendar.set(Calendar.HOUR,11);
-                calendar.set(Calendar.AM_PM,Calendar.PM);
-                dailyTargetEndTime = calendar.getTimeInMillis();
-                Log.w("Weekly2", getCurrentTimeStamp(dailyTargetEndTime)+" ");
-                calendar.set(Calendar.MILLISECOND,0);
-                calendar.set(Calendar.SECOND, 0);
-                calendar.set(Calendar.MINUTE,0);
-                calendar.set(Calendar.HOUR,0);
-                calendar.set(Calendar.AM_PM,Calendar.AM);
-                calendar.set(Calendar.DAY_OF_WEEK,Calendar.SUNDAY);
-                weeklyTargetStartTime = calendar.getTimeInMillis();
-                Log.w("Weekly3", getCurrentTimeStamp(weeklyTargetStartTime)+" ");
-                calendar.set(Calendar.MILLISECOND,999);
-                calendar.set(Calendar.SECOND, 59);
-                calendar.set(Calendar.MINUTE,59);
-                calendar.set(Calendar.HOUR,11);
-                calendar.set(Calendar.AM_PM,Calendar.PM);
-                calendar.set(Calendar.DAY_OF_WEEK,Calendar.SATURDAY);
-                weeklyTargetEndTime = calendar.getTimeInMillis();
-                Log.w("Weekly4", getCurrentTimeStamp(weeklyTargetEndTime)+" ");
+        try {
+            if(!jsonString.equals("")) {
+                targetMetaDetails = new JSONObject(jsonString);
+            }
+        }catch (Exception e){}
 
 
-                HashMap<String, AppUsageInfo> dailyData = getUsageStatistics(dailyTargetStartTime, dailyTargetEndTime, context);
-                HashMap<String, AppUsageInfo> weeklyData = getUsageStatistics(weeklyTargetStartTime, weeklyTargetEndTime, context);
+        long dailyTargetStartTime,dailyTargetEndTime,weeklyTargetStartTime,weeklyTargetEndTime;
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.MILLISECOND,0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MINUTE,0);
+        calendar.set(Calendar.HOUR,0);
+        calendar.set(Calendar.AM_PM,Calendar.AM);
+        dailyTargetStartTime = calendar.getTimeInMillis();
+        Log.w("Weekly1", getCurrentTimeStamp(dailyTargetStartTime)+" ");
+        calendar.set(Calendar.MILLISECOND,999);
+        calendar.set(Calendar.SECOND, 59);
+        calendar.set(Calendar.MINUTE,59);
+        calendar.set(Calendar.HOUR,11);
+        calendar.set(Calendar.AM_PM,Calendar.PM);
+        dailyTargetEndTime = calendar.getTimeInMillis();
+        Log.w("Weekly2", getCurrentTimeStamp(dailyTargetEndTime)+" ");
+        calendar.set(Calendar.MILLISECOND,0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MINUTE,0);
+        calendar.set(Calendar.HOUR,0);
+        calendar.set(Calendar.AM_PM,Calendar.AM);
+        calendar.set(Calendar.DAY_OF_WEEK,Calendar.SUNDAY);
+        weeklyTargetStartTime = calendar.getTimeInMillis();
+        Log.w("Weekly3", getCurrentTimeStamp(weeklyTargetStartTime)+" ");
+        calendar.set(Calendar.MILLISECOND,999);
+        calendar.set(Calendar.SECOND, 59);
+        calendar.set(Calendar.MINUTE,59);
+        calendar.set(Calendar.HOUR,11);
+        calendar.set(Calendar.AM_PM,Calendar.PM);
+        calendar.set(Calendar.DAY_OF_WEEK,Calendar.SATURDAY);
+        weeklyTargetEndTime = calendar.getTimeInMillis();
+        Log.w("Weekly4", getCurrentTimeStamp(weeklyTargetEndTime)+" ");
 
 
-                StringBuilder noti = new StringBuilder();
+        Log.w("key", "ok");
+        HashMap<String, AppUsageInfo> dailyData = getUsageStatistics(dailyTargetStartTime, dailyTargetEndTime, context);
+        HashMap<String, AppUsageInfo> weeklyData = getUsageStatistics(weeklyTargetStartTime, weeklyTargetEndTime, context);
 
-                while(keys.hasNext()) {
-                    String key = keys.next();
-                    JSONObject ob = (JSONObject) targetDetails.get(key);
+        StringBuilder noti = new StringBuilder();
 
+        final PackageManager pm = context.getPackageManager();
+        //get a list of installed apps.
 
-                    boolean checkDaily = false;
+        List<PackageInfo> packages = pm.getInstalledPackages(PackageManager.GET_META_DATA);
+        String key = "";
+                for(int i =0; i<packages.size();i++) {
+                    if ((packages.get(i).applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0) {
+                        String label = null;
+                        label = packages.get(i).applicationInfo.loadLabel(pm).toString();
+
+                        if (label != null)
+                            key = label;
+                        else
+                            key = packages.get(i).packageName;
+                    /////////////////
                     try {
-                        checkDaily = ob.get("Daily").toString().equals("Active");
-                    }catch (Exception e){}
 
-                    if(checkDaily){
-                        AppUsageInfo temp;
-                        assert dailyData != null;
-                        temp = dailyData.get(key);
-                       // if(temp!=null && temp.timeInForeground > ob.getLong("dailyTargetInMilis"))
+                        JSONObject ob = new JSONObject();
+                        try{
+                            ob = (JSONObject) targetMetaDetails.get(removeDot(key));
+                        }catch (Exception e){}
 
-//                                noti += key + " daily usage exceeded target (used: "+DateUtils.formatElapsedTime(temp.timeInForeground / 1000)
-//                                        +" target: "+DateUtils.formatElapsedTime(ob.getLong("dailyTargetInMilis") / 1000)+")\n" ;
+                        Log.w("key", key);
+                        boolean checkDaily = false;
+                        try {
+                            checkDaily = ob.get("Daily").toString().equals("Active");
+                        } catch (Exception e) {
+                        }
+
+                        if (checkDaily) {
+                            AppUsageInfo temp;
+                            assert dailyData != null;
+                            temp = dailyData.get(key);
+
                             JSONObject dateInfo = new JSONObject();
-                            dateInfo.put("dailyTargetInMilis",ob.getLong("dailyTargetInMilis"));
+                            dateInfo.put("dailyTargetInMilis",  ob.getLong("dailyTargetInMilis"));
                             double percentage;
-                            if(temp!=null) percentage = ((double)temp.timeInForeground/(double)ob.getLong("dailyTargetInMilis"))*100.0;
+                            if (temp != null)
+                                percentage = ((double) temp.timeInForeground / (double) ob.getLong("dailyTargetInMilis")) * 100.0;
                             else percentage = 0.00;
-                            dateInfo.put("usageInPercentage", percentage );
-                            dateInfo.put("Time_Range", getCurrentTimeStamp(dailyTargetStartTime)+"--"+getCurrentTimeStamp(dailyTargetEndTime) );
+                            dateInfo.put("usageInPercentage", percentage);
+                            dateInfo.put("Time_Range", getCurrentTimeStamp(dailyTargetStartTime) + "--" + getCurrentTimeStamp(dailyTargetEndTime));
                             JSONObject date = new JSONObject();
                             try {
                                 date = ob.getJSONObject("DailyInfo");
-                            }catch (Exception e){}
-                            date.put(dailyTargetStartTime+"",dateInfo);
-                            ob.put("DailyInfo",date);
+                            } catch (Exception e) {
+                            }
+
+                            date.put(dailyTargetStartTime+"-"+dailyTargetEndTime, dateInfo);
+                            ob.put("DailyInfo", date);
                             String formattedPercentage = String.format("%.2f", percentage);
                             noti.append(formattedPercentage).append("% of daily target for ").append(key).append(" is used\n");
 
-                    }
+                        } else {
+                            JSONObject dateInfo = new JSONObject();
+                            dateInfo.put("dailyTargetInMilis", null);
+                            double percentage;
+                            dateInfo.put("usageInPercentage", null);
+                            dateInfo.put("Time_Range", getCurrentTimeStamp(dailyTargetStartTime) + "--" + getCurrentTimeStamp(dailyTargetEndTime));
+                            JSONObject date = new JSONObject();
+                            try {
+                                date = ob.getJSONObject("DailyInfo");
+                            } catch (Exception e) {
+                            }
+                            date.put(dailyTargetStartTime + "-"+dailyTargetEndTime, dateInfo);
+                            ob.put("DailyInfo", date);
+                        }
 
-                    boolean checkWeekly = false;
-                    try {
-                        checkWeekly = ob.get("Weekly").toString().equals("Active");
-                    }catch (Exception e){}
+                        boolean checkWeekly = false;
+                        try {
+                            checkWeekly = ob.get("Weekly").toString().equals("Active");
+                        } catch (Exception e) {
+                        }
 
-                    if(checkWeekly){
-                        AppUsageInfo temp;
-                        assert weeklyData != null;
-                        temp = weeklyData.get(key);
+                        if (checkWeekly) {
+                            AppUsageInfo temp;
+                            assert weeklyData != null;
+                            temp = weeklyData.get(key);
 
                             JSONObject dateInfo = new JSONObject();
-                            dateInfo.put("weeklyTargetInMilis",ob.getLong("weeklyTargetInMilis"));
+                            dateInfo.put("weeklyTargetInMilis", ob.getLong("weeklyTargetInMilis"));
                             double percentage;
-                            if(temp!=null) percentage = ((double)temp.timeInForeground/(double)ob.getLong("weeklyTargetInMilis"))*100.0;
+                            if (temp != null)
+                                percentage = ((double) temp.timeInForeground / (double) ob.getLong("weeklyTargetInMilis")) * 100.0;
                             else percentage = 0.00;
-                            dateInfo.put("usageInPercentage", percentage );
-                            dateInfo.put("Time_Range", getCurrentTimeStamp(weeklyTargetStartTime)+"--"+getCurrentTimeStamp(weeklyTargetEndTime) );
+                            dateInfo.put("usageInPercentage", percentage);
+                            dateInfo.put("Time_Range", getCurrentTimeStamp(weeklyTargetStartTime) + "--" + getCurrentTimeStamp(weeklyTargetEndTime));
                             JSONObject date = new JSONObject();
                             try {
                                 date = ob.getJSONObject("WeeklyInfo");
-                            }catch (Exception e){}
-                            date.put(weeklyTargetStartTime+"",dateInfo);
-                            ob.put("WeeklyInfo",date);
+                            } catch (Exception e) {
+                            }
+                            date.put(weeklyTargetStartTime + "-"+weeklyTargetEndTime, dateInfo);
+                            ob.put("WeeklyInfo", date);
                             String formattedPercentage = String.format("%.2f", percentage);
                             noti.append(formattedPercentage).append("% of weekly target for ").append(key).append(" is used\n");
+                        } else {
+                            JSONObject dateInfo = new JSONObject();
+                            dateInfo.put("weeklyTargetInMilis", null);
+                            dateInfo.put("usageInPercentage", null);
+                            dateInfo.put("Time_Range", getCurrentTimeStamp(weeklyTargetStartTime) + "--" + getCurrentTimeStamp(weeklyTargetEndTime));
+                            JSONObject date = new JSONObject();
+                            try {
+                                date = ob.getJSONObject("WeeklyInfo");
+                            } catch (Exception e) {
+                            }
+                            date.put(weeklyTargetStartTime + "-"+weeklyTargetEndTime, dateInfo);
+                            ob.put("WeeklyInfo", date);
+                        }
+                        targetMetaDetails.put(removeDot(key), ob);
+                        // Log.w("Weekly5", getCurrentTimeStamp(weeklyTargetEndTime)+" ");
+
+                    } catch (Exception e) {
                     }
-                    targetDetails.put(key,ob);
-                   // Log.w("Weekly5", getCurrentTimeStamp(weeklyTargetEndTime)+" ");
+                    /////////////////
+
+                }
                 }
 
-                if(!noti.toString().equals(""))
-                displayNotification("Target Info", noti.toString(), context);
 
-               saveToPhone(targetDetails.toString(),"TargetDetails.json",context);
+        if(!noti.toString().equals(""))
+            displayNotification("Target Info", noti.toString(), context);
 
-                try {
-                    saveToFirebase(targetDetails.toString(),"TargetInfo/"+regNo);
-                } catch (Exception e) {}
+        saveToPhone(targetMetaDetails.toString(),"targetMetaDetails.json",context);
 
-            } catch (JSONException e) {}
-        }
+        try {
+            saveToFirebase(targetMetaDetails.toString(),"TargetInfo/"+regNo);
+        }catch (Exception e){}
     }
+
+
 
     void saveUserInfo(Context context){
         String regNo="";
@@ -573,5 +611,65 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
             saveToFirebase(ob.toString(),"UserInfo/"+regNo);
         }catch (Exception e){}
 
+        final PackageManager pm = context.getPackageManager();
+
+//        //get a list of installed apps.
+        List<PackageInfo> packages = pm.getInstalledPackages(PackageManager.GET_META_DATA);
+
+        JSONObject installedApps = new JSONObject();
+        for(int i =0; i<packages.size();i++){
+            if((packages.get(i).applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0){
+                String label = null;
+                label = packages.get(i).applicationInfo.loadLabel(pm).toString();
+
+                    try {
+                        if(label!=null)
+                            installedApps.put(removeDot(label),label);
+                        else
+                            installedApps.put(removeDot(packages.get(i).packageName),packages.get(i).packageName);
+                    }catch (Exception e){}
+
+            }
+        }
+
+        try {
+            saveToFirebase(installedApps.toString(),"InstalledApps/"+regNo);
+        }catch (Exception e){}
+
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    private class AsyncTaskRunner extends AsyncTask<Context, String, String> {
+
+        private String resp;
+        ProgressDialog progressDialog;
+
+
+        @Override
+        protected void onPostExecute(String result) {
+
+            startAlarm(contextG);
+            saveUserInfo(contextG);
+        }
+
+        @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+        @Override
+        protected String doInBackground(Context... contexts) {
+            doWork(contextG);
+            return null;
+        }
+        @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+        @Override
+        protected void onPreExecute() {
+            checkTargetLocally(contextG);
+        }
+        @Override
+        protected void onProgressUpdate(String... text) {
+        }
+    }
+
+    public static String removeDot(String x){
+        x = x.replaceAll("[.]","_dot_");
+        return x;
     }
 }
