@@ -46,6 +46,25 @@
         android:layout_height="wrap_content"
         android:textStyle="italic"
         android:gravity="center"/>
+    <Button
+        android:id="@+id/btn3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Remove Target"
+        android:layout_gravity="center_horizontal"
+        android:visibility="gone"
+        android:textAllCaps="false"
+        />
+    <Button
+        android:id="@+id/btn4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Remove Target"
+        android:layout_gravity="center_horizontal"
+        android:visibility="gone"
+        android:textAllCaps="false"
+        />
+
     <TextView
         android:id="@+id/targetTime"
         android:layout_width="match_parent"
