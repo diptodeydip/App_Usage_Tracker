@@ -73,7 +73,8 @@ public class MainActivity extends AppCompatActivity{
         history = findViewById(R.id.history);
         targetHistory = findViewById(R.id.targetStat);
         mUsageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
-        requestReadWrite();
+       // requestReadWrite();
+        requestAppUsage();
 
 
 

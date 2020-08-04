@@ -109,10 +109,11 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
 
     public static void saveToPhone(String json , String fileName, Context context){
         try {
-           // File path = Environment.getExternalStorageDirectory();   //ei path e file rakhle app uninstall korlei folder exist korbe
+           // File path = Environment.getExternalStorageDirectory();   //ei path e file rakhle app uninstall korleo folder exist korbe
 //            PackageInfo p =context.getPackageManager().getPackageInfo(context.getPackageName(),0);
 //            String path = p.applicationInfo.dataDir;
             String path = context.getExternalFilesDir(Environment.getDataDirectory().getAbsolutePath()).getAbsolutePath();
+
             File dir = new File(path + "/AppUsageTracker/");
             dir.mkdirs();
             File file = new File(dir, fileName);
