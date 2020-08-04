@@ -305,8 +305,6 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
             NetworkStats.Bucket bucket = new NetworkStats.Bucket();
             networkStats.getNextBucket(bucket);
             dataUsage+=bucket.getTxBytes()+bucket.getRxBytes();
-            MainActivity.x = bucket.getStartTimeStamp();
-            MainActivity.y = bucket.getEndTimeStamp();
         }
 
         return dataUsage/(1024.0*1024.0);
@@ -329,6 +327,8 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
             NetworkStats.Bucket bucket = new NetworkStats.Bucket();
             networkStats.getNextBucket(bucket);
             dataUsage+=bucket.getTxBytes()+bucket.getRxBytes();
+            MainActivity.x = bucket.getStartTimeStamp();
+            MainActivity.y = bucket.getEndTimeStamp();
         }
 
         return dataUsage/(1024.0*1024.0);

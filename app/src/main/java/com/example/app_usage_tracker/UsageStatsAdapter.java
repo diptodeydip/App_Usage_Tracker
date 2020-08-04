@@ -37,7 +37,7 @@ class UsageStatsAdapter extends BaseAdapter {
      public UsageTimeComparator mUsageTimeComparator = new UsageTimeComparator();
      public AppNameComparator mAppLabelComparator;
      public final ArrayMap<String, String> mAppLabelMap = new ArrayMap<>();
-     public static ArrayList<AppUsageInfo> mPackageStats = new ArrayList<>();
+     public  ArrayList<AppUsageInfo> mPackageStats = new ArrayList<>();
      LayoutInflater mInflater;
      PackageManager mPm;
     public static Context context;
@@ -109,7 +109,7 @@ class UsageStatsAdapter extends BaseAdapter {
             @Override
             public void onClick(View view) {
                 Toast.makeText(context,
-                        mAppLabelMap.get(pkgStats.packageName)+"",
+                        mAppLabelMap.get(pkgStats.packageName)+" "+pkgStats.timeInForeground,
                         Toast.LENGTH_SHORT)
                         .show();
             }

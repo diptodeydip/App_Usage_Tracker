@@ -140,27 +140,7 @@ public class UsagePage extends AppCompatActivity  {
 
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu,menu);
-        return true;
-    }
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle item selection
-        switch (item.getItemId()) {
-            case R.id.refresh:
-                recreate();
-                Toast.makeText(UsagePage.this,
-                        "Refreshing",
-                        Toast.LENGTH_SHORT)
-                        .show();
-                return true;
-            default:
-                return true;
-        }
-    }
+
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     void setStartEndTime(int position){
         if(position == 0){
@@ -202,15 +182,10 @@ public class UsagePage extends AppCompatActivity  {
             calendar.add(Calendar.DAY_OF_MONTH,(-1)*daysAgoStart);
             calendar.set(Calendar.AM_PM, Calendar.AM);
             MainActivity.start_time = calendar.getTimeInMillis();
-        Calendar calendar1 = Calendar.getInstance();
 
-        calendar1.set(Calendar.HOUR, 11);
-        calendar1.set(Calendar.MINUTE, 59);
-        calendar1.set(Calendar.SECOND, 59);
-        calendar.set(Calendar.MILLISECOND,999);
-        calendar1.add(Calendar.DAY_OF_MONTH,(-1)*daysAgoEnd);
-        calendar1.set(Calendar.AM_PM, Calendar.PM);
-        MainActivity.end_time = calendar1.getTimeInMillis();
+
+        MainActivity.end_time = System.currentTimeMillis();
+
         Toast.makeText(this,calendar.getTime()+"",Toast.LENGTH_LONG).show();
 
         AsyncTaskRunner runner = new AsyncTaskRunner();

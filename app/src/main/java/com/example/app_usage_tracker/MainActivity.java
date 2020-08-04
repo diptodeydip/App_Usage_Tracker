@@ -67,13 +67,8 @@ public class MainActivity extends AppCompatActivity{
         calendar.set(Calendar.AM_PM, Calendar.AM);
         start_time = calendar.getTimeInMillis();
         //Toast.makeText(this,calendar.getTime()+"",Toast.LENGTH_LONG).show();
-        calendar.set(Calendar.HOUR, 11);
-        calendar.set(Calendar.MINUTE, 59);
-        calendar.set(Calendar.SECOND, 59);
-        calendar.set(Calendar.MILLISECOND,999);
-        calendar.set(Calendar.AM_PM, Calendar.PM);
 
-        end_time = calendar.getTimeInMillis();
+        end_time = System.currentTimeMillis();
 
         target  = findViewById(R.id.target);
         history = findViewById(R.id.history);
@@ -85,7 +80,8 @@ public class MainActivity extends AppCompatActivity{
 
 ///////
 
-        String packageName = "com.facebook.katana";
+//        String packageName = "com.facebook.katana";
+        String packageName = "com.example.app_usage_tracker";
         PackageManager mPm = this.getPackageManager();
         ApplicationInfo appInfo = null;
 
@@ -93,8 +89,7 @@ public class MainActivity extends AppCompatActivity{
             appInfo = mPm.getApplicationInfo(packageName, 0);
 
             TextView tx = (TextView)findViewById(R.id.test);
-            tx.setText(MyBroadcastReceiver.getMobileDataUsage(this,appInfo.uid)+"Mb  StartTime:"+MyBroadcastReceiver.getCurrentTimeStamp(x)+
-                    " EndTime: "+MyBroadcastReceiver.getCurrentTimeStamp(y));
+           // tx.setText(MyBroadcastReceiver.getMobileDataUsage(this,appInfo.uid)+"Mb");
             TextView tx1 = (TextView)findViewById(R.id.test1);
             tx1.setText(MyBroadcastReceiver.getWifiDataUsage(this,appInfo.uid)+"Mb  StartTime:"+MyBroadcastReceiver.getCurrentTimeStamp(x)+
                     " EndTime: "+MyBroadcastReceiver.getCurrentTimeStamp(y));
