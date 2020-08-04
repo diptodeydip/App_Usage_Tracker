@@ -3,6 +3,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.app_usage_tracker">
 
+
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!--    <uses-permission android:name="android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE" />-->
+
+
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"

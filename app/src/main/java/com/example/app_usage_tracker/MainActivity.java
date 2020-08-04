@@ -8,10 +8,12 @@ import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -22,6 +24,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -37,16 +40,19 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity{
 
+    private static final int REQUEST_READ_PHONE_STATE = 3200;
     //start_time and end_time is for showing custom usage data in UsagePage.class
     public static long start_time,end_time;
+    public static long x,y;
     private UsageStatsManager mUsageStatsManager;
     private static final int EXTERNAL_STORAGE_CODE = 1;
     Button target,history,targetHistory;
     public static int sortFlag = 0 , historyFlag = 0;
 
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    //@RequiresApi(api = Build.VERSION_CODES.M)
+
+   // @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle icicle) {
         super.onCreate(icicle);
@@ -74,9 +80,30 @@ public class MainActivity extends AppCompatActivity{
         targetHistory = findViewById(R.id.targetStat);
         mUsageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
        // requestReadWrite();
-        requestAppUsage();
+       // requestAppUsage();
+        requestReadPhoneState();
+
+///////
+
+        String packageName = "com.facebook.katana";
+        PackageManager mPm = this.getPackageManager();
+        ApplicationInfo appInfo = null;
+
+        try{
+            appInfo = mPm.getApplicationInfo(packageName, 0);
+
+            TextView tx = (TextView)findViewById(R.id.test);
+            tx.setText(MyBroadcastReceiver.getMobileDataUsage(this,appInfo.uid)+"Mb  StartTime:"+MyBroadcastReceiver.getCurrentTimeStamp(x)+
+                    " EndTime: "+MyBroadcastReceiver.getCurrentTimeStamp(y));
+            TextView tx1 = (TextView)findViewById(R.id.test1);
+            tx1.setText(MyBroadcastReceiver.getWifiDataUsage(this,appInfo.uid)+"Mb  StartTime:"+MyBroadcastReceiver.getCurrentTimeStamp(x)+
+                    " EndTime: "+MyBroadcastReceiver.getCurrentTimeStamp(y));
+
+        }
+        catch (Exception e){}
 
 
+//////////
 
         history.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -126,14 +153,34 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
+
+//    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+//    private void requestReadWrite() {
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//
+//            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED
+//                    || checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+//                String[] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE};
+//                requestPermissions(permissions, EXTERNAL_STORAGE_CODE);
+//            }
+//            else{
+//                requestAppUsage();
+//            }
+//        }
+//        else {
+//            requestAppUsage();
+//        }
+//    }
+
+
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    private void requestReadWrite() {
+    public void requestReadPhoneState(){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 
-            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED
-                    || checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
-                String[] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE};
-                requestPermissions(permissions, EXTERNAL_STORAGE_CODE);
+            int permissionCheck = checkSelfPermission(Manifest.permission.READ_PHONE_STATE);
+
+            if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.READ_PHONE_STATE}, REQUEST_READ_PHONE_STATE);
             }
             else{
                 requestAppUsage();
@@ -142,7 +189,9 @@ public class MainActivity extends AppCompatActivity{
         else {
             requestAppUsage();
         }
+
     }
+
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -150,10 +199,19 @@ public class MainActivity extends AppCompatActivity{
         switch (requestCode) {
             case EXTERNAL_STORAGE_CODE: {
                 if (grantResults.length > 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-                    requestAppUsage();
+                    //requestAppUsage();
                 } else {
                     Toast.makeText(this, "Please allow these permissions", Toast.LENGTH_SHORT).show();
-                    requestReadWrite();
+                   // requestReadWrite();
+                }
+                break;
+            }
+            case REQUEST_READ_PHONE_STATE: {
+                if ((grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    requestAppUsage();
+                }
+                else{
+                    requestReadPhoneState();
                 }
                 break;
             }
@@ -215,7 +273,7 @@ public class MainActivity extends AppCompatActivity{
 
         alarmIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
         alarmMgr.set(AlarmManager.RTC_WAKEUP, alarmtime, alarmIntent);
-        Toast.makeText(this,"ALARM SET",Toast.LENGTH_LONG).show();
+       // Toast.makeText(this,"ALARM SET",Toast.LENGTH_LONG).show();
     }
 
 

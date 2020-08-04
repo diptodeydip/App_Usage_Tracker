@@ -1,6 +1,7 @@
 package com.example.app_usage_tracker;
 
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.Notification;
@@ -8,6 +9,8 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.app.usage.NetworkStats;
+import android.app.usage.NetworkStatsManager;
 import android.app.usage.UsageEvents;
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
@@ -23,6 +26,7 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Environment;
+import android.telephony.TelephonyManager;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.View;
@@ -55,6 +59,7 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.RequiresApi;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.work.Constraints;
 import androidx.work.Data;
@@ -72,7 +77,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         contextG = context;
         startAlarm(contextG);
 
-     //   displayNotification("Target Info", "ok", context);
+        //   displayNotification("Target Info", "ok", context);
         //Broadcast receiver onReceive starts on UI thread . thatsy screen gets frozen.. to solve this new thread is created
         new Thread(() -> { // Lambda Expression
             AsyncTaskRunner runner = new AsyncTaskRunner();
@@ -82,11 +87,12 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     }
 
 
-    void saveToFirebase(String jsonString,String path){
+    void saveToFirebase(String jsonString, String path) {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference myRef = database.getReference(path);
 
-        Map<String, Object> userMap = new Gson().fromJson(jsonString, new TypeToken<HashMap<String, Object>>() {}.getType());
+        Map<String, Object> userMap = new Gson().fromJson(jsonString, new TypeToken<HashMap<String, Object>>() {
+        }.getType());
         myRef.updateChildren(userMap);
 
     }
@@ -106,10 +112,9 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     }
 
 
-
-    public static void saveToPhone(String json , String fileName, Context context){
+    public static void saveToPhone(String json, String fileName, Context context) {
         try {
-           // File path = Environment.getExternalStorageDirectory();   //ei path e file rakhle app uninstall korleo folder exist korbe
+            // File path = Environment.getExternalStorageDirectory();   //ei path e file rakhle app uninstall korleo folder exist korbe
 //            PackageInfo p =context.getPackageManager().getPackageInfo(context.getPackageName(),0);
 //            String path = p.applicationInfo.dataDir;
             String path = context.getExternalFilesDir(Environment.getDataDirectory().getAbsolutePath()).getAbsolutePath();
@@ -126,20 +131,19 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         }
     }
 
-    public static String readJSON(String fileName , Context context){
-        try
-        {
+    public static String readJSON(String fileName, Context context) {
+        try {
             String path = context.getExternalFilesDir(Environment.getDataDirectory().getAbsolutePath()).getAbsolutePath();
-            File file = new File( path + "/" + "AppUsageTracker/"+fileName);
+            File file = new File(path + "/" + "AppUsageTracker/" + fileName);
 
             StringBuilder data = new StringBuilder();
-                BufferedReader br = new BufferedReader(new FileReader(file));
-                String line;
-                while ((line = br.readLine()) != null) {
-                    data.append(line);
-                    data.append("\n");
-                }
-                br.close();
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String line;
+            while ((line = br.readLine()) != null) {
+                data.append(line);
+                data.append("\n");
+            }
+            br.close();
 
             return data.toString();
         } catch (Exception e) {
@@ -149,7 +153,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     }
 
 
-    private  void displayNotification(String task, String desc, Context context) {
+    private void displayNotification(String task, String desc, Context context) {
 
         NotificationManager manager =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -162,24 +166,23 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel("dip", "Dipto", NotificationManager.IMPORTANCE_DEFAULT);
-           // channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+            // channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
             assert manager != null;
             manager.createNotificationChannel(channel);
         }
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "dip")
-               // .setContentTitle(task)
+                // .setContentTitle(task)
                 //.setContentText(desc)
                 .setSmallIcon(R.mipmap.ic_launcher)
-               // .setContentIntent(pendingIntent)
-              //  .setDefaults(Notification.DEFAULT_ALL)
+                // .setContentIntent(pendingIntent)
+                //  .setDefaults(Notification.DEFAULT_ALL)
                 //.addAction(R.mipmap.ic_launcher,"click",notificationIntent1)
                 //.setTicker("testing it")
-            //    .setPriority(Notification.PRIORITY_HIGH)
-             //   .setFullScreenIntent(pendingIntent,true)
-              //  .setAutoCancel(true)
-                .setStyle(new NotificationCompat.BigTextStyle().bigText(desc).setBigContentTitle(task).setSummaryText("Click to expand"))
-                ;
+                //    .setPriority(Notification.PRIORITY_HIGH)
+                //   .setFullScreenIntent(pendingIntent,true)
+                //  .setAutoCancel(true)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(desc).setBigContentTitle(task).setSummaryText("Click to expand"));
 
         assert manager != null;
         manager.notify(1, builder.build());
@@ -211,25 +214,25 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
                         currentEvent.getEventType() == UsageEvents.Event.ACTIVITY_PAUSED) {
                     //  allEvents.add(currentEvent);
 
-                    String key= getAppName(currentEvent.getPackageName(),context);
+                    String key = getAppName(currentEvent.getPackageName(), context);
 
                     if (map.get(key) == null) {
                         map.put(key, new AppUsageInfo(currentEvent.getPackageName()));
-                        sameEvents.put(key,new ArrayList<UsageEvents.Event>());
+                        sameEvents.put(key, new ArrayList<UsageEvents.Event>());
                     }
                     sameEvents.get(key).add(currentEvent);
                 }
             }
 
             // Traverse through each app data and count launch, calculate duration
-            for (Map.Entry<String,List<UsageEvents.Event>> entry : sameEvents.entrySet()) {
+            for (Map.Entry<String, List<UsageEvents.Event>> entry : sameEvents.entrySet()) {
                 int totalEvents = entry.getValue().size();
                 if (totalEvents > 1) {
                     for (int i = 0; i < totalEvents - 1; i++) {
                         UsageEvents.Event E0 = entry.getValue().get(i);
                         UsageEvents.Event E1 = entry.getValue().get(i + 1);
 
-                        if (E1.getEventType() == 1 ) {
+                        if (E1.getEventType() == 1) {
                             map.get(getAppName(E1.getPackageName(), context)).launchCount++;
                         }
                         if (E0.getEventType() == 1) {
@@ -254,7 +257,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
                     map.get(getAppName(entry.getValue().get(totalEvents - 1).getPackageName(), context)).timeInForeground += diff;
                 }
 
-                map.get(getAppName(entry.getValue().get(totalEvents - 1).getPackageName(), context)).lastTimeUsed =  entry.getValue().get(totalEvents - 1).getTimeStamp();
+                map.get(getAppName(entry.getValue().get(totalEvents - 1).getPackageName(), context)).lastTimeUsed = entry.getValue().get(totalEvents - 1).getTimeStamp();
 
             }
             return map;
@@ -263,6 +266,76 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         }
         return null;
     }
+    //////////
+
+
+    //when using NetworkStatsManager you need the subscriber id
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    public static String getSubscriberId(Context context) {
+            TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+            try {
+                if (context.checkSelfPermission(Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
+                    // here to request the missing permissions, and then overriding
+                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                    //                                          int[] grantResults)
+                    // to handle the case where the user grants the permission. See the documentation
+                    // for ActivityCompat#requestPermissions for more details.
+                    return  tm.getSubscriberId();
+                }
+            }catch (Exception e){}
+
+        return null;
+    }
+
+
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    public static double getMobileDataUsage(Context context, int packageUid) {
+
+        NetworkStats networkStats = null;
+        NetworkStatsManager networkStatsManager = (NetworkStatsManager) context.getSystemService(Context.NETWORK_STATS_SERVICE);
+        networkStats = networkStatsManager.queryDetailsForUid(
+                ConnectivityManager.TYPE_MOBILE,
+                getSubscriberId(context),
+                System.currentTimeMillis()-1000*60*60,
+                System.currentTimeMillis()+1000*60*60,
+                packageUid);
+        double dataUsage = 0;
+        while(networkStats.hasNextBucket()){
+            NetworkStats.Bucket bucket = new NetworkStats.Bucket();
+            networkStats.getNextBucket(bucket);
+            dataUsage+=bucket.getTxBytes()+bucket.getRxBytes();
+            MainActivity.x = bucket.getStartTimeStamp();
+            MainActivity.y = bucket.getEndTimeStamp();
+        }
+
+        return dataUsage/(1024.0*1024.0);
+    }
+
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    public static double getWifiDataUsage(Context context, int packageUid) {
+        NetworkStats networkStats = null;
+        NetworkStatsManager networkStatsManager = (NetworkStatsManager) context.getSystemService(Context.NETWORK_STATS_SERVICE);
+        networkStats = networkStatsManager.queryDetailsForUid(
+                ConnectivityManager.TYPE_WIFI,
+                "",
+                System.currentTimeMillis()-1000*60*60,
+                System.currentTimeMillis()+1000*60*60,
+                packageUid);
+
+        double dataUsage = 0;
+        while(networkStats.hasNextBucket()){
+            NetworkStats.Bucket bucket = new NetworkStats.Bucket();
+            networkStats.getNextBucket(bucket);
+            dataUsage+=bucket.getTxBytes()+bucket.getRxBytes();
+        }
+
+        return dataUsage/(1024.0*1024.0);
+    }
+
+
+    //////////
 
     public static String getAppName(String packageName, Context context){
         String appName = packageName;
