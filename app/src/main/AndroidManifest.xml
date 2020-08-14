@@ -3,12 +3,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.app_usage_tracker">
 
-
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <!--    <uses-permission android:name="android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE" />-->
-
-
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:allowBackup="true"
@@ -17,16 +17,23 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".AppwiseTargetStats"></activity>
-        <activity android:name=".TargetStats" />
-        <activity android:name=".MainActivity" />
-        <activity android:name=".SetTarget" />
-        <activity android:name=".Info">
+        <activity android:name=".AppList">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity android:name=".AppwiseTargetStats" />
+        <activity android:name=".TargetStats" />
+        <activity android:name=".MainActivity" />
+        <activity android:name=".SetTarget" />
+        <activity android:name=".Info">
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.MAIN" />-->
+
+<!--                <category android:name="android.intent.category.LAUNCHER" />-->
+<!--            </intent-filter>-->
         </activity>
         <activity android:name=".UsagePage" />
 
@@ -36,14 +43,5 @@
             </intent-filter>
         </receiver>
     </application>
-    <uses-permission
-        android:name="android.permission.PACKAGE_USAGE_STATS"
-        tools:ignore="ProtectedPermissions" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-<!--    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />-->
-<!--    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />-->
-<!--    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />-->
-
-<!--    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />-->
 
 </manifest>

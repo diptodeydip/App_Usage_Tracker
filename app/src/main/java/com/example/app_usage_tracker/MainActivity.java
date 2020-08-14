@@ -38,20 +38,19 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_READ_PHONE_STATE = 3200;
     //start_time and end_time is for showing custom usage data in UsagePage.class
-    public static long start_time,end_time;
-    public static long x,y;
+    public static long start_time, end_time;
+    public static long x, y;
     private UsageStatsManager mUsageStatsManager;
     private static final int EXTERNAL_STORAGE_CODE = 1;
-    Button target,history,targetHistory;
-    public static int sortFlag = 0 , historyFlag = 0;
+    Button target, history, targetHistory;
+    public static int sortFlag = 0, historyFlag = 0;
 
 
-
-   // @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    // @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle icicle) {
@@ -60,7 +59,7 @@ public class MainActivity extends AppCompatActivity{
 
         Calendar calendar = Calendar.getInstance();
         //  calendar.add(Calendar.DAY_OF_YEAR, -1);
-        calendar.set(Calendar.MILLISECOND,0);
+        calendar.set(Calendar.MILLISECOND, 0);
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.HOUR, 0);
@@ -70,17 +69,17 @@ public class MainActivity extends AppCompatActivity{
         calendar.set(Calendar.HOUR, 11);
         calendar.set(Calendar.MINUTE, 59);
         calendar.set(Calendar.SECOND, 59);
-        calendar.set(Calendar.MILLISECOND,999);
+        calendar.set(Calendar.MILLISECOND, 999);
         calendar.set(Calendar.AM_PM, Calendar.PM);
 
         end_time = calendar.getTimeInMillis();
 
-        target  = findViewById(R.id.target);
+        target = findViewById(R.id.target);
         history = findViewById(R.id.history);
         targetHistory = findViewById(R.id.targetStat);
-        mUsageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
-       // requestReadWrite();
-       // requestAppUsage();
+//        mUsageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
+        // requestReadWrite();
+        // requestAppUsage();
         requestReadPhoneState();
 
 ///////
@@ -89,18 +88,18 @@ public class MainActivity extends AppCompatActivity{
         PackageManager mPm = this.getPackageManager();
         ApplicationInfo appInfo = null;
 
-        try{
+        try {
             appInfo = mPm.getApplicationInfo(packageName, 0);
 
-            TextView tx = (TextView)findViewById(R.id.test);
-            tx.setText(MyBroadcastReceiver.getMobileDataUsage(this,appInfo.uid)+"Mb  StartTime:"+MyBroadcastReceiver.getCurrentTimeStamp(x)+
-                    " EndTime: "+MyBroadcastReceiver.getCurrentTimeStamp(y));
-            TextView tx1 = (TextView)findViewById(R.id.test1);
-            tx1.setText(MyBroadcastReceiver.getWifiDataUsage(this,appInfo.uid)+"Mb  StartTime:"+MyBroadcastReceiver.getCurrentTimeStamp(x)+
-                    " EndTime: "+MyBroadcastReceiver.getCurrentTimeStamp(y));
+            TextView tx = (TextView) findViewById(R.id.test);
+            tx.setText(MyBroadcastReceiver.getMobileDataUsage(this, appInfo.uid) + "Mb  StartTime:" + MyBroadcastReceiver.getCurrentTimeStamp(x) +
+                    " EndTime: " + MyBroadcastReceiver.getCurrentTimeStamp(y));
+            TextView tx1 = (TextView) findViewById(R.id.test1);
+            tx1.setText(MyBroadcastReceiver.getWifiDataUsage(this, appInfo.uid) + "Mb  StartTime:" + MyBroadcastReceiver.getCurrentTimeStamp(x) +
+                    " EndTime: " + MyBroadcastReceiver.getCurrentTimeStamp(y));
 
+        } catch (Exception e) {
         }
-        catch (Exception e){}
 
 
 //////////
@@ -108,19 +107,19 @@ public class MainActivity extends AppCompatActivity{
         history.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this,UsagePage.class));
+                startActivity(new Intent(MainActivity.this, UsagePage.class));
             }
         });
         target.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this,SetTarget.class));
+                startActivity(new Intent(MainActivity.this, SetTarget.class));
             }
         });
         targetHistory.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this,TargetStats.class));
+                startActivity(new Intent(MainActivity.this, TargetStats.class));
             }
         });
 
@@ -128,15 +127,15 @@ public class MainActivity extends AppCompatActivity{
         // setSupportActionBar(tbar);
 
 
-
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu,menu);
+        inflater.inflate(R.menu.menu, menu);
         return true;
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
@@ -174,19 +173,17 @@ public class MainActivity extends AppCompatActivity{
 
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    public void requestReadPhoneState(){
+    public void requestReadPhoneState() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 
             int permissionCheck = checkSelfPermission(Manifest.permission.READ_PHONE_STATE);
 
             if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(new String[]{Manifest.permission.READ_PHONE_STATE}, REQUEST_READ_PHONE_STATE);
-            }
-            else{
+            } else {
                 requestAppUsage();
             }
-        }
-        else {
+        } else {
             requestAppUsage();
         }
 
@@ -202,15 +199,14 @@ public class MainActivity extends AppCompatActivity{
                     //requestAppUsage();
                 } else {
                     Toast.makeText(this, "Please allow these permissions", Toast.LENGTH_SHORT).show();
-                   // requestReadWrite();
+                    // requestReadWrite();
                 }
                 break;
             }
             case REQUEST_READ_PHONE_STATE: {
                 if ((grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                     requestAppUsage();
-                }
-                else{
+                } else {
                     requestReadPhoneState();
                 }
                 break;
@@ -220,10 +216,9 @@ public class MainActivity extends AppCompatActivity{
 
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    void requestAppUsage(){
+    void requestAppUsage() {
 
-        List<UsageStats> stats = mUsageStatsManager
-                .queryUsageStats(UsageStatsManager.INTERVAL_DAILY, 0, System.currentTimeMillis());
+        List<UsageStats> stats = mUsageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, 0, System.currentTimeMillis());
         boolean isEmpty = stats.isEmpty();
         if (isEmpty) {
             Toast.makeText(MainActivity.this,
@@ -238,7 +233,7 @@ public class MainActivity extends AppCompatActivity{
                 }
             });
 
-        }else{
+        } else {
             requestAutoStart();
             startAlarm();
             target.setVisibility(View.VISIBLE);
@@ -247,7 +242,7 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
-    void requestAutoStart(){
+    void requestAutoStart() {
         AutoStartHelper.getInstance().getAutoStartPermission(this);
     }
 
@@ -259,11 +254,11 @@ public class MainActivity extends AppCompatActivity{
                 .show().setCancelable(false);
     }
 
-    private void startAlarm(){
+    private void startAlarm() {
         AlarmManager alarmMgr;
         PendingIntent alarmIntent;
 
-        alarmMgr = (AlarmManager)this.getSystemService(Context.ALARM_SERVICE);
+        alarmMgr = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(this, MyBroadcastReceiver.class);
 
         Calendar calendar = Calendar.getInstance();
@@ -273,11 +268,8 @@ public class MainActivity extends AppCompatActivity{
 
         alarmIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
         alarmMgr.set(AlarmManager.RTC_WAKEUP, alarmtime, alarmIntent);
-       // Toast.makeText(this,"ALARM SET",Toast.LENGTH_LONG).show();
+        // Toast.makeText(this,"ALARM SET",Toast.LENGTH_LONG).show();
     }
-
-
-
 
 
 }

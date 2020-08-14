@@ -1,6 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#6200EE</color>
-    <color name="colorPrimaryDark">#3700B3</color>
-    <color name="colorAccent">#03DAC5</color>
+    <color name="colorPrimary">#254b62</color>
+    <color name="colorPrimaryDark">#1d3e53</color>
+    <color name="colorAccent">#77abb7</color>
+    <color name="layoutBackground">#222831</color>
+    <color name="cardBackground">#1D2129</color>
+    <color name="itemBackground">#322f3d</color>
+    <color name="spinnerBackground">#4B3259</color>
+    <color name="spinnerDropDownBackground">#263859</color>
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+    <color name="radioUncheckedColor">#005086</color>
+    <color name="buttonBackground">#3E005086</color>
+    <color name="dialogBackground">#221f3b</color>
+    <color name="dialogBackgroundLight">#29a19c</color>
+    <color name="transparent">#00000000</color>
+    <color name="textColorLight">#00000000</color>
+
+    <!--    <color name="colorPrimary">#6200EE</color>-->
+    <!--    <color name="colorPrimaryDark">#3700B3</color>-->
+    <!--    <color name="colorAccent">#03DAC5</color>-->
 </resources>
