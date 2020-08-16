@@ -1,6 +1,7 @@
 package com.example.app_usage_tracker;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -45,10 +46,11 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.ViewHold
         String lastUsedTime = ImportantMethods.getTimeInAgoFromMillisecond(app.getLastTimeUsed());
         holder.lastTimeUsed.setText(lastUsedTime);
         holder.parentLayout.setOnClickListener( view -> {
-//            Intent intent = new Intent(context, AppDetails.class);
-//            context.startActivity(intent);
+            Intent intent = new Intent(context, AppDetails.class);
+            intent.putExtra("packageName", app.getPackageName());
+            context.startActivity(intent);
 //            showToast(Long.toString(app.getTimeInForeground()));
-            showToast(app.toString());
+//            showToast(app.toString());
         });
     }
 
@@ -170,30 +172,6 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.ViewHold
             fullMessage += message + " ";
         }
         showToast(fullMessage);
-    }
-
-    private void showLog(String message) {
-        Log.v(TAG, message);
-    }
-
-    private void showLog(int message) {
-        showLog(Integer.toString(message));
-    }
-
-    private void showLog(int... messages) {
-        String fullMessage = "";
-        for (int message : messages) {
-            fullMessage += message + " ";
-        }
-        showLog(fullMessage);
-    }
-
-    private void showLog(String... messages) {
-        String fullMessage = "";
-        for (String message : messages) {
-            fullMessage += message + " ";
-        }
-        showLog(fullMessage);
     }
 
 

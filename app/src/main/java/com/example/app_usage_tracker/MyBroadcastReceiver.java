@@ -69,6 +69,7 @@ import androidx.work.WorkManager;
 
 public class MyBroadcastReceiver extends BroadcastReceiver {
     private UsageStatsManager mUsageStatsManager;
+    public static final String TAG = "ahtrap";
     Context contextG;
 
     @Override
@@ -266,7 +267,6 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         }
         return null;
     }
-    //////////
 
 
     //when using NetworkStatsManager you need the subscriber id
@@ -382,6 +382,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     void doWork(Context context){
+//        Log.d(TAG, "doWork: ");
         String jsonString =  readJSON("details.json",context);
         String regNo="";
         try {
@@ -392,9 +393,8 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
             Log.w(regNo,jsonString1);
         }catch (Exception e){}
 
-
         if(!jsonString.equals("")) {
-
+//            Log.d(TAG, "doWork: inside!");
             PackageManager mPm = context.getPackageManager();
             Calendar calendar = Calendar.getInstance();
             calendar.set(Calendar.MILLISECOND,0);
@@ -431,8 +431,10 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
             for (long start_time = checkPoint; start_time + hour_milis <= goalPoint; start_time += hour_milis) {
 
                 HashMap<String, AppUsageInfo> map = getUsageStatistics(start_time, start_time + hour_milis, context);
+//                Log.d(TAG, "doWork: map is getto!");
                 assert map != null;
                 ArrayList<AppUsageInfo> smallInfoList = new ArrayList<>(map.values());
+
                 JSONObject usage = new JSONObject();
                 try {
                     usage.put("Time_Range", getCurrentTimeStamp(start_time) + "--" + getCurrentTimeStamp(start_time + hour_milis));
@@ -459,7 +461,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
 
                 }
                 try {
-                    usageDetails.put(System.currentTimeMillis() + "", usage);
+                    usageDetails.put(start_time + "", usage);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -642,9 +644,8 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         }
     }
 
-
-
     void saveUserInfo(Context context){
+//        Log.d(TAG, "saveUserInfo: ");
         String regNo="";
         try {
             String jsonString1 =  readJSON("userInfo.json",context);
@@ -689,20 +690,21 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
 
         @Override
         protected void onPostExecute(String result) {
-
-
+//            Log.d(TAG, "onPostExecute: ");
             saveUserInfo(contextG);
         }
 
         @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
         @Override
         protected String doInBackground(Context... contexts) {
+//            Log.d(TAG, "doInBackground: ");
             doWork(contextG);
             return null;
         }
         @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
         @Override
         protected void onPreExecute() {
+//            Log.d(TAG, "onPreExecute: ");
             checkTargetLocally(contextG);
         }
         @Override
