@@ -45,10 +45,6 @@ class AppUsageInfo {
     }
 
 
-    public void setTimeInForeground(long timeInForeground) {
-        this.timeInForeground = timeInForeground;
-    }
-
     public void incrementLaunchCount(){
         launchCount++;
     }
@@ -89,7 +85,6 @@ class AppUsageInfo {
         return agoTime + " ago";
     }
 
-
     public Drawable getAppIcon() {
         return appIcon;
     }
@@ -120,6 +115,31 @@ class AppUsageInfo {
 
     public long getInstallationTime() {
         return installationTime;
+    }
+
+
+    public void setTimeInForeground(long timeInForeground) {
+        this.timeInForeground = timeInForeground;
+    }
+
+    public void setAppIcon(Drawable appIcon) {
+        this.appIcon = appIcon;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
+    }
+
+    public void setPackageName(String packageName) {
+        this.packageName = packageName;
+    }
+
+    public void setInstallationTime(long installationTime) {
+        this.installationTime = installationTime;
+    }
+
+    public void setSystemApp(boolean systemApp) {
+        isSystemApp = systemApp;
     }
 
     public void setLaunchCount(int launchCount) {

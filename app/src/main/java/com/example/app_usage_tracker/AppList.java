@@ -27,18 +27,18 @@ import static android.app.AppOpsManager.MODE_ALLOWED;
 
 public class AppList extends AppCompatActivity {
     private final String TAG = "ahtrap";
-    private HashMap<String, AppUsageInfo> appsUsageInfo;
+    private HashMap<String, AppUsageInfo> appsUsageInfo, testMap;
     private SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_app_list);
-        sharedPreferences = getSharedPreferences(ImportantMethods.SHARED_PREFERENCE, MODE_PRIVATE);
-        checkIfFirst();
+        sharedPreferences = getSharedPreferences(ImportantStuffs.SHARED_PREFERENCE, MODE_PRIVATE);
+        if(!checkIfFirst())
+            testThings();
         if(isUsagePermissionEnabled() == true)
             startAlarm();
-        testThings();
     }
 
     @Override
@@ -50,18 +50,19 @@ public class AppList extends AppCompatActivity {
             finish();
             return;
         } else {
-            appsUsageInfo = AppUsageDataController.getAppsUsageInfo(ImportantMethods.getDayStartingHour(), ImportantMethods.getDayEndTime(), this);
+            long startTime = ImportantStuffs.getDayStartingHour(), endTime = ImportantStuffs.getCurrentTime();
+            appsUsageInfo = AppUsageDataController.getAppsUsageInfo(startTime, endTime, this);
             addOtherAppsToAppsUsageInfo();
             createAppList();
         }
     }
 
-    private void checkIfFirst(){
+    private boolean checkIfFirst(){
         SharedPreferences sharedPreferences = getSharedPreferences("AppUsageData", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         Long time = sharedPreferences.getLong("checkpoint", 0);
         if(time == 0){
-            ImportantMethods.showLog("no checkpoint data");
+            ImportantStuffs.showLog("no checkpoint data");
             Calendar calendar = Calendar.getInstance();
 
             calendar.set(Calendar.MILLISECOND,0);
@@ -75,7 +76,9 @@ public class AppList extends AppCompatActivity {
             time = calendar.getTimeInMillis();
             editor.putLong("checkpoint", time);
             editor.commit();
+            return true;
         }
+        return false;
     }
 
     private void startAlarm() {
@@ -87,22 +90,20 @@ public class AppList extends AppCompatActivity {
 
         Calendar calendar = Calendar.getInstance();
 
-        long alarmTime = calendar.getTimeInMillis() + 1000 * 5;
+        long alarmTime = calendar.getTimeInMillis() + 500;
 
         alarmIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
         alarmMgr.set(AlarmManager.RTC_WAKEUP, alarmTime, alarmIntent);
     }
 
     private void testThings() {
-        String packageName = "com.android.launcher3";
-        long dayStartTime = ImportantMethods.getDayStartingHour();
-        ArrayList<Integer>usageData = ImportantMethods.getDailyAppUsageData(dayStartTime, packageName, this);
-        Integer totalUsageTime = 0;
-        for(Integer hourlyUsage:usageData){
-            totalUsageTime += hourlyUsage;
-            ImportantMethods.showLog(ImportantMethods.getTimeFromMillisecond(hourlyUsage));
-        }
-        ImportantMethods.showLog(ImportantMethods.getTimeFromMillisecond(totalUsageTime));
+//        long t1 = ImportantStuffs.getCurrentHour(), t2 = ImportantStuffs.getRecentHourFromTime(ImportantStuffs.getCurrentTime());
+//        ImportantStuffs.showLog(ImportantStuffs.getDateFromMilliseconds(t1), ImportantStuffs.getDateFromMilliseconds(t2));
+
+//        String packageName = "com.example.app_usage_tracker";
+//        long dayStartTime = ImportantStuffs.getDayStartingHour();
+//        ArrayList<Integer>usageData = AppUsageDataController.getDailyUsageDataInHourlyList(dayStartTime, packageName, this);
+//        ImportantStuffs.showLog(usageData.toString());
     }
 
     public void addOtherAppsToAppsUsageInfo(){
@@ -123,7 +124,7 @@ public class AppList extends AppCompatActivity {
             } catch (PackageManager.NameNotFoundException e) {
                 e.printStackTrace();
             }
-            boolean isSystem = ImportantMethods.isSystemPackage(packageName, this);
+            boolean isSystem = ImportantStuffs.isSystemPackage(packageName, this);
 
             appsUsageInfo.put(packageName, new AppUsageInfo(appName, packageName, icon, installed, isSystem));
         }
@@ -135,7 +136,7 @@ public class AppList extends AppCompatActivity {
         AppListAdapter adapter = new AppListAdapter(this, appsInfoList);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter.sortByLastOpened(false);
+        adapter.sortByUsageTime(false);
     }
 
     private boolean isUsagePermissionEnabled() {

@@ -1,20 +1,14 @@
 package com.example.app_usage_tracker;
 
-import android.app.usage.UsageEvents;
-import android.app.usage.UsageStats;
-import android.app.usage.UsageStatsManager;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
-import android.os.Build;
 import android.os.Environment;
 import android.provider.Settings;
 import android.util.Log;
-import android.widget.Toast;
-
-import androidx.core.content.ContextCompat;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,16 +23,15 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Random;
 
-import static com.example.app_usage_tracker.MyBroadcastReceiver.getAppName;
+public class ImportantStuffs {
 
-public class ImportantMethods {
-
-    public static final String TAG = "ahtrap";
     public static final long MILLISECONDS_IN_HOUR = 3600000L;
-    public static final String SHARED_PREFERENCE = "AppUsageData";
+    public static final String SHARED_PREFERENCE = "AppUsageData", TAG = "ahtrap";
+    public static final String LAUNCHER_PACKAGE = "com.example.ui", THIS_APP_PACKAGE = "com.example.app_usage_tracker";
+    public static final String SETTINGS_PACKAGE = "com.android.settings", FILE_MANAGER_PACKAGE = "com.amaze.filemanager";
+    private static final Random random = new Random();
 
 
     public static String getAppName(String packageName, Context context) {
@@ -93,8 +86,7 @@ public class ImportantMethods {
         calendar.set(Calendar.MILLISECOND, 0);
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.HOUR, 0);
-        calendar.set(Calendar.AM_PM, Calendar.AM);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
         return calendar.getTimeInMillis();
     }
 
@@ -109,15 +101,27 @@ public class ImportantMethods {
 
     public static long getDayEndTime() {
         Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR, 11);
-        calendar.set(Calendar.MINUTE, 59);
-        calendar.set(Calendar.SECOND, 59);
-        calendar.set(Calendar.MILLISECOND, 999);
-        calendar.set(Calendar.AM_PM, Calendar.PM);
+        calendar.set(Calendar.MILLISECOND, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.HOUR_OF_DAY, 24);
         return calendar.getTimeInMillis();
     }
 
-    public static long getMostRecentHourTime() {
+    public static long getCurrentTime() {
+        return Calendar.getInstance().getTimeInMillis();
+    }
+
+    public static long getRecentHourFromTime(long time){
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(time);
+        calendar.set(Calendar.MILLISECOND, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        return calendar.getTimeInMillis();
+    }
+
+    public static long getCurrentHour() {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.MILLISECOND, 0);
         calendar.set(Calendar.SECOND, 0);
@@ -147,6 +151,11 @@ public class ImportantMethods {
         else
             timeString = min_hour + " min";
         return timeString;
+    }
+
+    public static int getMinuteFromTime(int time){
+        int minute = time / (1000 * 60);
+        return Math.min(minute, 60);
     }
 
     public static String getTimeInAgoFromMillisecond(long time){
@@ -194,58 +203,14 @@ public class ImportantMethods {
         }
     }
 
-    public static ArrayList<Integer> getDailyAppUsageData(long dayStartTime, String packageName, Context context) {
-        ArrayList<Integer> usage = new ArrayList<>();
-
-        long startTime = dayStartTime;
-        long endTime = dayStartTime + 23*MILLISECONDS_IN_HOUR;
-
-        for(long currentTime=startTime; currentTime<=endTime; currentTime+=MILLISECONDS_IN_HOUR){
-            usage.add(getHourlyAppUsageData(currentTime, packageName, context));
-        }
-        return usage;
-    }
-
-    public static int getHourlyAppUsageData(long hourStartTime, String packageName, Context context){
-        String history = ImportantMethods.readJSON("History.json", context);
-
-        JSONObject jsonObject = null;
-        try {
-            jsonObject = new JSONObject(history);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        String key = String.valueOf(hourStartTime);
-        try {
-            JSONArray appArray = jsonObject.getJSONArray(key);
-            return getForegroundTimeFromJsonArray(appArray, packageName);
-        } catch (JSONException e) {
-//                ImportantMethods.showLog("Error: ", ImportantMethods.getDateFromMilliseconds(currentTime));
-            return 0;
-        }
-    }
-
-    public static int getForegroundTimeFromJsonArray(JSONArray array, String packageName) {
-        for(int i=0; i<array.length(); i++){
-            try {
-                JSONObject object = array.getJSONObject(i);
-                String value = object.getString("packageName");
-                if(value.equals(packageName))
-                    return object.getInt("foregroundTime");
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-
-        }
-        return 0;
-    }
-      
-
     public static void playRandomSound(Context context){
         MediaPlayer mediaPlayer = MediaPlayer.create(context, Settings.System.DEFAULT_ALARM_ALERT_URI);
         mediaPlayer.setLooping(false);
         mediaPlayer.start();
+    }
+
+    public static int getRandomInt(int maxValue){
+        return random.nextInt(maxValue);
     }
 
 
@@ -467,5 +432,45 @@ public class ImportantMethods {
 //
 //        }
 //
+//    }
+
+//    private void dunno(){
+//        for (Map.Entry<String, List<UsageEvents.Event>> entry : sameEvents.entrySet()) {
+//            ImportantStuffs.showLog(packageName + " -> " + totalEvents, " -> " + ImportantStuffs.getTimeFromMillisecond(usageTime));
+
+//            if (totalEvents > 1) {
+//                for (int i = 0; i < totalEvents - 1; i++) {
+//                    UsageEvents.Event E0 = entry.getValue().get(i);
+//                    UsageEvents.Event E1 = entry.getValue().get(i + 1);
+//
+//                    if (E1.getEventType() == 1) {
+//                        appsUsageInfo.get(E1.getPackageName()).incrementLaunchCount();
+//                    }
+//                    if (E0.getEventType() == 1) {
+//                        appsUsageInfo.get(E1.getPackageName()).incrementLaunchCount();
+//                    }
+//
+//                    if (E0.getEventType() == 1 && E1.getEventType() == 2) {
+//                        long diff = E1.getTimeStamp() - E0.getTimeStamp();
+//                        appsUsageInfo.get(E0.getPackageName()).addToTimeInForeground(diff);
+//                    }
+//                }
+//            }
+//
+//            // shurur event jodi app closing hoy taile start_time and app closing time er difference add korlam
+//            if (entry.getValue().get(0).getEventType() == 2) {
+//                long diff = entry.getValue().get(0).getTimeStamp() - startTime;
+//                appsUsageInfo.get(entry.getValue().get(0).getPackageName()).addToTimeInForeground(diff);
+//            }
+//
+//            // shesher event jodi app starting hoy  tahole app starting time and end_time er diiferece add korlaam
+//            if (entry.getValue().get(totalEvents - 1).getEventType() == 1) {
+//                appsUsageInfo.get(entry.getValue().get(totalEvents - 1).getPackageName()).incrementLaunchCount();
+//                long diff = endTime - entry.getValue().get(totalEvents - 1).getTimeStamp();
+//                appsUsageInfo.get(entry.getValue().get(totalEvents - 1).getPackageName()).addToTimeInForeground(diff);
+//            }
+//
+//            appsUsageInfo.get(entry.getValue().get(totalEvents - 1).getPackageName()).lastTimeUsed = entry.getValue().get(totalEvents - 1).getTimeStamp();
+//        }
 //    }
 }

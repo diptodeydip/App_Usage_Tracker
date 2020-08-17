@@ -2,7 +2,6 @@ package com.example.app_usage_tracker;
 
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,7 +42,7 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.ViewHold
         String time = getTimeFromMillisecond(app.getTimeInForeground());
         holder.appUsage.setText(time);
         holder.appIcon.setImageDrawable(app.getAppIcon());
-        String lastUsedTime = ImportantMethods.getTimeInAgoFromMillisecond(app.getLastTimeUsed());
+        String lastUsedTime = ImportantStuffs.getTimeInAgoFromMillisecond(app.getLastTimeUsed());
         holder.lastTimeUsed.setText(lastUsedTime);
         holder.parentLayout.setOnClickListener( view -> {
             Intent intent = new Intent(context, AppDetails.class);

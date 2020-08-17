@@ -3,16 +3,12 @@ package com.example.app_usage_tracker;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.work.Constraints;
-import androidx.work.ExistingWorkPolicy;
-import androidx.work.NetworkType;
-import androidx.work.OneTimeWorkRequest;
-import androidx.work.WorkManager;
-import androidx.work.WorkRequest;
+import androidx.core.content.ContextCompat;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
@@ -29,43 +25,45 @@ import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
-import com.github.mikephil.charting.utils.ColorTemplate;
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Random;
 
-public class AppDetails extends AppCompatActivity implements DatePickerDialog.OnDateSetListener {
+public class AppDetails extends AppCompatActivity implements DatePickerDialog.OnDateSetListener{
 
     BarChart chart;
     TextView targetTypeTextView, targetTextView, notificationTypesTextView, selectedAppTextView;
     ConstraintLayout selectAppLayout, setTargetLayout, setNotificationsLayout;
     int targetTypeIndex, hourTarget, minTarget, selectedAppIndex;
     String[] targetTypes, notificationTypes, appList;
-    ArrayList<Integer> selectedNotifications;
+    ArrayList<Integer> selectedNotifications, dailyUsage;
+    long usageCollectionTime = ImportantStuffs.getDayStartingHour();
+    private String currentPackage = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_app_details);
 
-        testStuffs();
         initStuffs();
-        createGraph();
+        createGraph(dailyUsage);
+        testStuffs();
     }
 
     private void testStuffs(){
-
+        ImportantStuffs.showLog(currentPackage, dailyUsage.toString());
     }
 
     private void initStuffs() {
         selectAppLayout = findViewById(R.id.app_list);
         selectedAppTextView = findViewById(R.id.selected_app);
         appList = getResources().getStringArray(R.array.planets_array);
+        currentPackage = getIntent().getStringExtra("packageName");
         selectedAppIndex = 0;
         selectedAppTextView.setText(appList[selectedAppIndex]);
-
-//        spinner = findViewById(R.id.app_list);
+        dailyUsage = AppUsageDataController.getDailyUsageDataInHourlyList(usageCollectionTime, currentPackage, this);
         chart = findViewById(R.id.usage_graph);
 
         targetTypes = getResources().getStringArray(R.array.target_types);
@@ -128,14 +126,33 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
         }
     }
 
-    private void createGraph() {
-//        chart.setBackgroundColor(Color.WHITE);
+    private void createGraph(ArrayList<Integer> usageData) {
+        initBarChart(chart);
+
+        BarDataSet set = getBarDataSetFromUsage(usageData);
+        BarData data = new BarData(set);
+        chart.setData(data);
+
+        initXAxis(chart, usageData.size());
+        initYAxis(chart);
+
+        chart.invalidate();
+        chart.animateY(1000, Easing.EaseOutCubic);
+    }
+
+    private void initBarChart(BarChart chart){
         chart.setDrawBarShadow(false);
         chart.setDrawValueAboveBar(true);
         chart.setDrawGridBackground(false);
+        chart.setFitBars(true);
         chart.getDescription().setEnabled(false);
         chart.setPinchZoom(false);
+        chart.getLegend().setTextColor(Color.WHITE);
+        chart.getLegend().setEnabled(false);
+        chart.setExtraBottomOffset(10f);
+    }
 
+    private void initYAxis(BarChart chart){
         YAxis leftAxis = chart.getAxisLeft();
         leftAxis.setAxisMinimum(0f);
         leftAxis.setAxisMaximum(60);
@@ -144,27 +161,51 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
         YAxis rightAxis = chart.getAxisRight();
         rightAxis.setDrawGridLines(false);
         rightAxis.setDrawLabels(false);
+    }
+
+    private void initXAxis(BarChart chart, int count){
+        ArrayList<String> label = new ArrayList<>();
+        if(count == 24){
+            label.add("12 am");
+            for(int i=1; i<=11; i++)
+                label.add(i+" am");
+            label.add("12 pm");
+            for(int i=1; i<=11; i++)
+                label.add(i+" pm");
+        }
+
 
         XAxis xAxis = chart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setDrawGridLines(false);
-        xAxis.setAxisMaximum(23);
         xAxis.setTextColor(Color.WHITE);
+        xAxis.setLabelRotationAngle(90);
+        xAxis.setLabelCount(24);
+//        xAxis.setCenterAxisLabels(true);
+        xAxis.setValueFormatter(new IndexAxisValueFormatter(label));
+    }
 
+    private BarDataSet getRandomBarDataSet(){
         ArrayList<BarEntry> dataValues = new ArrayList<>();
-        Random random = new Random();
         for (int i = 0; i < 24; i++) {
-            dataValues.add(new BarEntry(i, random.nextInt(61)));
+            dataValues.add(new BarEntry(i, ImportantStuffs.getRandomInt(60)));
         }
         BarDataSet barDataSet = new BarDataSet(dataValues, "");
-        barDataSet.setColors(ColorTemplate.COLORFUL_COLORS);
+        barDataSet.setColor(ContextCompat.getColor(this, R.color.barGraphBarColor1));
         barDataSet.setDrawValues(false);
-        BarData barData = new BarData(barDataSet);
+        return barDataSet;
+    }
 
-        chart.setData(barData);
-        chart.invalidate();
-        chart.animateY(1000, Easing.EaseOutCubic);
-
+    private BarDataSet getBarDataSetFromUsage(ArrayList<Integer> usageData){
+        ArrayList<BarEntry> dataValues = new ArrayList<>();
+        for(int i=0; i<usageData.size(); i++){
+            int time = ImportantStuffs.getMinuteFromTime(usageData.get(i));
+            dataValues.add(new BarEntry(i, time));
+        }
+        BarDataSet barDataSet = new BarDataSet(dataValues, "");
+        barDataSet.setColor(ContextCompat.getColor(this, R.color.barGraphBarColor1));
+        barDataSet.setDrawValues(false);
+        return barDataSet;
     }
 
     public void onSelectAppClicked(View view) {
@@ -277,25 +318,35 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
         showDatePickerDialog();
     }
 
-    public void onCompareDateClicked(View view) {
-        showDatePickerDialog();
-    }
-
     public void showDatePickerDialog() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(usageCollectionTime);
         DatePickerDialog datePickerDialog = new DatePickerDialog(
                 this,
-                R.style.DialogTheme,
+                R.style.DatePicker,
                 this,
-                Calendar.getInstance().get(Calendar.YEAR),
-                Calendar.getInstance().get(Calendar.MONTH),
-                Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
         );
         datePickerDialog.show();
+        datePickerDialog.getButton(DatePickerDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE);
+        datePickerDialog.getButton(DatePickerDialog.BUTTON_NEGATIVE).setTextColor(Color.WHITE);
     }
 
     @Override
     public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-        showToast("onDateSet");
+        Calendar calendar = Calendar.getInstance();
+
+        calendar.set(Calendar.YEAR, year);
+        calendar.set(Calendar.MONTH, month);
+        calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+        calendar.set(Calendar.MILLISECOND, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        usageCollectionTime = calendar.getTimeInMillis();
+        dailyUsage = AppUsageDataController.getDailyUsageDataInHourlyList(usageCollectionTime, currentPackage, AppDetails.this);
+
     }
 
     private void showToast(String message) {
@@ -321,5 +372,4 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
         }
         showToast(fullMessage);
     }
-
 }

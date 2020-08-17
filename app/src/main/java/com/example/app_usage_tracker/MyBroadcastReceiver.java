@@ -192,8 +192,6 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public static HashMap<String, AppUsageInfo> getUsageStatistics(long start_time, long end_time, Context context) {
-
-
         UsageEvents.Event currentEvent;
         //  List<UsageEvents.Event> allEvents = new ArrayList<>();
 
