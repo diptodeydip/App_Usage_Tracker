@@ -77,6 +77,12 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.ViewHold
             String app1 = o1.getPackageName();
             String app2 = o2.getPackageName();
             int compare = app1.compareToIgnoreCase(app2);
+            if(compare == 0){
+                String app1name = o1.getAppName();
+                String app2Name = o2.getAppName();
+                int compare2 = app1name.compareToIgnoreCase(app2Name);
+                return compare2;
+            }
             if(ascending)
                 return compare;
             else
@@ -90,6 +96,12 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.ViewHold
             long app1 = o1.getTimeInForeground();
             long app2 = o2.getTimeInForeground();
             int compare = Long.compare(app1, app2);
+            if(compare == 0){
+                String app1name = o1.getAppName();
+                String app2Name = o2.getAppName();
+                int compare2 = app1name.compareToIgnoreCase(app2Name);
+                return compare2;
+            }
             if(ascending)
                 return compare;
             else
@@ -103,6 +115,12 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.ViewHold
             long app1 = o1.getLastTimeUsed();
             long app2 = o2.getLastTimeUsed();
             int compare = Long.compare(app1, app2);
+            if(compare == 0){
+                String app1name = o1.getAppName();
+                String app2Name = o2.getAppName();
+                int compare2 = app1name.compareToIgnoreCase(app2Name);
+                return compare2;
+            }
             if(ascending)
                 return compare;
             else

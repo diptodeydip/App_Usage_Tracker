@@ -29,6 +29,7 @@ public class AppList extends AppCompatActivity {
     private final String TAG = "ahtrap";
     private HashMap<String, AppUsageInfo> appsUsageInfo, testMap;
     private SharedPreferences sharedPreferences;
+    AppListAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,13 +98,21 @@ public class AppList extends AppCompatActivity {
     }
 
     private void testThings() {
+
 //        long t1 = ImportantStuffs.getCurrentHour(), t2 = ImportantStuffs.getRecentHourFromTime(ImportantStuffs.getCurrentTime());
 //        ImportantStuffs.showLog(ImportantStuffs.getDateFromMilliseconds(t1), ImportantStuffs.getDateFromMilliseconds(t2));
 
 //        String packageName = "com.example.app_usage_tracker";
-//        long dayStartTime = ImportantStuffs.getDayStartingHour();
-//        ArrayList<Integer>usageData = AppUsageDataController.getDailyUsageDataInHourlyList(dayStartTime, packageName, this);
-//        ImportantStuffs.showLog(usageData.toString());
+//        long weekStartTime = ImportantStuffs.getRecentWeekFromTime(ImportantStuffs.getCurrentTime());
+//
+//        ArrayList<Long>usageData = AppUsageDataController.getWeeklyUsageDataInDailyList(weekStartTime, packageName, this);
+//        long totalUsage = 0;
+//        for(long usage:usageData){
+//            totalUsage += usage;
+//            ImportantStuffs.showLog(ImportantStuffs.getDateFromMilliseconds(weekStartTime), ImportantStuffs.getTimeFromMillisecond(usage));
+//            weekStartTime += ImportantStuffs.MILLISECONDS_IN_DAY;
+//        }
+//        ImportantStuffs.showLog("Total Usage:", ImportantStuffs.getTimeFromMillisecond(totalUsage));
     }
 
     public void addOtherAppsToAppsUsageInfo(){
@@ -133,10 +142,11 @@ public class AppList extends AppCompatActivity {
     private void createAppList() {
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
         ArrayList<AppUsageInfo> appsInfoList = new ArrayList<>(appsUsageInfo.values());
-        AppListAdapter adapter = new AppListAdapter(this, appsInfoList);
+        adapter = new AppListAdapter(this, appsInfoList);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter.sortByUsageTime(false);
+//        adapter.sortByUsageTime(false);
+        adapter.sortByLastOpened(false);
     }
 
     private boolean isUsagePermissionEnabled() {

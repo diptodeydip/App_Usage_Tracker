@@ -11,7 +11,7 @@
     <color name="black">#000000</color>
     <color name="white">#FFFFFF</color>
     <color name="nearWhite">#BBBBBB</color>
-    <color name="radioUncheckedColor">#005086</color>
+    <color name="radioUncheckedColor">#FFFFFF</color>
     <color name="buttonBackground">#3E005086</color>
     <color name="dialogBackground">#221f3b</color>
     <color name="dialogBackgroundLight">#29a19c</color>

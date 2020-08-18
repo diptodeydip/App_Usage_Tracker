@@ -10,6 +10,11 @@ import android.os.Environment;
 import android.provider.Settings;
 import android.util.Log;
 
+import androidx.core.content.ContextCompat;
+
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,7 +32,7 @@ import java.util.Random;
 
 public class ImportantStuffs {
 
-    public static final long MILLISECONDS_IN_HOUR = 3600000L;
+    public static final long MILLISECONDS_IN_HOUR = 3600000L, MILLISECONDS_IN_DAY = 24*MILLISECONDS_IN_HOUR;
     public static final String SHARED_PREFERENCE = "AppUsageData", TAG = "ahtrap";
     public static final String LAUNCHER_PACKAGE = "com.example.ui", THIS_APP_PACKAGE = "com.example.app_usage_tracker";
     public static final String SETTINGS_PACKAGE = "com.android.settings", FILE_MANAGER_PACKAGE = "com.amaze.filemanager";
@@ -121,6 +126,17 @@ public class ImportantStuffs {
         return calendar.getTimeInMillis();
     }
 
+    public static long getRecentWeekFromTime(long time){
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(time);
+        calendar.set(Calendar.MILLISECOND, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.DAY_OF_WEEK, 1);
+        return calendar.getTimeInMillis();
+    }
+
     public static long getCurrentHour() {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.MILLISECOND, 0);
@@ -129,14 +145,30 @@ public class ImportantStuffs {
         return calendar.getTimeInMillis();
     }
 
-    public static String getDateFromMilliseconds(long milliSeconds) {
+    public static String getDateAndTimeFromMilliseconds(long milliseconds) {
         String dateFormat = "dd MMM yyyy HH:mm";
-        // Create a DateFormatter object for displaying date in specified format.
         SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
 
-        // Create a calendar object that will convert the date and time value in milliseconds to date.
         Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(milliSeconds);
+        calendar.setTimeInMillis(milliseconds);
+        return formatter.format(calendar.getTime());
+    }
+
+    public static String getDateFromMilliseconds(long milliseconds){
+        String dateFormat = "dd MMM yyyy";
+        SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(milliseconds);
+        return formatter.format(calendar.getTime());
+    }
+
+    public static String getDayAndMonthFromMilliseconds(long milliseconds){
+        String dateFormat = "dd MMM";
+        SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(milliseconds);
         return formatter.format(calendar.getTime());
     }
 
@@ -153,9 +185,14 @@ public class ImportantStuffs {
         return timeString;
     }
 
-    public static int getMinuteFromTime(int time){
-        int minute = time / (1000 * 60);
+    public static float getMinuteFromTime(Long time){
+        float minute = time / (1000 * 60);
         return Math.min(minute, 60);
+    }
+
+    public static float getHourFromTime(Long time){
+        float minute = time / ImportantStuffs.MILLISECONDS_IN_HOUR;
+        return Math.min(minute, 24);
     }
 
     public static String getTimeInAgoFromMillisecond(long time){
@@ -472,5 +509,16 @@ public class ImportantStuffs {
 //
 //            appsUsageInfo.get(entry.getValue().get(totalEvents - 1).getPackageName()).lastTimeUsed = entry.getValue().get(totalEvents - 1).getTimeStamp();
 //        }
+//    }
+
+//    private BarDataSet getRandomBarDataSet(){
+//        ArrayList<BarEntry> dataValues = new ArrayList<>();
+//        for (int i = 0; i < 24; i++) {
+//            dataValues.add(new BarEntry(i, ImportantStuffs.getRandomInt(60)));
+//        }
+//        BarDataSet barDataSet = new BarDataSet(dataValues, "");
+//        barDataSet.setColor(ContextCompat.getColor(this, R.color.barGraphBarColor1));
+//        barDataSet.setDrawValues(false);
+//        return barDataSet;
 //    }
 }

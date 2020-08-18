@@ -11,7 +11,6 @@ import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
@@ -166,20 +165,46 @@ public class AppUsageDataController extends BroadcastReceiver {
         return appsUsageInfo;
     }
 
-    public static ArrayList<Integer> getDailyUsageDataInHourlyList(long dayStartTime, String packageName, Context context) {
-        ArrayList<Integer> usage = new ArrayList<>();
+    public static ArrayList<Long> getWeeklyUsageDataInDailyList(long weekStartTime, String packageName, Context context){
+        ArrayList<Long> usage = new ArrayList<>();
 
-        long startTime = dayStartTime;
-        long endTime = dayStartTime + 23*ImportantStuffs.MILLISECONDS_IN_HOUR;
+        long startTime = weekStartTime;
+        long endTime = startTime + 6*ImportantStuffs.MILLISECONDS_IN_DAY;
 
-        for(long currentTime=startTime; currentTime<=endTime; currentTime+=ImportantStuffs.MILLISECONDS_IN_HOUR){
-            int time = getHourlyUsageData(currentTime, packageName, context);
+        for(long currentTime=startTime; currentTime<=endTime; currentTime+=ImportantStuffs.MILLISECONDS_IN_DAY){
+            long time = getDailyUsageData(currentTime, packageName, context);
             usage.add(time);
         }
         return usage;
     }
 
-    public static int getHourlyUsageData(long hourStartTime, String packageName, Context context){
+    public static ArrayList<Long> getDailyUsageDataInHourlyList(long dayStartTime, String packageName, Context context) {
+        ArrayList<Long> usage = new ArrayList<>();
+
+        long startTime = dayStartTime;
+        long endTime = dayStartTime + 23*ImportantStuffs.MILLISECONDS_IN_HOUR;
+
+        for(long currentTime=startTime; currentTime<=endTime; currentTime+=ImportantStuffs.MILLISECONDS_IN_HOUR){
+            long time = getHourlyUsageData(currentTime, packageName, context);
+            usage.add(time);
+        }
+        return usage;
+    }
+
+    public static long getDailyUsageData(long dayStartTime, String packageName, Context context){
+        long usage = 0;
+
+        long startTime = dayStartTime;
+        long endTime = dayStartTime + 23*ImportantStuffs.MILLISECONDS_IN_HOUR;
+
+        for(long currentTime=startTime; currentTime<=endTime; currentTime+=ImportantStuffs.MILLISECONDS_IN_HOUR){
+            long time = getHourlyUsageData(currentTime, packageName, context);
+            usage += time;
+        }
+        return usage;
+    }
+
+    public static long getHourlyUsageData(long hourStartTime, String packageName, Context context){
         SharedPreferences sharedPreferences = context.getSharedPreferences(ImportantStuffs.SHARED_PREFERENCE, Context.MODE_PRIVATE);
         long checkpoint = sharedPreferences.getLong("checkpoint", 0);
         long currentHour = ImportantStuffs.getCurrentHour();
@@ -241,8 +266,8 @@ public class AppUsageDataController extends BroadcastReceiver {
             }
         }
 
-        for (long startTime = checkpoint ; startTime <= goalPoint; startTime += HOUR_IN_MILLIS) {
-            ImportantStuffs.showLog("getting new data!", ImportantStuffs.getDateFromMilliseconds(startTime));
+        for (long startTime = checkpoint + ImportantStuffs.MILLISECONDS_IN_HOUR ; startTime <= goalPoint; startTime += HOUR_IN_MILLIS) {
+            ImportantStuffs.showLog("getting new data!", ImportantStuffs.getDateAndTimeFromMilliseconds(startTime));
             HashMap<String, AppUsageInfo> appsUsageInfo = getAppsUsageInfo(startTime, startTime + HOUR_IN_MILLIS, context);
 
             JSONArray jsonAppInfo = new JSONArray();
