@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat;
 
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
+import com.google.gson.JsonObject;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -32,8 +33,8 @@ import java.util.Random;
 
 public class ImportantStuffs {
 
-    public static final long MILLISECONDS_IN_HOUR = 3600000L, MILLISECONDS_IN_DAY = 24*MILLISECONDS_IN_HOUR;
-    public static final String SHARED_PREFERENCE = "AppUsageData", TAG = "ahtrap";
+    public static final long MILLISECONDS_IN_MINUTE = 60000L, MILLISECONDS_IN_HOUR = 3600000L, MILLISECONDS_IN_DAY = 86400000L;
+    public static final String TAG = "ahtrap";
     public static final String LAUNCHER_PACKAGE = "com.example.ui", THIS_APP_PACKAGE = "com.example.app_usage_tracker";
     public static final String SETTINGS_PACKAGE = "com.android.settings", FILE_MANAGER_PACKAGE = "com.amaze.filemanager";
     private static final Random random = new Random();
@@ -204,10 +205,10 @@ public class ImportantStuffs {
     }
 
 
-    public static String readJSON(String fileName, Context context) {
+    public static String getStringFromJson(String jsonFilePath, Context context) {
         try {
-            String path = context.getExternalFilesDir(Environment.getDataDirectory().getAbsolutePath()).getAbsolutePath();
-            File file = new File(path + "/" + "AppUsageTracker/" + fileName);
+            String path = context.getExternalFilesDir("").getAbsolutePath();
+            File file = new File(path + "/" +jsonFilePath);
 
             StringBuilder data = new StringBuilder();
             BufferedReader br = new BufferedReader(new FileReader(file));
@@ -224,20 +225,41 @@ public class ImportantStuffs {
         }
     }
 
-    public static void saveToPhone(String json, String fileName, Context context) {
+    public static JSONObject getJsonObject(String jsonFilePath, Context context){
+        String jsonString = getStringFromJson(jsonFilePath, context);
+        JSONObject jsonObject = null;
         try {
-            String path = context.getExternalFilesDir(Environment.getDataDirectory().getAbsolutePath()).getAbsolutePath();
+            jsonObject = new JSONObject(jsonString);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return jsonObject;
+    }
 
-            File dir = new File(path + "/AppUsageTracker/");
-            dir.mkdirs();
-            File file = new File(dir, fileName);
+    public static JSONArray getJsonArray(String jsonFilePath, Context context){
+        String jsonString = getStringFromJson(jsonFilePath, context);
+        JSONArray jsonArray = null;
+        try {
+            jsonArray = new JSONArray(jsonString);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return jsonArray;
+    }
+
+    public static boolean saveFileLocally(String fileName, String fileContent, Context context) {
+        try {
+            String path = context.getExternalFilesDir("").getAbsolutePath();
+            File file = new File(path, fileName);
             FileWriter fw = new FileWriter(file.getAbsoluteFile());
             BufferedWriter bw = new BufferedWriter(fw);
-            bw.write(json);
+            bw.write(fileContent);
             bw.close();
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
+        return true;
     }
 
     public static void playRandomSound(Context context){

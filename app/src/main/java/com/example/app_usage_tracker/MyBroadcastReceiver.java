@@ -268,6 +268,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
 
 
     //when using NetworkStatsManager you need the subscriber id
+    @SuppressLint("MissingPermission")
     @RequiresApi(api = Build.VERSION_CODES.M)
     public static String getSubscriberId(Context context) {
             TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);

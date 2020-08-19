@@ -2,22 +2,21 @@ package com.example.app_usage_tracker;
 
 import android.graphics.drawable.Drawable;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-
 class AppUsageInfo {
     Drawable appIcon;
     String appName = "Demo", packageName = "";
-    long timeInForeground = 0, lastTimeUsed = 0, installationTime = 0;
+    long timeInForeground = 0, lastTimeUsed = 0, installationTime = 0, usageTarget = 0;
     int launchCount = 0;
     boolean isSystemApp = true;
+    String targetType = "None";
+    String notifications[];
 
     @Override
     public String toString() {
-        String usedTime = getTimeFromMillisecond(timeInForeground);
+        String usedTime = ImportantStuffs.getTimeFromMillisecond(timeInForeground);
         String lastOpened = "Not opened today";
         if(lastTimeUsed != 0)
-            lastOpened = getTimeInAgoFromMillisecond(lastTimeUsed);
+            lastOpened = ImportantStuffs.getTimeInAgoFromMillisecond(lastTimeUsed);
         String result = String.format("Name: %s, Used time: %s, Last opened: %s, Launches: %d", appName, usedTime, lastOpened, launchCount);
         return result;
     }
@@ -40,50 +39,16 @@ class AppUsageInfo {
         this.lastTimeUsed = lastTimeUsed;
     }
 
+    AppUsageInfo(String targetType, long usageTarget, String[] notifications) {
+        this.usageTarget = usageTarget;
+        this.targetType = targetType;
+        this.notifications = notifications;
+    }
+
     AppUsageInfo(String packageName){
         this.packageName = packageName;
     }
 
-
-    public void incrementLaunchCount(){
-        launchCount++;
-    }
-
-    public void addToTimeInForeground(long time){
-        timeInForeground += time;
-    }
-
-
-    private String getDateFromMilliseconds(long milliSeconds) {
-        String dateFormat = "dd/MM/yyyy hh:mm:ss.SSS a";
-        // Create a DateFormatter object for displaying date in specified format.
-        SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
-
-        // Create a calendar object that will convert the date and time value in milliseconds to date.
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(milliSeconds);
-        return formatter.format(calendar.getTime());
-    }
-
-    private String getTimeFromMillisecond(long time){
-        String timeString = "";
-        Long second = time / 1000;
-        Long min = second / 60;
-
-        Long hour = min / 60;
-        Long min_hour = min % 60;
-        if(hour > 0)
-            timeString = hour + " hour " + min_hour + " min";
-        else
-            timeString = min_hour + " min";
-        return timeString;
-    }
-
-    private String getTimeInAgoFromMillisecond(long time){
-        long interval = System.currentTimeMillis() - time;
-        String agoTime = getTimeFromMillisecond(interval);
-        return agoTime + " ago";
-    }
 
     public Drawable getAppIcon() {
         return appIcon;
@@ -117,6 +82,30 @@ class AppUsageInfo {
         return installationTime;
     }
 
+    public long getUsageTarget() {
+        return usageTarget;
+    }
+
+    public String getTargetType() {
+        return targetType;
+    }
+
+    public String[] getNotifications() {
+        return notifications;
+    }
+
+
+    public void setUsageTarget(long usageTarget) {
+        this.usageTarget = usageTarget;
+    }
+
+    public void setTargetType(String targetType) {
+        this.targetType = targetType;
+    }
+
+    public void setNotifications(String[] notifications) {
+        this.notifications = notifications;
+    }
 
     public void setTimeInForeground(long timeInForeground) {
         this.timeInForeground = timeInForeground;

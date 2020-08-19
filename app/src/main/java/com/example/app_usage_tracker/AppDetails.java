@@ -7,6 +7,7 @@ import androidx.core.content.ContextCompat;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -25,25 +26,42 @@ import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
-import com.github.mikephil.charting.formatter.ValueFormatter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.HashSet;
 
 public class AppDetails extends AppCompatActivity implements DatePickerDialog.OnDateSetListener{
 
     BarChart chart;
-    int targetTypeIndex, hourTarget, minTarget;
-    TextView targetTypeTextView, targetTextView, notificationTypesTextView;
-    ConstraintLayout setTargetLayout, setNotificationsLayout;
-    String[] targetTypes, notificationTypes, appList;
+    long currentGraphDate;
+
+    int targetTypeIndex;
+    String targetTypeString;
+    TextView targetTypeTextView;
+    ArrayList<String> targetTypes;
+
+    ConstraintLayout setTargetLayout;
+    int hourTarget, minTarget;
+    TextView targetTextView;
+
+    ConstraintLayout setNotificationsLayout;
+    TextView notificationTypesTextView;
+    ArrayList<String> notificationTypes;
+    HashSet<String> selectedNotificationsString = new HashSet<>();
+    ArrayList<Integer> selectedNotifications = new ArrayList<>();
+
     ArrayList<Long> usageData;
-    ArrayList<Integer> selectedNotifications;
-    long usageCollectionTime = ImportantStuffs.getDayStartingHour(), currentGraphDate = ImportantStuffs.getCurrentHour();
+    long usageCollectionTime;
+
     private String currentPackage = "";
 
     private final int CALENDAR_DAILY = 0, CALENDAR_WEEKLY = 1;
     private int calendarMode = CALENDAR_DAILY;
+
+//    private SharedPreferences targetSharedPreferences;
+//    private SharedPreferences.Editor targetEditor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,32 +74,39 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
     }
 
     private void testStuffs(){
-        ImportantStuffs.showLog(currentPackage, usageData.toString());
+//        ImportantStuffs.showLog(currentPackage, usageData.toString());
+        HashSet<String> notifications = new HashSet<>();
+        notifications.add("hello");
+//        targetEditor.putStringSet("hi", notifications);
     }
 
     private void initStuffs() {
-        appList = getResources().getStringArray(R.array.planets_array);
         currentPackage = getIntent().getStringExtra("packageName");
-//        selectedAppIndex = 0;
-//        selectedAppTextView.setText(appList[selectedAppIndex]);
+        usageCollectionTime = ImportantStuffs.getDayStartingHour();
         usageData = AppUsageDataController.getDailyUsageDataInHourlyList(usageCollectionTime, currentPackage, this);
-        chart = findViewById(R.id.usage_graph);
 
-        targetTypes = getResources().getStringArray(R.array.target_types);
+//        targetSharedPreferences = getSharedPreferences(ImportantStuffs.SHARED_PREFERENCE_TARGET, MODE_PRIVATE);
+//        targetEditor = targetSharedPreferences.edit();
+
+        chart = findViewById(R.id.usage_graph);
+        currentGraphDate = usageCollectionTime;
+
         targetTypeTextView = findViewById(R.id.target_type_text);
+        targetTypes = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.target_types)));
+        targetTypeString = "None";
+        targetTypeIndex = targetTypes.indexOf(targetTypeString);
+        targetTypeTextView.setText(targetTypeString);
 
         setTargetLayout = findViewById(R.id.set_target);
         targetTextView = findViewById(R.id.target_text);
-        targetTypeIndex = 2;
         hourTarget = 2;
         minTarget = 0;
-        targetTypeTextView.setText(targetTypes[targetTypeIndex]);
-        setTargetText(hourTarget, minTarget);
+        setUsageTarget(hourTarget, minTarget);
 
-        notificationTypes = getResources().getStringArray(R.array.notification_types);
+
         setNotificationsLayout = findViewById(R.id.set_notifications_type);
         notificationTypesTextView = findViewById(R.id.notifications_text);
-        selectedNotifications = new ArrayList();
+        notificationTypes = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.notification_types)));
         selectedNotifications.add(0);
         setNotificationsText();
 
@@ -97,7 +122,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
                 notificationTypesTextView.setText("None");
                 break;
             case 1:
-                String selectedNotification = notificationTypes[selectedNotifications.get(0)];
+                String selectedNotification = notificationTypes.get(selectedNotifications.get(0));
                 notificationTypesTextView.setText(selectedNotification);
                 break;
             default:
@@ -105,7 +130,11 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
         }
     }
 
-    private void setTargetText(int hour, int min) {
+    private void setUsageTarget(int hour, int min) {
+//        targetEditor.putInt("hourTarget", hour);
+//        targetEditor.putInt("minTarget", min);
+//        targetEditor.commit();
+
         String targetText = hour + " hour " + min + " min";
         targetTextView.setText(targetText);
     }
@@ -220,13 +249,6 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
         return barDataSet;
     }
 
-//    public class MyValueFormatter extends ValueFormatter{
-//        @Override
-//        public String getBarLabel(BarEntry barEntry) {
-//            return getFormattedValue(barEntry.getY());
-//        }
-//    }
-
 
     public void onTargetTypeClicked(View view) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.DialogTheme);
@@ -239,7 +261,9 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
                 makeConstraintLayoutGrayedOut(setNotificationsLayout, true);
             }
             targetTypeIndex = which;
-            String selectedType = targetTypes[which];
+            String selectedType = targetTypes.get(which);
+//            targetEditor.putString(currentPackage, selectedType);
+//            targetEditor.commit();
             targetTypeTextView.setText(selectedType);
             final Handler handler = new Handler();
             handler.postDelayed(dialog::dismiss, 100);
@@ -303,7 +327,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
         setButton.setOnClickListener(v -> {
             int hour = hourPicker.getValue();
             int min = minPicker.getValue();
-            setTargetText(hour, min);
+            setUsageTarget(hour, min);
             dialog.dismiss();
         });
 
@@ -329,10 +353,6 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
     }
 
     public void onPickDateClicked(View view) {
-        showDatePickerDialog();
-    }
-
-    public void showDatePickerDialog() {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(usageCollectionTime);
         DatePickerDialog datePickerDialog = new DatePickerDialog(

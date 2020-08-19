@@ -9,15 +9,21 @@ import android.app.AppOpsManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.Settings;
 import android.widget.Toast;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -26,20 +32,18 @@ import java.util.List;
 import static android.app.AppOpsManager.MODE_ALLOWED;
 
 public class AppList extends AppCompatActivity {
-    private final String TAG = "ahtrap";
-    private HashMap<String, AppUsageInfo> appsUsageInfo, testMap;
-    private SharedPreferences sharedPreferences;
+    private HashMap<String, AppUsageInfo> appsUsageInfo;
     AppListAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_app_list);
-        sharedPreferences = getSharedPreferences(ImportantStuffs.SHARED_PREFERENCE, MODE_PRIVATE);
-        if(!checkIfFirst())
-            testThings();
-        if(isUsagePermissionEnabled() == true)
+        testThings();
+        checkIfFirst();
+        if(isUsagePermissionEnabled() == true){
             startAlarm();
+        }
     }
 
     @Override
@@ -59,12 +63,11 @@ public class AppList extends AppCompatActivity {
     }
 
     private boolean checkIfFirst(){
-        SharedPreferences sharedPreferences = getSharedPreferences("AppUsageData", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        Long time = sharedPreferences.getLong("checkpoint", 0);
-        if(time == 0){
-            ImportantStuffs.showLog("no checkpoint data");
+        String info = ImportantStuffs.getStringFromJson("info.json", this);
+        if(info == ""){
+            ImportantStuffs.showLog("No checkpoint data");
             Calendar calendar = Calendar.getInstance();
+            JSONObject jsonInfo = new JSONObject();
 
             calendar.set(Calendar.MILLISECOND,0);
             calendar.set(Calendar.SECOND, 0);
@@ -74,9 +77,15 @@ public class AppList extends AppCompatActivity {
             calendar.add(Calendar.WEEK_OF_MONTH,-1);
             calendar.set(Calendar.AM_PM, Calendar.AM);
 
-            time = calendar.getTimeInMillis();
-            editor.putLong("checkpoint", time);
-            editor.commit();
+            Long time = calendar.getTimeInMillis();
+            try {
+                jsonInfo.put("checkpoint", time);
+            } catch (JSONException e) {
+                e.printStackTrace();
+                ImportantStuffs.showLog("Checkpoint can't be initialized");
+            }
+            if(!ImportantStuffs.saveFileLocally("info.json", jsonInfo.toString(), this))
+                ImportantStuffs.showLog("Checkpoint can't be initialized");
             return true;
         }
         return false;
@@ -98,21 +107,19 @@ public class AppList extends AppCompatActivity {
     }
 
     private void testThings() {
-
-//        long t1 = ImportantStuffs.getCurrentHour(), t2 = ImportantStuffs.getRecentHourFromTime(ImportantStuffs.getCurrentTime());
-//        ImportantStuffs.showLog(ImportantStuffs.getDateFromMilliseconds(t1), ImportantStuffs.getDateFromMilliseconds(t2));
-
-//        String packageName = "com.example.app_usage_tracker";
-//        long weekStartTime = ImportantStuffs.getRecentWeekFromTime(ImportantStuffs.getCurrentTime());
-//
-//        ArrayList<Long>usageData = AppUsageDataController.getWeeklyUsageDataInDailyList(weekStartTime, packageName, this);
-//        long totalUsage = 0;
-//        for(long usage:usageData){
-//            totalUsage += usage;
-//            ImportantStuffs.showLog(ImportantStuffs.getDateFromMilliseconds(weekStartTime), ImportantStuffs.getTimeFromMillisecond(usage));
-//            weekStartTime += ImportantStuffs.MILLISECONDS_IN_DAY;
+//        try{
+//            String path = getExternalFilesDir("").getAbsolutePath();
+//            ImportantStuffs.showLog(path);
+//            File file = new File(path, "testFile8.json");
+//            FileWriter fw = new FileWriter(file.getAbsoluteFile());
+//            BufferedWriter bw = new BufferedWriter(fw);
+//            bw.write("hello :(");
+//            bw.close();
+//            fw.close();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            ImportantStuffs.showLog("Can't save file :(");
 //        }
-//        ImportantStuffs.showLog("Total Usage:", ImportantStuffs.getTimeFromMillisecond(totalUsage));
     }
 
     public void addOtherAppsToAppsUsageInfo(){

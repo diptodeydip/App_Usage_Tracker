@@ -27,18 +27,17 @@ import java.util.Map;
 public class AppUsageDataController extends BroadcastReceiver {
     Context context;
     public static final String TAG = "ahtrap";
-    SharedPreferences sharedPreferences;
-    SharedPreferences.Editor editor;
     private static final long HOUR_IN_MILLIS = 60 * 1000 * 60;
 
     @Override
     public void onReceive(Context context, Intent intent) {
         this.context = context;
 
-        sharedPreferences = context.getSharedPreferences(ImportantStuffs.SHARED_PREFERENCE, Context.MODE_PRIVATE);
-        editor = sharedPreferences.edit();
+        if ("android.intent.action.BOOT_COMPLETED".equals(intent.getAction())) {
+            ImportantStuffs.showLog("Device has been rebooted!");
+        }
 
-        startAlarm(context);
+        startAlarm(context, 20*ImportantStuffs.MILLISECONDS_IN_MINUTE);
 
         new Thread(() -> {
             AsyncUsageTask runner = new AsyncUsageTask();
@@ -46,7 +45,7 @@ public class AppUsageDataController extends BroadcastReceiver {
         }).start();
     }
 
-    private void startAlarm(Context context) {
+    public static void startAlarm(Context context, long delay) {
         AlarmManager alarmMgr;
         PendingIntent alarmIntent;
 
@@ -55,7 +54,7 @@ public class AppUsageDataController extends BroadcastReceiver {
 
         Calendar calendar = Calendar.getInstance();
 
-        long alarmTime = calendar.getTimeInMillis() + 1000 * 60 * 20;
+        long alarmTime = calendar.getTimeInMillis() + delay;
 
         alarmIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
         alarmMgr.set(AlarmManager.RTC_WAKEUP, alarmTime, alarmIntent);
@@ -165,6 +164,7 @@ public class AppUsageDataController extends BroadcastReceiver {
         return appsUsageInfo;
     }
 
+
     public static ArrayList<Long> getWeeklyUsageDataInDailyList(long weekStartTime, String packageName, Context context){
         ArrayList<Long> usage = new ArrayList<>();
 
@@ -205,13 +205,13 @@ public class AppUsageDataController extends BroadcastReceiver {
     }
 
     public static long getHourlyUsageData(long hourStartTime, String packageName, Context context){
-        SharedPreferences sharedPreferences = context.getSharedPreferences(ImportantStuffs.SHARED_PREFERENCE, Context.MODE_PRIVATE);
-        long checkpoint = sharedPreferences.getLong("checkpoint", 0);
+        JSONObject jsonInfo = ImportantStuffs.getJsonObject("info.json", context);
+        long checkpoint = getCheckpoint(context);
         long currentHour = ImportantStuffs.getCurrentHour();
         long currentTime = ImportantStuffs.getCurrentTime();
 
         if(checkpoint >= hourStartTime){
-            String history = ImportantStuffs.readJSON("History.json", context);
+            String history = ImportantStuffs.getStringFromJson("History.json", context);
             JSONObject jsonObject;
             try {
                 jsonObject = new JSONObject(history);
@@ -249,14 +249,28 @@ public class AppUsageDataController extends BroadcastReceiver {
         return 0;
     }
 
+    private static long getCheckpoint(Context context){
+        JSONObject jsonInfo = ImportantStuffs.getJsonObject("info.json", context);
+        long checkpoint = 0;
+        try {
+            checkpoint = jsonInfo.getLong("checkpoint");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return checkpoint;
+    }
+
+
     private void saveUsageDataLocally() {
-        long checkpoint = sharedPreferences.getLong("checkpoint", 0);
+        ImportantStuffs.showLog("Checking local data------");
+        JSONObject jsonInfo = ImportantStuffs.getJsonObject("info.json", context);
+        long checkpoint = getCheckpoint(context);
         long goalPoint = ImportantStuffs.getCurrentHour()-ImportantStuffs.MILLISECONDS_IN_HOUR;
-//        ImportantStuffs.showLog(ImportantStuffs.getDateFromMilliseconds(checkpoint), ImportantStuffs.getDateFromMilliseconds(goalPoint));
+        ImportantStuffs.showLog(ImportantStuffs.getDateAndTimeFromMilliseconds(checkpoint));
         if(goalPoint == checkpoint || checkpoint == 0)
             return;
 
-        String jsonString = ImportantStuffs.readJSON("History.json", context);
+        String jsonString = ImportantStuffs.getStringFromJson("History.json", context);
         JSONObject usageDetails = new JSONObject();
         if (jsonString != "") {
             try {
@@ -267,7 +281,6 @@ public class AppUsageDataController extends BroadcastReceiver {
         }
 
         for (long startTime = checkpoint + ImportantStuffs.MILLISECONDS_IN_HOUR ; startTime <= goalPoint; startTime += HOUR_IN_MILLIS) {
-            ImportantStuffs.showLog("getting new data!", ImportantStuffs.getDateAndTimeFromMilliseconds(startTime));
             HashMap<String, AppUsageInfo> appsUsageInfo = getAppsUsageInfo(startTime, startTime + HOUR_IN_MILLIS, context);
 
             JSONArray jsonAppInfo = new JSONArray();
@@ -290,11 +303,19 @@ public class AppUsageDataController extends BroadcastReceiver {
                 e.printStackTrace();
             }
         }
-        editor.putLong("checkpoint", goalPoint);
-        editor.commit();
 
-        ImportantStuffs.saveToPhone(usageDetails.toString(), "History.json", context);
+        try {
+            jsonInfo.put("checkpoint", goalPoint);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+            ImportantStuffs.showLog("checkpoint not saving -_-");
+        }
+
+        ImportantStuffs.saveFileLocally("History.json", usageDetails.toString(), context);
+        ImportantStuffs.saveFileLocally( "info.json", jsonInfo.toString(), context);
     }
+
 
     private class AsyncUsageTask extends AsyncTask<Context, String, String> {
 
