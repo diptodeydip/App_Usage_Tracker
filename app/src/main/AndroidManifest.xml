@@ -15,7 +15,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".AppDetails"></activity>
+        <activity
+            android:name=".TargetHistory"
+            android:label="@string/title_activity_target_history"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity android:name=".AppDetails" />
         <activity android:name=".AppList">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -27,7 +31,7 @@
         <activity android:name=".TargetStats" />
         <activity android:name=".MainActivity" />
         <activity android:name=".SetTarget" />
-        <activity android:name=".Info"></activity>
+        <activity android:name=".Info" />
         <activity android:name=".UsagePage" />
 
         <receiver android:name=".MyBroadcastReceiver">
@@ -35,11 +39,14 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-
-        <receiver android:name=".AppUsageDataController" android:enabled="true" android:exported="false">
+        <receiver
+            android:name=".AppsDataController"
+            android:enabled="true"
+            android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>

@@ -1,20 +1,12 @@
 package com.example.app_usage_tracker;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
-import android.os.Environment;
 import android.provider.Settings;
 import android.util.Log;
-
-import androidx.core.content.ContextCompat;
-
-import com.github.mikephil.charting.data.BarDataSet;
-import com.github.mikephil.charting.data.BarEntry;
-import com.google.gson.JsonObject;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -26,9 +18,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.Random;
 
 public class ImportantStuffs {
@@ -186,14 +176,19 @@ public class ImportantStuffs {
         return timeString;
     }
 
-    public static float getMinuteFromTime(Long time){
+    public static float getMinuteFromTime(long time){
         float minute = time / (1000 * 60);
-        return Math.min(minute, 60);
+        return minute;
     }
 
-    public static float getHourFromTime(Long time){
-        float minute = time / ImportantStuffs.MILLISECONDS_IN_HOUR;
-        return Math.min(minute, 24);
+    public static float getHourFromTime(long time){
+        float minute = (float) time / (float) MILLISECONDS_IN_HOUR;
+        return minute;
+    }
+
+    public static int getRemainingMinuteFromTime(long time){
+        long remainingTime = time % MILLISECONDS_IN_HOUR;
+        return (int) (remainingTime / MILLISECONDS_IN_MINUTE);
     }
 
     public static String getTimeInAgoFromMillisecond(long time){
@@ -205,7 +200,7 @@ public class ImportantStuffs {
     }
 
 
-    public static String getStringFromJson(String jsonFilePath, Context context) {
+    public static String getStringFromJsonObjectPath(String jsonFilePath, Context context) {
         try {
             String path = context.getExternalFilesDir("").getAbsolutePath();
             File file = new File(path + "/" +jsonFilePath);
@@ -226,7 +221,7 @@ public class ImportantStuffs {
     }
 
     public static JSONObject getJsonObject(String jsonFilePath, Context context){
-        String jsonString = getStringFromJson(jsonFilePath, context);
+        String jsonString = getStringFromJsonObjectPath(jsonFilePath, context);
         JSONObject jsonObject = null;
         try {
             jsonObject = new JSONObject(jsonString);
@@ -237,7 +232,7 @@ public class ImportantStuffs {
     }
 
     public static JSONArray getJsonArray(String jsonFilePath, Context context){
-        String jsonString = getStringFromJson(jsonFilePath, context);
+        String jsonString = getStringFromJsonObjectPath(jsonFilePath, context);
         JSONArray jsonArray = null;
         try {
             jsonArray = new JSONArray(jsonString);
@@ -255,6 +250,7 @@ public class ImportantStuffs {
             BufferedWriter bw = new BufferedWriter(fw);
             bw.write(fileContent);
             bw.close();
+            fw.close();
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -302,6 +298,42 @@ public class ImportantStuffs {
     }
 
     public static void showLog(long... messages) {
+        String fullMessage = "";
+        for (long message : messages) {
+            fullMessage += message + " ";
+        }
+        showLog(fullMessage);
+    }
+
+    public static void showErrorLog(String message) {
+        Log.e(TAG, message);
+    }
+
+    public static void showErrorLog(String... messages) {
+        String fullMessage = "";
+        for (String message : messages) {
+            fullMessage += message + " ";
+        }
+        showErrorLog(fullMessage);
+    }
+
+    public static void showErrorLog(int message) {
+        showErrorLog(Integer.toString(message));
+    }
+
+    public static void showErrorLog(int... messages) {
+        String fullMessage = "";
+        for (int message : messages) {
+            fullMessage += message + " ";
+        }
+        showErrorLog(fullMessage);
+    }
+
+    public static void showErrorLog(long message) {
+        showErrorLog(Long.toString(message));
+    }
+
+    public static void showErrorLog(long... messages) {
         String fullMessage = "";
         for (long message : messages) {
             fullMessage += message + " ";

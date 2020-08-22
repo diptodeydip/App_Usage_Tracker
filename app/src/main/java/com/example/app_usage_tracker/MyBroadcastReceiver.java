@@ -714,7 +714,8 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     public static String removeDot(String x){
         x = x.replaceAll("[.]","_dot_");
         return x;
-    }public static String addDot(String x){
+    }
+    public static String addDot(String x){
         x = x.replaceAll("_dot_","[.]");
         return x;
     }

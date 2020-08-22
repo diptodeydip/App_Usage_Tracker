@@ -7,10 +7,9 @@ import androidx.core.content.ContextCompat;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -27,41 +26,47 @@ import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.HashSet;
 
 public class AppDetails extends AppCompatActivity implements DatePickerDialog.OnDateSetListener{
+
+    public static final String TAG = "extra", TAG_TEMP = "temp";
 
     BarChart chart;
     long currentGraphDate;
 
-    int targetTypeIndex;
-    String targetTypeString;
-    TextView targetTypeTextView;
+    TextView targetTypesTextView;
     ArrayList<String> targetTypes;
+    ArrayList<Integer> selectedTargetTypeIndexes = new ArrayList<>();
 
-    ConstraintLayout setTargetLayout;
-    int hourTarget, minTarget;
-    TextView targetTextView;
+    ConstraintLayout setWeeklyTargetLayout, setDailyTargetLayout;
+    long weeklyTarget = 0, dailyTarget = 0;
+    TextView weeklyTargetTextView, dailyTargetTextView;
 
-    ConstraintLayout setNotificationsLayout;
-    TextView notificationTypesTextView;
+    ConstraintLayout setWeeklyNotificationsLayout;
+    TextView weeklyNotificationTypesTextView;
+    ArrayList<Integer> weeklySelectedNotificationIndexes = new ArrayList<>();
+    ConstraintLayout setDailyNotificationsLayout;
+    TextView dailyNotificationTypesTextView;
+    ArrayList<Integer> dailySelectedNotificationIndexes = new ArrayList<>();
     ArrayList<String> notificationTypes;
-    HashSet<String> selectedNotificationsString = new HashSet<>();
-    ArrayList<Integer> selectedNotifications = new ArrayList<>();
 
     ArrayList<Long> usageData;
     long usageCollectionTime;
 
     private String currentPackage = "";
 
-    private final int CALENDAR_DAILY = 0, CALENDAR_WEEKLY = 1;
-    private int calendarMode = CALENDAR_DAILY;
+    private JSONObject jsonInfo;
 
-//    private SharedPreferences targetSharedPreferences;
-//    private SharedPreferences.Editor targetEditor;
+    private final int MODE_WEEKLY = 0, MODE_DAILY = 1, MODE_NONE = 2, MODE_BOTH = 3;
+    private int calendarMode = MODE_DAILY;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,75 +74,122 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
         setContentView(R.layout.activity_app_details);
 
         initStuffs();
+        String appName = ImportantStuffs.getAppName(currentPackage, this);
+        setTitle(appName);
         createGraph();
         testStuffs();
     }
 
     private void testStuffs(){
-//        ImportantStuffs.showLog(currentPackage, usageData.toString());
-        HashSet<String> notifications = new HashSet<>();
-        notifications.add("hello");
-//        targetEditor.putStringSet("hi", notifications);
+//        {
+//            long total = 0;
+//            int index = 0;
+//            for(Long data:usageData){
+//                total += data;
+//                String time = ImportantStuffs.getTimeFromMillisecond(data);
+//                Log.d(TAG, index + " -- " + time);
+//                index++;
+//            }
+//            Log.d(TAG, "total -- "+ImportantStuffs.getTimeFromMillisecond(total));
+//        }
+
     }
 
     private void initStuffs() {
         currentPackage = getIntent().getStringExtra("packageName");
-        usageCollectionTime = ImportantStuffs.getDayStartingHour();
-        usageData = AppUsageDataController.getDailyUsageDataInHourlyList(usageCollectionTime, currentPackage, this);
+        initJson();
 
-//        targetSharedPreferences = getSharedPreferences(ImportantStuffs.SHARED_PREFERENCE_TARGET, MODE_PRIVATE);
-//        targetEditor = targetSharedPreferences.edit();
+        usageCollectionTime = ImportantStuffs.getDayStartingHour();
+        usageData = AppsDataController.getDailyUsageDataInHourlyList(usageCollectionTime, currentPackage, this);
 
         chart = findViewById(R.id.usage_graph);
         currentGraphDate = usageCollectionTime;
 
-        targetTypeTextView = findViewById(R.id.target_type_text);
+        initTargetNotificationStuffs();
+    }
+
+    private void initJson(){
+        jsonInfo = ImportantStuffs.getJsonObject("info.json", this);
+        String thisAppInfo = "";
+        try {
+            thisAppInfo = jsonInfo.getJSONObject("appsInfo").getJSONObject(currentPackage).toString();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        if(thisAppInfo.equals("")){
+            ImportantStuffs.showLog("No app info for", currentPackage);
+            try {
+                JSONObject thisAppInfoJson = new JSONObject();
+                thisAppInfoJson.put("targetTypes", new JSONArray());
+                thisAppInfoJson.put("weeklyTarget", 14*ImportantStuffs.MILLISECONDS_IN_HOUR);
+                thisAppInfoJson.put("weeklyNotifications", new JSONArray("[0]"));
+                thisAppInfoJson.put("dailyTarget", 2*ImportantStuffs.MILLISECONDS_IN_HOUR);
+                thisAppInfoJson.put("dailyNotifications", new JSONArray("[0]"));
+                jsonInfo.getJSONObject("appsInfo").put(currentPackage, thisAppInfoJson);
+                ImportantStuffs.saveFileLocally("info.json", jsonInfo.toString(), this);
+                ImportantStuffs.showLog("App info has been created successfully");
+            } catch (JSONException e) {
+                e.printStackTrace();
+                ImportantStuffs.showErrorLog("Can't put app to appInfo");
+            }
+        }
+
+        {
+            try {
+                thisAppInfo = jsonInfo.getJSONObject("appsInfo").getJSONObject(currentPackage).toString();
+            } catch (JSONException e) {
+                thisAppInfo = "";
+                e.printStackTrace();
+            }
+            Log.d(TAG, currentPackage + ": " + thisAppInfo);
+        }
+    }
+
+    private void initTargetNotificationStuffs(){
+        try {
+            JSONObject thisAppInfoJson = jsonInfo.getJSONObject("appsInfo").getJSONObject(currentPackage);
+            JSONArray targetTypesJson = thisAppInfoJson.getJSONArray("targetTypes");
+            for(int i=0; i<targetTypesJson.length(); i++)
+                selectedTargetTypeIndexes.add(targetTypesJson.getInt(i));
+            weeklyTarget = thisAppInfoJson.getLong("weeklyTarget");
+            dailyTarget = thisAppInfoJson.getLong("dailyTarget");
+        } catch (JSONException e) {
+            ImportantStuffs.showErrorLog("Can't initialize target");
+            e.printStackTrace();
+        }
+        targetTypesTextView = findViewById(R.id.target_types_text);
         targetTypes = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.target_types)));
-        targetTypeString = "None";
-        targetTypeIndex = targetTypes.indexOf(targetTypeString);
-        targetTypeTextView.setText(targetTypeString);
 
-        setTargetLayout = findViewById(R.id.set_target);
-        targetTextView = findViewById(R.id.target_text);
-        hourTarget = 2;
-        minTarget = 0;
-        setUsageTarget(hourTarget, minTarget);
+        setWeeklyTargetLayout = findViewById(R.id.set_weekly_target_layout);
+        weeklyTargetTextView = findViewById(R.id.weekly_target_text);
+        setUsageTarget(MODE_WEEKLY, weeklyTarget);
+        setDailyTargetLayout = findViewById(R.id.set_daily_target_layout);
+        dailyTargetTextView = findViewById(R.id.daily_target_text);
+        setUsageTarget(MODE_DAILY, dailyTarget);
 
-
-        setNotificationsLayout = findViewById(R.id.set_notifications_type);
-        notificationTypesTextView = findViewById(R.id.notifications_text);
         notificationTypes = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.notification_types)));
-        selectedNotifications.add(0);
-        setNotificationsText();
-
-        if (targetTypeIndex == 2) {
-            makeConstraintLayoutGrayedOut(setTargetLayout, true);
-            makeConstraintLayoutGrayedOut(setNotificationsLayout, true);
+        setWeeklyNotificationsLayout = findViewById(R.id.set_weekly_notifications_type);
+        weeklyNotificationTypesTextView = findViewById(R.id.weekly_notifications_text);
+        setDailyNotificationsLayout = findViewById(R.id.set_daily_notifications_type);
+        dailyNotificationTypesTextView = findViewById(R.id.daily_notifications_text);
+        try {
+            JSONObject thisAppInfoJson = jsonInfo.getJSONObject("appsInfo").getJSONObject(currentPackage);
+            JSONArray weeklyNotificationsJson = thisAppInfoJson.getJSONArray("weeklyNotifications");
+            for(int i=0; i<weeklyNotificationsJson.length(); i++)
+                weeklySelectedNotificationIndexes.add(weeklyNotificationsJson.getInt(i));
+            JSONArray dailyNotificationsJson = thisAppInfoJson.getJSONArray("dailyNotifications");
+            for(int i=0; i<dailyNotificationsJson.length(); i++)
+                dailySelectedNotificationIndexes.add(dailyNotificationsJson.getInt(i));
+        } catch (JSONException e) {
+            ImportantStuffs.showErrorLog("Can't initialize notifications");
+            e.printStackTrace();
         }
+        setWeeklyNotificationsText();
+        setDailyNotificationsText();
+
+        setTargetTypes();
     }
 
-    private void setNotificationsText() {
-        switch (selectedNotifications.size()) {
-            case 0:
-                notificationTypesTextView.setText("None");
-                break;
-            case 1:
-                String selectedNotification = notificationTypes.get(selectedNotifications.get(0));
-                notificationTypesTextView.setText(selectedNotification);
-                break;
-            default:
-                notificationTypesTextView.setText("Multiple");
-        }
-    }
-
-    private void setUsageTarget(int hour, int min) {
-//        targetEditor.putInt("hourTarget", hour);
-//        targetEditor.putInt("minTarget", min);
-//        targetEditor.commit();
-
-        String targetText = hour + " hour " + min + " min";
-        targetTextView.setText(targetText);
-    }
 
     private void makeConstraintLayoutGrayedOut(ConstraintLayout layout, boolean value) {
         TextView targetText;
@@ -155,6 +207,247 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
             layout.setClickable(true);
         }
     }
+
+
+    public void onTargetTypeClicked(View view) {
+//        setTargetTypes();
+        boolean[] selectedItems = {false, false};
+        for (int i : selectedTargetTypeIndexes)
+            selectedItems[i] = true;
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.DialogTheme);
+        builder.setTitle(R.string.select_target_type).setMultiChoiceItems(R.array.target_types, selectedItems, (dialog, which, isChecked) -> {
+            boolean contains = selectedTargetTypeIndexes.contains(which);
+            if(isChecked && !contains)
+                selectedTargetTypeIndexes.add(which);
+            else if(!isChecked && contains)
+                selectedTargetTypeIndexes.remove(selectedTargetTypeIndexes.indexOf(which));
+            setTargetTypes();
+        }).setPositiveButton(R.string.set, (dialog, id) -> {});
+        builder.create();
+        builder.show();
+    }
+
+    public void onSetWeeklyTargetClicked(View view) {
+        int hour = (int) ImportantStuffs.getHourFromTime(weeklyTarget);
+        int min = (int) ImportantStuffs.getRemainingMinuteFromTime(weeklyTarget);
+        showTimePickerDialog(MODE_WEEKLY, hour, min, 24*7-1, 59);
+    }
+
+    public void onSetDailyTargetClicked(View view) {
+        int hour = (int) ImportantStuffs.getHourFromTime(dailyTarget);
+        int min = (int) ImportantStuffs.getRemainingMinuteFromTime(dailyTarget);
+        showTimePickerDialog(MODE_DAILY, hour, min, 23, 59);
+    }
+
+    public void onSetWeeklyNotificationsClicked(View view) {
+        boolean[] selectedItems = {false, false, false, false, false, false};
+        for (int i : weeklySelectedNotificationIndexes)
+            selectedItems[i] = true;
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.DialogTheme);
+        builder.setTitle(R.string.select_notification_type).setMultiChoiceItems(R.array.notification_types, selectedItems,(dialog, which, isChecked) -> {
+            boolean contains = weeklySelectedNotificationIndexes.contains(which);
+            if(isChecked && !contains)
+                weeklySelectedNotificationIndexes.add(which);
+            else if(!isChecked && contains)
+                weeklySelectedNotificationIndexes.remove(weeklySelectedNotificationIndexes.indexOf(which));
+            setWeeklyNotificationsText();
+        }).setPositiveButton(R.string.set, (dialog, id) -> {});
+
+        builder.create();
+        builder.show();
+    }
+
+    public void onSetDailyNotificationsClicked(View view) {
+        boolean[] selectedItems = {false, false, false, false, false, false};
+        for (int i : dailySelectedNotificationIndexes)
+            selectedItems[i] = true;
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.DialogTheme);
+        builder.setTitle(R.string.select_notification_type).setMultiChoiceItems(R.array.notification_types, selectedItems, (dialog, which, isChecked) -> {
+            boolean contains = dailySelectedNotificationIndexes.contains(which);
+            if(isChecked && !contains)
+                dailySelectedNotificationIndexes.add(which);
+            else if(!isChecked && contains)
+                dailySelectedNotificationIndexes.remove(dailySelectedNotificationIndexes.indexOf(which));
+            setDailyNotificationsText();
+        }).setPositiveButton(R.string.set, (dialog, id) -> {});
+
+        builder.create();
+        builder.show();
+    }
+
+    public void onTargetHistoryClicked(View view){
+
+    }
+
+    private void showTimePickerDialog(int mode, int currentHour, int currentMin, int maxHour, int maxMin){
+        final Dialog dialog = new Dialog(this);
+        View dialogLayout = getLayoutInflater().inflate(R.layout.set_app_usage_target, null);
+        NumberPicker hourPicker = dialogLayout.findViewById(R.id.hour_picker);
+        NumberPicker minPicker = dialogLayout.findViewById(R.id.min_picker);
+        Button cancelButton = dialogLayout.findViewById(R.id.cancelButton);
+        Button setButton = dialogLayout.findViewById(R.id.setButton);
+
+        hourPicker.setMinValue(0);
+        hourPicker.setMaxValue(maxHour);
+        hourPicker.setValue(currentHour);
+
+        minPicker.setMinValue(0);
+        minPicker.setMaxValue(maxMin);
+        minPicker.setValue(currentMin);
+
+        cancelButton.setOnClickListener(v -> dialog.dismiss());
+        setButton.setOnClickListener(v -> {
+            int hour = hourPicker.getValue();
+            int min = minPicker.getValue();
+
+            if(hour == 0 && min == 0){
+                showToast("Target can't be 0");
+                if(mode == MODE_WEEKLY)
+                    hour = 14;
+                else
+                    hour = 2;
+            }
+
+            setUsageTarget(mode, hour, min);
+            dialog.dismiss();
+        });
+
+        dialog.setTitle("Set target");
+        dialog.setContentView(dialogLayout);
+        dialog.show();
+    }
+
+
+    private void setWeeklyNotificationsText() {
+        int numOfNotification = weeklySelectedNotificationIndexes.size();
+
+        if (numOfNotification == 0) {
+            weeklyNotificationTypesTextView.setText("None");
+        } else if (numOfNotification == 1) {
+            String selectedNotification = notificationTypes.get(weeklySelectedNotificationIndexes.get(0));
+            weeklyNotificationTypesTextView.setText(selectedNotification);
+        } else {
+            weeklyNotificationTypesTextView.setText("Multiple");
+        }
+        String data = weeklySelectedNotificationIndexes.toString();
+        try {
+            JSONArray notificationTypesJson = new JSONArray(data);
+            jsonInfo.getJSONObject("appsInfo").getJSONObject(currentPackage).put("weeklyNotifications", notificationTypesJson);
+            ImportantStuffs.saveFileLocally("info.json", jsonInfo.toString(), this);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+            ImportantStuffs.showLog("Can't save weekly notification types");
+        }
+    }
+
+    private void setDailyNotificationsText() {
+        int numOfNotification = dailySelectedNotificationIndexes.size();
+
+        if (numOfNotification == 0) {
+            dailyNotificationTypesTextView.setText("None");
+        } else if (numOfNotification == 1) {
+            String selectedNotification = notificationTypes.get(dailySelectedNotificationIndexes.get(0));
+            dailyNotificationTypesTextView.setText(selectedNotification);
+        } else {
+            dailyNotificationTypesTextView.setText("Multiple");
+        }
+        String data = dailySelectedNotificationIndexes.toString();
+        try {
+            JSONArray notificationTypesJson = new JSONArray(data);
+            jsonInfo.getJSONObject("appsInfo").getJSONObject(currentPackage).put("dailyNotifications", notificationTypesJson);
+            ImportantStuffs.saveFileLocally("info.json", jsonInfo.toString(), this);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+            ImportantStuffs.showLog("Can't save daily notification types");
+        }
+    }
+
+    private void setTargetTypes() {
+        int numOfTargets = selectedTargetTypeIndexes.size();
+        if(numOfTargets == 0){
+            targetTypesTextView.setText("None");
+            makeConstraintLayoutGrayedOut(setDailyTargetLayout, true);
+            makeConstraintLayoutGrayedOut(setWeeklyTargetLayout, true);
+            makeConstraintLayoutGrayedOut(setDailyNotificationsLayout, true);
+            makeConstraintLayoutGrayedOut(setWeeklyNotificationsLayout, true);
+        }
+        else if(numOfTargets == 1){
+            String targetType = targetTypes.get(selectedTargetTypeIndexes.get(0));
+            targetTypesTextView.setText(targetType);
+            if(targetType.equals("Daily")){
+                makeConstraintLayoutGrayedOut(setWeeklyTargetLayout, true);
+                makeConstraintLayoutGrayedOut(setDailyTargetLayout, false);
+                makeConstraintLayoutGrayedOut(setWeeklyNotificationsLayout, true);
+                makeConstraintLayoutGrayedOut(setDailyNotificationsLayout, false);
+            }
+            else{
+                makeConstraintLayoutGrayedOut(setWeeklyTargetLayout, false);
+                makeConstraintLayoutGrayedOut(setDailyTargetLayout, true);
+                makeConstraintLayoutGrayedOut(setWeeklyNotificationsLayout, false);
+                makeConstraintLayoutGrayedOut(setDailyNotificationsLayout, true);
+            }
+        }
+        else{
+            targetTypesTextView.setText("Weekly and Daily");
+            makeConstraintLayoutGrayedOut(setWeeklyTargetLayout, false);
+            makeConstraintLayoutGrayedOut(setDailyTargetLayout, false);
+            makeConstraintLayoutGrayedOut(setWeeklyNotificationsLayout, false);
+            makeConstraintLayoutGrayedOut(setDailyNotificationsLayout, false);
+        }
+        saveTargetTypes();
+    }
+
+    private void setUsageTarget(int mode, int hour, int min) {
+        String targetText = hour + " hour " + min + " min";
+        if(mode == MODE_WEEKLY)
+            weeklyTargetTextView.setText(targetText);
+        else
+            dailyTargetTextView.setText(targetText);
+
+        long target = hour * ImportantStuffs.MILLISECONDS_IN_HOUR + min * ImportantStuffs.MILLISECONDS_IN_MINUTE;
+        try {
+            if(mode == MODE_WEEKLY) {
+                weeklyTarget = target;
+                jsonInfo.getJSONObject("appsInfo").getJSONObject(currentPackage).put("weeklyTarget", target);
+            }
+            else {
+                dailyTarget = target;
+                jsonInfo.getJSONObject("appsInfo").getJSONObject(currentPackage).put("dailyTarget", target);
+            }
+            ImportantStuffs.saveFileLocally("info.json", jsonInfo.toString(), this);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            ImportantStuffs.showErrorLog("Can't save target");
+        }
+
+    }
+
+    private void setUsageTarget(int mode, long time){
+        int hour = (int) ImportantStuffs.getHourFromTime(time);
+        int min = (int) ImportantStuffs.getRemainingMinuteFromTime(time);
+
+        setUsageTarget(mode, hour, min);
+    }
+
+    private void saveTargetTypes(){
+        String data = selectedTargetTypeIndexes.toString();
+        try {
+            JSONArray targetTypes = new JSONArray(data);
+            jsonInfo.getJSONObject("appsInfo").getJSONObject(currentPackage).put("targetTypes", targetTypes);
+            ImportantStuffs.saveFileLocally("info.json", jsonInfo.toString(), this);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+            ImportantStuffs.showLog("Can't save target types");
+        }
+
+    }
+
 
     private void createGraph() {
         initBarChart();
@@ -250,105 +543,19 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
     }
 
 
-    public void onTargetTypeClicked(View view) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.DialogTheme);
-        builder.setTitle(R.string.select_target_type).setSingleChoiceItems(R.array.target_types, targetTypeIndex, (dialog, which) -> {
-            if (targetTypeIndex == 2 && which != 2) {
-                makeConstraintLayoutGrayedOut(setTargetLayout, false);
-                makeConstraintLayoutGrayedOut(setNotificationsLayout, false);
-            } else if (which == 2) {
-                makeConstraintLayoutGrayedOut(setTargetLayout, true);
-                makeConstraintLayoutGrayedOut(setNotificationsLayout, true);
-            }
-            targetTypeIndex = which;
-            String selectedType = targetTypes.get(which);
-//            targetEditor.putString(currentPackage, selectedType);
-//            targetEditor.commit();
-            targetTypeTextView.setText(selectedType);
-            final Handler handler = new Handler();
-            handler.postDelayed(dialog::dismiss, 100);
-        });
-        builder.create();
-        builder.show();
-    }
-
-    public void onSetNotificationsClicked(View view) {
-        boolean[] selectedItems = {false, false, false, false, false, false};
-        for (int i : selectedNotifications)
-            selectedItems[i] = true;
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.DialogTheme);
-        builder.setTitle(R.string.select_notification_type)
-                .setMultiChoiceItems(R.array.notification_types, selectedItems,
-                        (dialog, which, isChecked) -> {
-                            if (isChecked) {
-                                selectedNotifications.add(which);
-                            } else if (selectedNotifications.contains(which)) {
-                                selectedNotifications.remove(Integer.valueOf(which));
-                            }
-                            setNotificationsText();
-                        })
-                .setPositiveButton(R.string.set, (dialog, id) -> {
-
-                });
-//                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-//                    @Override
-//                    public void onClick(DialogInterface dialog, int id) {
-//                        showToast(selectedNotifications.toString());
-//                    }
-//                });
-
-        builder.create();
-        builder.show();
-    }
-
-    public void onSetTargetClicked(View view) {
-        final Dialog dialog = new Dialog(this);
-        View setTargetDialog = getLayoutInflater().inflate(R.layout.set_app_usage_target, null);
-        NumberPicker hourPicker = setTargetDialog.findViewById(R.id.hour_picker);
-        NumberPicker minPicker = setTargetDialog.findViewById(R.id.min_picker);
-        Button cancelButton = setTargetDialog.findViewById(R.id.cancelButton);
-        Button setButton = setTargetDialog.findViewById(R.id.setButton);
-
-        int maxHour = 23;
-        if (targetTypeIndex == 0)
-            maxHour = 24 * 7 - 1;
-        int maxMin = 59;
-
-        hourPicker.setMinValue(0);
-        hourPicker.setMaxValue(maxHour);
-        hourPicker.setValue(hourTarget);
-
-        minPicker.setMinValue(0);
-        minPicker.setMaxValue(maxMin);
-        minPicker.setValue(minTarget);
-
-        cancelButton.setOnClickListener(v -> dialog.dismiss());
-        setButton.setOnClickListener(v -> {
-            int hour = hourPicker.getValue();
-            int min = minPicker.getValue();
-            setUsageTarget(hour, min);
-            dialog.dismiss();
-        });
-
-        dialog.setTitle("Set target");
-        dialog.setContentView(setTargetDialog);
-        dialog.show();
-    }
-
     public void onDailyCalendarSelected(View view) {
 //        showToast("onDailyCalendarSelected");
-        calendarMode = CALENDAR_DAILY;
+        calendarMode = MODE_DAILY;
         usageCollectionTime = currentGraphDate;
-        usageData = AppUsageDataController.getDailyUsageDataInHourlyList(usageCollectionTime, currentPackage, this);
+        usageData = AppsDataController.getDailyUsageDataInHourlyList(usageCollectionTime, currentPackage, this);
         updateGraphData();
     }
 
     public void onWeeklyCalendarSelected(View view) {
 //        showToast("onWeeklyCalendarSelected");
-        calendarMode = CALENDAR_WEEKLY;
+        calendarMode = MODE_WEEKLY;
         usageCollectionTime = ImportantStuffs.getRecentWeekFromTime(currentGraphDate);
-        usageData = AppUsageDataController.getWeeklyUsageDataInDailyList(usageCollectionTime, currentPackage, this);
+        usageData = AppsDataController.getWeeklyUsageDataInDailyList(usageCollectionTime, currentPackage, this);
         updateGraphData();
     }
 
@@ -380,7 +587,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.HOUR_OF_DAY, 0);
         currentGraphDate = calendar.getTimeInMillis();
-        if(calendarMode == CALENDAR_DAILY)
+        if(calendarMode == MODE_DAILY)
             onDailyCalendarSelected(null);
         else
             onWeeklyCalendarSelected(null);

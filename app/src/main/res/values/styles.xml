@@ -9,6 +9,10 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:textColor">@color/white</item>
+
+        <!--        <item name="android:windowTranslucentNavigation">true</item>-->
+        <!--        <item name="android:windowDrawsSystemBarBackgrounds">true</item>-->
+        <!--        <item name="android:navigationBarColor">@android:color/transparent</item>-->
     </style>
 
     <style name="DialogTheme" parent="Theme.AppCompat.Light.Dialog">
@@ -24,12 +28,12 @@
         <item name="android:textColorPrimary">@color/nearWhite</item>
         <item name="textColorAlertDialogListItem">@color/white</item>
         <item name="android:textColorSecondary">@color/white</item>
-<!--        <item name="colorPrimaryDark">@color/white</item>-->
-<!--        <item name="android:colorPrimaryDark">@color/white</item>-->
-<!--        <item name="colorPrimary">@color/white</item>-->
-<!--        <item name="android:colorPrimary">@color/white</item>-->
-<!--        <item name="android:textColor">@color/white</item>-->
-<!--        <item name="android:textColorHighlight">@color/white</item>-->
+        <!--        <item name="colorPrimaryDark">@color/white</item>-->
+        <!--        <item name="android:colorPrimaryDark">@color/white</item>-->
+        <!--        <item name="colorPrimary">@color/white</item>-->
+        <!--        <item name="android:colorPrimary">@color/white</item>-->
+        <!--        <item name="android:textColor">@color/white</item>-->
+        <!--        <item name="android:textColorHighlight">@color/white</item>-->
     </style>
 
     <style name="NumberPickerTheme" parent="Theme.AppCompat.Light">
@@ -42,10 +46,19 @@
         <item name="android:textSize">30sp</item>
     </style>
 
+    <style name="AppTheme.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
     <!--    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">-->
-<!--        <item name="colorPrimary">@color/colorPrimary</item>-->
-<!--        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>-->
-<!--        <item name="colorAccent">@color/colorAccent</item>-->
-<!--    </style>-->
+    <!--        <item name="colorPrimary">@color/colorPrimary</item>-->
+    <!--        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>-->
+    <!--        <item name="colorAccent">@color/colorAccent</item>-->
+    <!--    </style>-->
 
 </resources>

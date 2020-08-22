@@ -4,30 +4,21 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.app.AlarmManager;
 import android.app.AppOpsManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.Settings;
 import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.List;
 
 import static android.app.AppOpsManager.MODE_ALLOWED;
 
@@ -42,7 +33,7 @@ public class AppList extends AppCompatActivity {
         testThings();
         checkIfFirst();
         if(isUsagePermissionEnabled() == true){
-            startAlarm();
+            AppsDataController.startAlarm(this, 500);
         }
     }
 
@@ -56,16 +47,15 @@ public class AppList extends AppCompatActivity {
             return;
         } else {
             long startTime = ImportantStuffs.getDayStartingHour(), endTime = ImportantStuffs.getCurrentTime();
-            appsUsageInfo = AppUsageDataController.getAppsUsageInfo(startTime, endTime, this);
-            addOtherAppsToAppsUsageInfo();
+            appsUsageInfo = AppsDataController.getAppsAllInfo(startTime, endTime, this);
             createAppList();
         }
     }
 
     private boolean checkIfFirst(){
-        String info = ImportantStuffs.getStringFromJson("info.json", this);
+        String info = ImportantStuffs.getStringFromJsonObjectPath("info.json", this);
         if(info == ""){
-            ImportantStuffs.showLog("No checkpoint data");
+            ImportantStuffs.showLog("No checkpoint data found. Creating new checkpoint---");
             Calendar calendar = Calendar.getInstance();
             JSONObject jsonInfo = new JSONObject();
 
@@ -80,31 +70,32 @@ public class AppList extends AppCompatActivity {
             Long time = calendar.getTimeInMillis();
             try {
                 jsonInfo.put("checkpoint", time);
+                jsonInfo.put("appsInfo", new JSONObject());
             } catch (JSONException e) {
                 e.printStackTrace();
-                ImportantStuffs.showLog("Checkpoint can't be initialized");
+                ImportantStuffs.showErrorLog("Checkpoint can't be initialized");
             }
             if(!ImportantStuffs.saveFileLocally("info.json", jsonInfo.toString(), this))
-                ImportantStuffs.showLog("Checkpoint can't be initialized");
+                ImportantStuffs.showErrorLog("Checkpoint can't be initialized");
             return true;
         }
         return false;
     }
 
-    private void startAlarm() {
-        AlarmManager alarmMgr;
-        PendingIntent alarmIntent;
-
-        alarmMgr = (AlarmManager) getSystemService(ALARM_SERVICE);
-        Intent intent = new Intent(this, AppUsageDataController.class);
-
-        Calendar calendar = Calendar.getInstance();
-
-        long alarmTime = calendar.getTimeInMillis() + 500;
-
-        alarmIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
-        alarmMgr.set(AlarmManager.RTC_WAKEUP, alarmTime, alarmIntent);
-    }
+//    private void startAlarm() {
+//        AlarmManager alarmMgr;
+//        PendingIntent alarmIntent;
+//
+//        alarmMgr = (AlarmManager) getSystemService(ALARM_SERVICE);
+//        Intent intent = new Intent(this, AppsDataController.class);
+//
+//        Calendar calendar = Calendar.getInstance();
+//
+//        long alarmTime = calendar.getTimeInMillis() + 500;
+//
+//        alarmIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
+//        alarmMgr.set(AlarmManager.RTC_WAKEUP, alarmTime, alarmIntent);
+//    }
 
     private void testThings() {
 //        try{
@@ -122,29 +113,29 @@ public class AppList extends AppCompatActivity {
 //        }
     }
 
-    public void addOtherAppsToAppsUsageInfo(){
-        PackageManager pm = getPackageManager();
-        List<PackageInfo> packs = getPackageManager().getInstalledPackages(0);
-
-        for (int i = 0; i < packs.size(); i++) {
-            PackageInfo p = packs.get(i);
-            String packageName = p.applicationInfo.packageName;
-            if(appsUsageInfo.get(packageName) != null)
-                continue;
-
-            String appName = p.applicationInfo.loadLabel(getPackageManager()).toString();
-            Drawable icon = p.applicationInfo.loadIcon(getPackageManager());
-            long installed = 0;
-            try {
-                installed = pm.getPackageInfo(packageName, 0).firstInstallTime;
-            } catch (PackageManager.NameNotFoundException e) {
-                e.printStackTrace();
-            }
-            boolean isSystem = ImportantStuffs.isSystemPackage(packageName, this);
-
-            appsUsageInfo.put(packageName, new AppUsageInfo(appName, packageName, icon, installed, isSystem));
-        }
-    }
+//    public void addOtherAppsToAppsUsageInfo(){
+//        PackageManager pm = getPackageManager();
+//        List<PackageInfo> packs = getPackageManager().getInstalledPackages(0);
+//
+//        for (int i = 0; i < packs.size(); i++) {
+//            PackageInfo p = packs.get(i);
+//            String packageName = p.applicationInfo.packageName;
+//            if(appsUsageInfo.get(packageName) != null)
+//                continue;
+//
+//            String appName = p.applicationInfo.loadLabel(getPackageManager()).toString();
+//            Drawable icon = p.applicationInfo.loadIcon(getPackageManager());
+//            long installed = 0;
+//            try {
+//                installed = pm.getPackageInfo(packageName, 0).firstInstallTime;
+//            } catch (PackageManager.NameNotFoundException e) {
+//                e.printStackTrace();
+//            }
+//            boolean isSystem = ImportantStuffs.isSystemPackage(packageName, this);
+//
+//            appsUsageInfo.put(packageName, new AppUsageInfo(appName, packageName, icon, installed, isSystem));
+//        }
+//    }
 
     private void createAppList() {
         RecyclerView recyclerView = findViewById(R.id.recycler_view);

@@ -15,43 +15,44 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="8dp">
+            android:layout_margin="8dp"
+            android:paddingBottom="20dp">
 
-<!--            <androidx.constraintlayout.widget.ConstraintLayout-->
-<!--                android:id="@+id/app_list"-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_marginTop="8dp"-->
-<!--                android:background="@drawable/spinner_background"-->
-<!--                android:foreground="?android:attr/selectableItemBackground"-->
-<!--                android:onClick="onSelectAppClicked"-->
-<!--                app:layout_constraintEnd_toEndOf="parent"-->
-<!--                app:layout_constraintStart_toStartOf="parent"-->
-<!--                app:layout_constraintTop_toTopOf="parent">-->
+            <!--            <androidx.constraintlayout.widget.ConstraintLayout-->
+            <!--                android:id="@+id/app_list"-->
+            <!--                android:layout_width="match_parent"-->
+            <!--                android:layout_height="wrap_content"-->
+            <!--                android:layout_marginTop="8dp"-->
+            <!--                android:background="@drawable/spinner_background"-->
+            <!--                android:foreground="?android:attr/selectableItemBackground"-->
+            <!--                android:onClick="onSelectAppClicked"-->
+            <!--                app:layout_constraintEnd_toEndOf="parent"-->
+            <!--                app:layout_constraintStart_toStartOf="parent"-->
+            <!--                app:layout_constraintTop_toTopOf="parent">-->
 
-<!--                <TextView-->
-<!--                    android:id="@+id/selected_app"-->
-<!--                    android:layout_width="wrap_content"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:padding="10dp"-->
-<!--                    android:text=""-->
-<!--                    android:textSize="14sp"-->
-<!--                    app:layout_constraintBottom_toBottomOf="parent"-->
-<!--                    app:layout_constraintStart_toStartOf="parent"-->
-<!--                    app:layout_constraintTop_toTopOf="parent" />-->
+            <!--                <TextView-->
+            <!--                    android:id="@+id/selected_app"-->
+            <!--                    android:layout_width="wrap_content"-->
+            <!--                    android:layout_height="wrap_content"-->
+            <!--                    android:padding="10dp"-->
+            <!--                    android:text=""-->
+            <!--                    android:textSize="14sp"-->
+            <!--                    app:layout_constraintBottom_toBottomOf="parent"-->
+            <!--                    app:layout_constraintStart_toStartOf="parent"-->
+            <!--                    app:layout_constraintTop_toTopOf="parent" />-->
 
-<!--                <ImageView-->
-<!--                    android:id="@+id/imageView"-->
-<!--                    android:layout_width="wrap_content"-->
-<!--                    android:layout_height="0dp"-->
-<!--                    android:padding="5dp"-->
-<!--                    android:paddingEnd="0dp"-->
-<!--                    android:paddingRight="0dp"-->
-<!--                    app:layout_constraintBottom_toBottomOf="parent"-->
-<!--                    app:layout_constraintEnd_toEndOf="parent"-->
-<!--                    app:layout_constraintTop_toTopOf="parent"-->
-<!--                    app:srcCompat="@drawable/down_arrow" />-->
-<!--            </androidx.constraintlayout.widget.ConstraintLayout>-->
+            <!--                <ImageView-->
+            <!--                    android:id="@+id/imageView"-->
+            <!--                    android:layout_width="wrap_content"-->
+            <!--                    android:layout_height="0dp"-->
+            <!--                    android:padding="5dp"-->
+            <!--                    android:paddingEnd="0dp"-->
+            <!--                    android:paddingRight="0dp"-->
+            <!--                    app:layout_constraintBottom_toBottomOf="parent"-->
+            <!--                    app:layout_constraintEnd_toEndOf="parent"-->
+            <!--                    app:layout_constraintTop_toTopOf="parent"-->
+            <!--                    app:srcCompat="@drawable/down_arrow" />-->
+            <!--            </androidx.constraintlayout.widget.ConstraintLayout>-->
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/card_view"
@@ -153,7 +154,7 @@
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
-                    android:id="@+id/target_type_text"
+                    android:id="@+id/target_types_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text=""
@@ -164,30 +165,30 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/set_target"
+                android:id="@+id/set_weekly_target_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:background="@drawable/item_background"
                 android:foreground="?android:attr/selectableItemBackground"
-                android:onClick="onSetTargetClicked"
+                android:onClick="onSetWeeklyTargetClicked"
                 android:padding="10dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/target_type">
 
                 <TextView
-                    android:id="@+id/set_target_text"
+                    android:id="@+id/set_weekly_target_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Set target"
+                    android:text="Set weekly target"
                     android:textSize="14sp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
-                    android:id="@+id/target_text"
+                    android:id="@+id/weekly_target_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text=""
@@ -199,17 +200,88 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/set_notifications_type"
+                android:id="@+id/set_weekly_notifications_type"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:background="@drawable/item_background"
                 android:foreground="?android:attr/selectableItemBackground"
-                android:onClick="onSetNotificationsClicked"
+                android:onClick="onSetWeeklyNotificationsClicked"
                 android:padding="10dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/set_target">
+                app:layout_constraintTop_toBottomOf="@+id/set_weekly_target_layout">
+
+                <TextView
+                    android:id="@+id/set_weekly_notifications_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clickable="false"
+                    android:enabled="false"
+                    android:text="Weekly notifications"
+                    android:textSize="14sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/weekly_notifications_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textSize="12sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/set_daily_target_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/item_background"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:onClick="onSetDailyTargetClicked"
+                android:padding="10dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/set_weekly_notifications_type">
+
+                <TextView
+                    android:id="@+id/set_daily_target_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Set daily target"
+                    android:textSize="14sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/daily_target_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textSize="12sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/set_daily_notifications_type"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/item_background"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:onClick="onSetDailyNotificationsClicked"
+                android:padding="10dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/set_daily_target_layout">
 
                 <TextView
                     android:id="@+id/set_notifications_text"
@@ -217,20 +289,46 @@
                     android:layout_height="wrap_content"
                     android:clickable="false"
                     android:enabled="false"
-                    android:text="Notifications"
+                    android:text="Daily notifications"
                     android:textSize="14sp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
-                    android:id="@+id/notifications_text"
+                    android:id="@+id/daily_notifications_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text=""
                     android:textSize="12sp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/target_history_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/item_background"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:onClick="onTargetHistoryClicked"
+                android:padding="10dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/set_daily_notifications_type">
+
+                <TextView
+                    android:id="@+id/target_history_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clickable="false"
+                    android:enabled="false"
+                    android:text="Target history"
+                    android:textSize="14sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 

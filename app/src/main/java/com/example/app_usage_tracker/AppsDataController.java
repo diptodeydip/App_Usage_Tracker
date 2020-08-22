@@ -7,7 +7,8 @@ import android.app.usage.UsageStatsManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -21,13 +22,13 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-public class AppUsageDataController extends BroadcastReceiver {
+public class AppsDataController extends BroadcastReceiver {
     Context context;
     public static final String TAG = "ahtrap";
-    private static final long HOUR_IN_MILLIS = 60 * 1000 * 60;
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -45,20 +46,49 @@ public class AppUsageDataController extends BroadcastReceiver {
         }).start();
     }
 
-    public static void startAlarm(Context context, long delay) {
+    private class AsyncUsageTask extends AsyncTask<Context, String, String> {
+
+        @Override
+        protected void onPostExecute(String result) {
+//            Log.d(TAG, "onPostExecute: ");
+        }
+
+        @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+        @Override
+        protected String doInBackground(Context... contexts) {
+//            Log.d(TAG, "doInBackground: ");
+            saveUsageDataLocally();
+            return null;
+        }
+
+        @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+        @Override
+        protected void onPreExecute() {
+//            Log.d(TAG, "onPreExecute: ");
+//            checkTargetLocally(context);
+        }
+
+        @Override
+        protected void onProgressUpdate(String... text) {
+//            Log.d(TAG, "onProgressUpdate: ");
+        }
+    }
+
+    public static void startAlarm(Context context, long delayInMillisecond) {
         AlarmManager alarmMgr;
         PendingIntent alarmIntent;
 
         alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(context, AppUsageDataController.class);
+        Intent intent = new Intent(context, AppsDataController.class);
 
         Calendar calendar = Calendar.getInstance();
 
-        long alarmTime = calendar.getTimeInMillis() + delay;
+        long alarmTime = calendar.getTimeInMillis() + delayInMillisecond;
 
         alarmIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
         alarmMgr.set(AlarmManager.RTC_WAKEUP, alarmTime, alarmIntent);
     }
+
 
     public static HashMap<String, AppUsageInfo> getAppsUsageInfo(long startTime, long endTime, Context context) {
         HashMap<String, AppUsageInfo> appsUsageInfo = new HashMap<>();
@@ -164,6 +194,37 @@ public class AppUsageDataController extends BroadcastReceiver {
         return appsUsageInfo;
     }
 
+    public static HashMap<String, AppUsageInfo> getAppsAllInfo(long startTime, long endTime, Context context){
+        HashMap<String, AppUsageInfo> appsUsageInfo = getAppsUsageInfo(startTime, endTime, context);
+        appsUsageInfo = addOtherAppsInfo(appsUsageInfo, context);
+        return appsUsageInfo;
+    }
+
+    private static HashMap<String, AppUsageInfo> addOtherAppsInfo(HashMap<String, AppUsageInfo> appsInfo, Context context){
+        PackageManager packageManager = context.getPackageManager();
+        List<PackageInfo> installedPackages = context.getPackageManager().getInstalledPackages(0);
+
+        for (int i = 0; i < installedPackages.size(); i++) {
+            PackageInfo packageInfo = installedPackages.get(i);
+            String packageName = packageInfo.applicationInfo.packageName;
+            if(appsInfo.get(packageName) != null)
+                continue;
+
+            String appName = packageInfo.applicationInfo.loadLabel(context.getPackageManager()).toString();
+            Drawable icon = packageInfo.applicationInfo.loadIcon(context.getPackageManager());
+            long installed = 0;
+            try {
+                installed = packageManager.getPackageInfo(packageName, 0).firstInstallTime;
+            } catch (PackageManager.NameNotFoundException e) {
+                e.printStackTrace();
+            }
+            boolean isSystem = ImportantStuffs.isSystemPackage(packageName, context);
+
+            appsInfo.put(packageName, new AppUsageInfo(appName, packageName, icon, installed, isSystem));
+        }
+        return appsInfo;
+    }
+
 
     public static ArrayList<Long> getWeeklyUsageDataInDailyList(long weekStartTime, String packageName, Context context){
         ArrayList<Long> usage = new ArrayList<>();
@@ -205,13 +266,12 @@ public class AppUsageDataController extends BroadcastReceiver {
     }
 
     public static long getHourlyUsageData(long hourStartTime, String packageName, Context context){
-        JSONObject jsonInfo = ImportantStuffs.getJsonObject("info.json", context);
         long checkpoint = getCheckpoint(context);
         long currentHour = ImportantStuffs.getCurrentHour();
         long currentTime = ImportantStuffs.getCurrentTime();
 
         if(checkpoint >= hourStartTime){
-            String history = ImportantStuffs.getStringFromJson("History.json", context);
+            String history = ImportantStuffs.getStringFromJsonObjectPath("History.json", context);
             JSONObject jsonObject;
             try {
                 jsonObject = new JSONObject(history);
@@ -222,19 +282,24 @@ public class AppUsageDataController extends BroadcastReceiver {
             String key = String.valueOf(hourStartTime);
             try {
                 JSONArray appArray = jsonObject.getJSONArray(key);
-                return getForegroundTimeFromJsonArray(appArray, packageName);
+                return getForegroundTime(appArray, packageName);
             } catch (JSONException e) {
                 return 0;
             }
         }
         else if(hourStartTime == currentHour){
             HashMap<String, AppUsageInfo> map = getAppsUsageInfo(hourStartTime, currentTime, context);
-            return (int) map.get(packageName).getTimeInForeground();
+            try {
+                return map.get(packageName).getTimeInForeground();
+            } catch (Exception e){
+                return 0;
+            }
         }
         return 0;
     }
 
-    public static int getForegroundTimeFromJsonArray(JSONArray array, String packageName) {
+
+    private static int getForegroundTime(JSONArray array, String packageName) {
         for(int i=0; i<array.length(); i++){
             try {
                 JSONObject object = array.getJSONObject(i);
@@ -266,11 +331,16 @@ public class AppUsageDataController extends BroadcastReceiver {
         JSONObject jsonInfo = ImportantStuffs.getJsonObject("info.json", context);
         long checkpoint = getCheckpoint(context);
         long goalPoint = ImportantStuffs.getCurrentHour()-ImportantStuffs.MILLISECONDS_IN_HOUR;
-        ImportantStuffs.showLog(ImportantStuffs.getDateAndTimeFromMilliseconds(checkpoint));
-        if(goalPoint == checkpoint || checkpoint == 0)
+        if(goalPoint == checkpoint){
+            ImportantStuffs.showLog("No new data to store");
             return;
+        }
+        if(checkpoint == 0){
+            ImportantStuffs.showErrorLog("No valid checkpoint data found");
+            return;
+        }
 
-        String jsonString = ImportantStuffs.getStringFromJson("History.json", context);
+        String jsonString = ImportantStuffs.getStringFromJsonObjectPath("History.json", context);
         JSONObject usageDetails = new JSONObject();
         if (jsonString != "") {
             try {
@@ -280,9 +350,8 @@ public class AppUsageDataController extends BroadcastReceiver {
             }
         }
 
-        for (long startTime = checkpoint + ImportantStuffs.MILLISECONDS_IN_HOUR ; startTime <= goalPoint; startTime += HOUR_IN_MILLIS) {
-            HashMap<String, AppUsageInfo> appsUsageInfo = getAppsUsageInfo(startTime, startTime + HOUR_IN_MILLIS, context);
-
+        for (long startTime = checkpoint + ImportantStuffs.MILLISECONDS_IN_HOUR ; startTime <= goalPoint; startTime += ImportantStuffs.MILLISECONDS_IN_HOUR) {
+            HashMap<String, AppUsageInfo> appsUsageInfo = getAppsUsageInfo(startTime, startTime + ImportantStuffs.MILLISECONDS_IN_HOUR, context);
             JSONArray jsonAppInfo = new JSONArray();
             for (AppUsageInfo appInfo:appsUsageInfo.values()) {
                 JSONObject jsonObject = new JSONObject();
@@ -304,9 +373,12 @@ public class AppUsageDataController extends BroadcastReceiver {
             }
         }
 
+        String startPoint = ImportantStuffs.getDateAndTimeFromMilliseconds(checkpoint + ImportantStuffs.MILLISECONDS_IN_HOUR);
+        String endPoint = ImportantStuffs.getDateAndTimeFromMilliseconds(goalPoint + ImportantStuffs.MILLISECONDS_IN_HOUR);
+        ImportantStuffs.showLog("Data saved from", startPoint, "--", endPoint);
+
         try {
             jsonInfo.put("checkpoint", goalPoint);
-
         } catch (JSONException e) {
             e.printStackTrace();
             ImportantStuffs.showLog("checkpoint not saving -_-");
@@ -316,31 +388,139 @@ public class AppUsageDataController extends BroadcastReceiver {
         ImportantStuffs.saveFileLocally( "info.json", jsonInfo.toString(), context);
     }
 
+    public  void checkTargetLocally(Context context){
+        JSONObject targetMetaDetails = new JSONObject();
+        String jsonString =  ImportantStuffs.getStringFromJsonObjectPath("targetMetaDetails.json",context);
 
-    private class AsyncUsageTask extends AsyncTask<Context, String, String> {
+        if(!jsonString.equals("")) {
+            try {
+                targetMetaDetails = new JSONObject(jsonString);
+                Iterator<String> keys = targetMetaDetails.keys();
+                long dailyTargetStartTime,dailyTargetEndTime,weeklyTargetStartTime,weeklyTargetEndTime;
 
-        @Override
-        protected void onPostExecute(String result) {
-//            Log.d(TAG, "onPostExecute: ");
-        }
+                Calendar calendar = Calendar.getInstance();
+                calendar.set(Calendar.MILLISECOND,0);
+                calendar.set(Calendar.SECOND, 0);
+                calendar.set(Calendar.MINUTE,0);
+                calendar.set(Calendar.HOUR,0);
+                calendar.set(Calendar.AM_PM,Calendar.AM);
+                dailyTargetStartTime = calendar.getTimeInMillis();
 
-        @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-        @Override
-        protected String doInBackground(Context... contexts) {
-//            Log.d(TAG, "doInBackground: ");
-            saveUsageDataLocally();
-            return null;
-        }
+                calendar.set(Calendar.MILLISECOND,999);
+                calendar.set(Calendar.SECOND, 59);
+                calendar.set(Calendar.MINUTE,59);
+                calendar.set(Calendar.HOUR,11);
+                calendar.set(Calendar.AM_PM,Calendar.PM);
+                dailyTargetEndTime = calendar.getTimeInMillis();
 
-        @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-        @Override
-        protected void onPreExecute() {
-//            Log.d(TAG, "onPreExecute: ");
-        }
+                calendar.set(Calendar.MILLISECOND,0);
+                calendar.set(Calendar.SECOND, 0);
+                calendar.set(Calendar.MINUTE,0);
+                calendar.set(Calendar.HOUR,0);
+                calendar.set(Calendar.AM_PM,Calendar.AM);
+                calendar.set(Calendar.DAY_OF_WEEK,Calendar.SUNDAY);
+                weeklyTargetStartTime = calendar.getTimeInMillis();
 
-        @Override
-        protected void onProgressUpdate(String... text) {
-//            Log.d(TAG, "onProgressUpdate: ");
+                calendar.set(Calendar.MILLISECOND,999);
+                calendar.set(Calendar.SECOND, 59);
+                calendar.set(Calendar.MINUTE,59);
+                calendar.set(Calendar.HOUR,11);
+                calendar.set(Calendar.AM_PM,Calendar.PM);
+                calendar.set(Calendar.DAY_OF_WEEK,Calendar.SATURDAY);
+                weeklyTargetEndTime = calendar.getTimeInMillis();
+
+                HashMap<String, AppUsageInfo> dailyData = getAppsUsageInfo(dailyTargetStartTime, System.currentTimeMillis(),context);
+                HashMap<String, AppUsageInfo> weeklyData = getAppsUsageInfo(weeklyTargetStartTime, System.currentTimeMillis(),context);
+
+
+                StringBuilder noti = new StringBuilder();
+
+                while(keys.hasNext()) {
+                    String key = keys.next();
+                    JSONObject ob = (JSONObject) targetMetaDetails.get(key);
+
+
+                    boolean checkDaily = false;
+                    try {
+                        checkDaily = ob.get("Daily").toString().equals("Active");
+                    }catch (Exception e){}
+
+                    if(checkDaily){
+                        AppUsageInfo temp;
+                        assert dailyData != null;
+                        temp = dailyData.get(key);
+
+                        JSONObject dateInfo = new JSONObject();
+                        dateInfo.put("dailyTargetInMilis",  ob.getLong("dailyTargetInMilis"));
+                        double percentage;
+                        if (temp != null)
+                            percentage = ((double) temp.timeInForeground / (double) ob.getLong("dailyTargetInMilis")) * 100.0;
+                        else percentage = 0.00;
+                        dateInfo.put("usageInPercentage", percentage);
+                        dateInfo.put("Time_Range", dailyTargetStartTime + "--" + dailyTargetEndTime);
+                        JSONObject date = new JSONObject();
+                        try {
+                            date = ob.getJSONObject("DailyInfo");
+                        } catch (Exception e) {
+                        }
+
+                        date.put(dailyTargetStartTime+"-"+dailyTargetEndTime, dateInfo);
+                        ob.put("DailyInfo", date);
+                        String formattedPercentage = String.format("%.2f", percentage);
+                        noti.append(formattedPercentage).append("% of daily target for ").append(key).append(" is used\n");
+                    }else {
+                        JSONObject date = new JSONObject();
+                        try {
+                            date = ob.getJSONObject("DailyInfo");
+                        } catch (Exception e) {
+                        }
+                        date.put(dailyTargetStartTime + "-"+dailyTargetEndTime, null);
+                        ob.put("DailyInfo", date);
+                    }
+
+                    boolean checkWeekly = false;
+                    try {
+                        checkWeekly = ob.get("Weekly").toString().equals("Active");
+                    }catch (Exception e){}
+
+                    if(checkWeekly){
+                        AppUsageInfo temp;
+                        assert weeklyData != null;
+                        temp = weeklyData.get(key);
+
+                        JSONObject dateInfo = new JSONObject();
+                        dateInfo.put("weeklyTargetInMilis", ob.getLong("weeklyTargetInMilis"));
+                        double percentage;
+                        if (temp != null)
+                            percentage = ((double) temp.timeInForeground / (double) ob.getLong("weeklyTargetInMilis")) * 100.0;
+                        else percentage = 0.00;
+                        dateInfo.put("usageInPercentage", percentage);
+                        dateInfo.put("Time_Range", weeklyTargetStartTime + "--" + weeklyTargetEndTime);
+                        JSONObject date = new JSONObject();
+                        try {
+                            date = ob.getJSONObject("WeeklyInfo");
+                        } catch (Exception e) {
+                        }
+                        date.put(weeklyTargetStartTime + "-"+weeklyTargetEndTime, dateInfo);
+                        ob.put("WeeklyInfo", date);
+                        String formattedPercentage = String.format("%.2f", percentage);
+                        noti.append(formattedPercentage).append("% of weekly target for ").append(key).append(" is used\n");
+
+                    }else {
+                        JSONObject date = new JSONObject();
+                        try {
+                            date = ob.getJSONObject("WeeklyInfo");
+                        } catch (Exception e) {
+                        }
+                        date.put(weeklyTargetStartTime + "-"+weeklyTargetEndTime, null);
+                        ob.put("WeeklyInfo", date);
+                    }
+                    targetMetaDetails.put(key, ob);
+                }
+                ImportantStuffs.saveFileLocally("targetMetaDetails.json", targetMetaDetails.toString(), context);
+
+
+            } catch (JSONException e) {}
         }
     }
 }
