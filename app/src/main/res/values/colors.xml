@@ -3,24 +3,31 @@
     <color name="colorPrimary">#254b62</color>
     <color name="colorPrimaryDark">#1d3e53</color>
     <color name="colorAccent">#77abb7</color>
+    <color name="defaultColorAccent">#03DAC5</color>
+
     <color name="layoutBackground">#222831</color>
+
     <color name="cardBackground">#1D2129</color>
-    <color name="itemBackground">#322f3d</color>
+    <color name="cardBackgroundDifferent">#271F33</color>
+
+    <color name="tabSelected">#1D2129</color>
+    <color name="tabNotSelected">#1C334C</color>
+    <color name="tabIndicator">#4B3259</color>
+
+    <color name="itemBackground">#221E25</color>
+
     <color name="spinnerBackground">#4B3259</color>
     <color name="spinnerDropDownBackground">#263859</color>
+
     <color name="black">#000000</color>
     <color name="white">#FFFFFF</color>
     <color name="nearWhite">#BBBBBB</color>
+    <color name="transparent">#00000000</color>
+
     <color name="radioUncheckedColor">#FFFFFF</color>
     <color name="buttonBackground">#3E005086</color>
     <color name="dialogBackground">#221f3b</color>
     <color name="dialogBackgroundLight">#29a19c</color>
-    <color name="transparent">#00000000</color>
-    <color name="textColorLight">#00000000</color>
-    <color name="barGraphBarColor1">#ffa36c</color>
-    <color name="barGraphBarColor2">#FF5722</color>
 
-    <!--    <color name="colorPrimary">#6200EE</color>-->
-    <!--    <color name="colorPrimaryDark">#3700B3</color>-->
-        <color name="defaultColorAccent">#03DAC5</color>
+    <color name="barColor">#ffa36c</color>
 </resources>

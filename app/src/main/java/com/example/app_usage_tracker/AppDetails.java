@@ -7,6 +7,7 @@ import androidx.core.content.ContextCompat;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
@@ -64,7 +65,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
 
     private JSONObject jsonInfo;
 
-    private final int MODE_WEEKLY = 0, MODE_DAILY = 1, MODE_NONE = 2, MODE_BOTH = 3;
+    public static final int MODE_WEEKLY = 0, MODE_DAILY = 1, MODE_NONE = 2, MODE_BOTH = 3;
     private int calendarMode = MODE_DAILY;
 
 
@@ -279,7 +280,9 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
     }
 
     public void onTargetHistoryClicked(View view){
-
+        Intent historyIntent = new Intent(this, TargetHistory.class);
+        historyIntent.putExtra("packageName", currentPackage);
+        startActivity(historyIntent);
     }
 
     private void showTimePickerDialog(int mode, int currentHour, int currentMin, int maxHour, int maxMin){
@@ -537,7 +540,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
             dataValues.add(new BarEntry(i, time));
         }
         BarDataSet barDataSet = new BarDataSet(dataValues, ImportantStuffs.getDateFromMilliseconds(currentGraphDate));
-        barDataSet.setColor(ContextCompat.getColor(this, R.color.barGraphBarColor1));
+        barDataSet.setColor(ContextCompat.getColor(this, R.color.barColor));
         barDataSet.setDrawValues(false);
         return barDataSet;
     }
