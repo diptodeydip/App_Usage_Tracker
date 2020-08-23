@@ -24,7 +24,7 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.ViewHold
     public AppListAdapter(Context context, ArrayList<AppUsageInfo> appsUsageInfo) {
         this.context = context;
         this.appsUsageInfo = appsUsageInfo;
-        this.appsUsageInfoOriginal = appsUsageInfo;
+        this.appsUsageInfoOriginal = new ArrayList<>(appsUsageInfo);
     }
 
     @NonNull
@@ -48,8 +48,6 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.ViewHold
             Intent intent = new Intent(context, AppDetails.class);
             intent.putExtra("packageName", app.getPackageName());
             context.startActivity(intent);
-//            showToast(Long.toString(app.getTimeInForeground()));
-//            showToast(app.toString());
         });
     }
 
@@ -58,6 +56,22 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.ViewHold
         return appsUsageInfo.size();
     }
 
+
+    public void sort(int sortBy, boolean ascending){
+        switch (sortBy){
+            case R.id.sort_by_last_installed:
+                sortByLastInstalled(ascending);
+                break;
+            case R.id.sort_by_last_used:
+                sortByLastOpened(ascending);
+                break;
+            case R.id.sort_by_name:
+                sortByAppName(ascending);
+                break;
+            default:
+                sortByUsageTime(ascending);
+        }
+    }
 
     public void sortByAppName(boolean ascending){
         Collections.sort(appsUsageInfo, (o1, o2) -> {
@@ -68,25 +82,6 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.ViewHold
                 return compare;
             else
                 return -1 * compare;
-        });
-        notifyDataSetChanged();
-    }
-
-    public void sortByPackageName(boolean ascending){
-        Collections.sort(appsUsageInfo, (o1, o2) -> {
-            String app1 = o1.getPackageName();
-            String app2 = o2.getPackageName();
-            int compare = app1.compareToIgnoreCase(app2);
-            if(compare == 0){
-                String app1name = o1.getAppName();
-                String app2Name = o2.getAppName();
-                int compare2 = app1name.compareToIgnoreCase(app2Name);
-                return compare2;
-            }
-            if(ascending)
-                return compare;
-            else
-                return 1 - compare;
         });
         notifyDataSetChanged();
     }
@@ -129,6 +124,36 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.ViewHold
         notifyDataSetChanged();
     }
 
+    public void sortByLastInstalled(boolean ascending){
+        Collections.sort(appsUsageInfo, (o1, o2) -> {
+            long app1 = o1.getInstallationTime();
+            long app2 = o2.getInstallationTime();
+            int compare = Long.compare(app1, app2);
+            if(compare == 0){
+                String app1name = o1.getAppName();
+                String app2Name = o2.getAppName();
+                int compare2 = app1name.compareToIgnoreCase(app2Name);
+                return compare2;
+            }
+            if(ascending)
+                return compare;
+            else
+                return -1 * compare;
+        });
+        notifyDataSetChanged();
+    }
+
+    public void filterApps(boolean filterSystemApp, boolean filterUnusedApp){
+        ArrayList<AppUsageInfo> filteredApps = new ArrayList<>();
+        for(AppUsageInfo app:appsUsageInfoOriginal){
+            if( !(filterSystemApp && app.isSystemApp()) && !(filterUnusedApp && app.getTimeInForeground() == 0) )
+                filteredApps.add(app);
+        }
+        appsUsageInfo = filteredApps;
+        notifyDataSetChanged();
+    }
+
+
 
     public void clearAll() {
         appsUsageInfo.clear();
@@ -140,17 +165,6 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.ViewHold
         appsUsageInfo.remove(index);
 //        notifyItemRemoved(index);
 //        notifyItemRangeChanged(index, appsUsageInfo.size());
-        notifyDataSetChanged();
-    }
-
-    public void removeSystemApps(){
-        ArrayList<AppUsageInfo> withoutSystemApp = new ArrayList<>();
-        int len = appsUsageInfo.size();
-        for(AppUsageInfo app:appsUsageInfo){
-            if(!app.isSystemApp())
-                withoutSystemApp.add(app);
-        }
-        appsUsageInfo = withoutSystemApp;
         notifyDataSetChanged();
     }
 

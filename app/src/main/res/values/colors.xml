@@ -6,6 +6,7 @@
     <color name="defaultColorAccent">#03DAC5</color>
 
     <color name="layoutBackground">#222831</color>
+    <color name="layoutBackgroundDark">#14171C</color>
 
     <color name="cardBackground">#1D2129</color>
     <color name="cardBackgroundDifferent">#271F33</color>
@@ -14,7 +15,7 @@
     <color name="tabNotSelected">#1C334C</color>
     <color name="tabIndicator">#4B3259</color>
 
-    <color name="itemBackground">#221E25</color>
+    <color name="itemBackground">#222831</color>
 
     <color name="spinnerBackground">#4B3259</color>
     <color name="spinnerDropDownBackground">#263859</color>

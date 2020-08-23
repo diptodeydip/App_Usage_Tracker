@@ -1,6 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string-array name="target_types">
+        <item>Weekly</item>
+        <item>Daily</item>
+    </string-array>
 
+    <string-array name="notification_types">
+        <item>When target exceeds</item>
+        <item>At 90%</item>
+        <item>At 80%</item>
+        <item>At 70%</item>
+        <item>At 60%</item>
+        <item>At 50%</item>
+    </string-array>
+
+    <string-array name="planets_array">
+        <item>All</item>
+        <item>Mercury</item>
+        <item>Venus</item>
+        <item>Earth</item>
+        <item>Mars</item>
+        <item>Jupiter</item>
+        <item>Saturn</item>
+        <item>Uranus</item>
+        <item>Neptune</item>
+        <item>Mercury</item>
+        <item>Venus</item>
+        <item>Earth</item>
+        <item>Mars</item>
+        <item>Jupiter</item>
+        <item>Saturn</item>
+        <item>Uranus</item>
+        <item>Neptune</item>
+    </string-array>
+
+    <string-array name="small_array">
+        <item>Earth</item>
+        <item>Mars</item>
+        <item>Jupiter</item>
+        <item>Saturn</item>
+        <item>Uranus</item>
+        <item>Neptune</item>
+    </string-array>
 
     <string-array name="sorting_order">
         <item>Usage time</item>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:title="filter"
+        android:icon="@drawable/ic_filter"
+        app:showAsAction="always"
+        android:orderInCategory="2">
+        <menu>
+            <item
+                android:id="@+id/system_app_filter"
+                android:title="Show system apps"
+                android:checkable="true">
+            </item>
+            <item
+                android:id="@+id/unused_app_filter"
+                android:title="Show unused app"
+                android:checkable="true"
+                android:checked="false">
+            </item>
+        </menu>
+    </item>
+    <item
+        android:title="sort"
+        android:icon="@drawable/ic_sort"
+        app:showAsAction="always"
+        android:orderInCategory="1">
+        <menu>
+            <group
+                android:checkableBehavior="single">
+                <item
+                    android:id="@+id/sort_by_name"
+                    android:title="Sort by app name"
+                    app:showAsAction="always">
+                </item>
+                <item
+                    android:id="@+id/sort_by_usage_time"
+                    android:title="Sort by usage time"
+                    app:showAsAction="always">
+                </item>
+                <item
+                    android:id="@+id/sort_by_last_used"
+                    android:title="Sort by last used"
+                    app:showAsAction="always">
+                </item>
+                <item
+                    android:id="@+id/sort_by_last_installed"
+                    android:title="Sort by last installed"
+                    app:showAsAction="always">
+                </item>
+            </group>
+            <item
+                android:id="@+id/sort_ascending"
+                android:title="Ascending"
+                android:checkable="true"
+                android:checked="false"
+                app:showAsAction="always">
+            </item>
+        </menu>
+    </item>
+</menu>

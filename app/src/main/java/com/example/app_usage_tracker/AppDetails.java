@@ -567,7 +567,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
         calendar.setTimeInMillis(usageCollectionTime);
         DatePickerDialog datePickerDialog = new DatePickerDialog(
                 this,
-                R.style.DatePicker,
+                R.style.DatePickerTheme,
                 this,
                 calendar.get(Calendar.YEAR),
                 calendar.get(Calendar.MONTH),

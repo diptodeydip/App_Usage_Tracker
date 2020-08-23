@@ -1,5 +1,6 @@
 package com.example.app_usage_tracker;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -7,10 +8,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.app.AppOpsManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -25,16 +30,108 @@ import static android.app.AppOpsManager.MODE_ALLOWED;
 public class AppList extends AppCompatActivity {
     private HashMap<String, AppUsageInfo> appsUsageInfo;
     AppListAdapter adapter;
+    SharedPreferences sharedPreference;
+    SharedPreferences.Editor editor;
+    int sortBy;
+    boolean systemAppFilter, unusedAppFilter, sortOrderAscending;
+    public static final String SYSTEM_APP_FILTER = "systemAppFilter", UNUSED_APP_FILTER = "unusedAppFilter";
+    public static final String APP_LIST_SHARED_PREFERENCE = "AppListSharedPreference";
+    public static final String ASCENDING_SORT = "sortOrderAscending", SORT_BY = "sortBy";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_app_list);
+        sharedPreference = getSharedPreferences(APP_LIST_SHARED_PREFERENCE, MODE_PRIVATE);
+        editor = sharedPreference.edit();
+
+        systemAppFilter = sharedPreference.getBoolean(SYSTEM_APP_FILTER, false);
+        unusedAppFilter = sharedPreference.getBoolean(UNUSED_APP_FILTER, true);
+        sortOrderAscending = sharedPreference.getBoolean(ASCENDING_SORT, false);
+        sortBy = sharedPreference.getInt(SORT_BY, R.id.sort_by_usage_time);
+
         testThings();
         checkIfFirst();
         if(isUsagePermissionEnabled() == true){
             AppsDataController.startAlarm(this, 500);
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.app_list_menu, menu);
+        menu.findItem(sortBy).setChecked(true);
+        menu.findItem(R.id.system_app_filter).setChecked(systemAppFilter);
+        menu.findItem(R.id.unused_app_filter).setChecked(unusedAppFilter);
+        menu.findItem(R.id.sort_ascending).setChecked(sortOrderAscending);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        systemAppFilter = sharedPreference.getBoolean(SYSTEM_APP_FILTER, false);
+        unusedAppFilter = sharedPreference.getBoolean(UNUSED_APP_FILTER, true);
+        sortOrderAscending = sharedPreference.getBoolean(ASCENDING_SORT, false);
+        sortBy = sharedPreference.getInt(SORT_BY, R.id.sort_by_usage_time);
+
+
+        switch (item.getItemId()){
+            case R.id.system_app_filter:
+                systemAppFilter = item.isChecked();
+                item.setChecked(!systemAppFilter);
+
+                adapter.filterApps(!systemAppFilter, unusedAppFilter);
+                editor.putBoolean(SYSTEM_APP_FILTER, !systemAppFilter);
+                break;
+
+            case R.id.unused_app_filter:
+                unusedAppFilter = item.isChecked();
+                item.setChecked(!unusedAppFilter);
+
+                adapter.filterApps(!systemAppFilter, unusedAppFilter);
+                editor.putBoolean(UNUSED_APP_FILTER, !unusedAppFilter);
+                break;
+
+            case R.id.sort_by_name:
+                sortBy = R.id.sort_by_name;
+                item.setChecked(true);
+
+                editor.putInt(SORT_BY, sortBy);
+                break;
+
+            case R.id.sort_by_last_installed:
+                sortBy = R.id.sort_by_last_installed;
+                item.setChecked(true);
+
+                editor.putInt(SORT_BY, sortBy);
+                break;
+
+            case R.id.sort_by_last_used:
+                sortBy = R.id.sort_by_last_used;
+                item.setChecked(true);
+
+                editor.putInt(SORT_BY, sortBy);
+                break;
+
+            case R.id.sort_by_usage_time:
+                sortBy = R.id.sort_by_usage_time;
+                item.setChecked(true);
+
+                editor.putInt(SORT_BY, sortBy);
+                break;
+
+            case R.id.sort_ascending:
+                sortOrderAscending = item.isChecked();
+                item.setChecked(!sortOrderAscending);
+                editor.putBoolean(ASCENDING_SORT, !sortOrderAscending);
+                break;
+        }
+
+        adapter.sort(sortBy, sortOrderAscending);
+        editor.commit();
+        return true;
     }
 
     @Override
@@ -51,6 +148,7 @@ public class AppList extends AppCompatActivity {
             createAppList();
         }
     }
+
 
     private boolean checkIfFirst(){
         String info = ImportantStuffs.getStringFromJsonObjectPath("info.json", this);
@@ -82,21 +180,6 @@ public class AppList extends AppCompatActivity {
         return false;
     }
 
-//    private void startAlarm() {
-//        AlarmManager alarmMgr;
-//        PendingIntent alarmIntent;
-//
-//        alarmMgr = (AlarmManager) getSystemService(ALARM_SERVICE);
-//        Intent intent = new Intent(this, AppsDataController.class);
-//
-//        Calendar calendar = Calendar.getInstance();
-//
-//        long alarmTime = calendar.getTimeInMillis() + 500;
-//
-//        alarmIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
-//        alarmMgr.set(AlarmManager.RTC_WAKEUP, alarmTime, alarmIntent);
-//    }
-
     private void testThings() {
 //        try{
 //            String path = getExternalFilesDir("").getAbsolutePath();
@@ -113,38 +196,14 @@ public class AppList extends AppCompatActivity {
 //        }
     }
 
-//    public void addOtherAppsToAppsUsageInfo(){
-//        PackageManager pm = getPackageManager();
-//        List<PackageInfo> packs = getPackageManager().getInstalledPackages(0);
-//
-//        for (int i = 0; i < packs.size(); i++) {
-//            PackageInfo p = packs.get(i);
-//            String packageName = p.applicationInfo.packageName;
-//            if(appsUsageInfo.get(packageName) != null)
-//                continue;
-//
-//            String appName = p.applicationInfo.loadLabel(getPackageManager()).toString();
-//            Drawable icon = p.applicationInfo.loadIcon(getPackageManager());
-//            long installed = 0;
-//            try {
-//                installed = pm.getPackageInfo(packageName, 0).firstInstallTime;
-//            } catch (PackageManager.NameNotFoundException e) {
-//                e.printStackTrace();
-//            }
-//            boolean isSystem = ImportantStuffs.isSystemPackage(packageName, this);
-//
-//            appsUsageInfo.put(packageName, new AppUsageInfo(appName, packageName, icon, installed, isSystem));
-//        }
-//    }
-
     private void createAppList() {
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
         ArrayList<AppUsageInfo> appsInfoList = new ArrayList<>(appsUsageInfo.values());
         adapter = new AppListAdapter(this, appsInfoList);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-//        adapter.sortByUsageTime(false);
-        adapter.sortByLastOpened(false);
+        adapter.filterApps(systemAppFilter, unusedAppFilter);
+        adapter.sort(sortBy, sortOrderAscending);
     }
 
     private boolean isUsagePermissionEnabled() {

@@ -6,49 +6,6 @@
     <string name="select_app">Select app</string>
     <string name="select_target_type">Select target type</string>
     <string name="select_notification_type">Notifications</string>
-
-    <string-array name="target_types">
-        <item>Weekly</item>
-        <item>Daily</item>
-    </string-array>
-
-    <string-array name="notification_types">
-        <item>When target exceeds</item>
-        <item>At 90%</item>
-        <item>At 80%</item>
-        <item>At 70%</item>
-        <item>At 60%</item>
-        <item>At 50%</item>
-    </string-array>
-
-    <string-array name="planets_array">
-        <item>All</item>
-        <item>Mercury</item>
-        <item>Venus</item>
-        <item>Earth</item>
-        <item>Mars</item>
-        <item>Jupiter</item>
-        <item>Saturn</item>
-        <item>Uranus</item>
-        <item>Neptune</item>
-        <item>Mercury</item>
-        <item>Venus</item>
-        <item>Earth</item>
-        <item>Mars</item>
-        <item>Jupiter</item>
-        <item>Saturn</item>
-        <item>Uranus</item>
-        <item>Neptune</item>
-    </string-array>
-
-    <string-array name="small_array">
-        <item>Earth</item>
-        <item>Mars</item>
-        <item>Jupiter</item>
-        <item>Saturn</item>
-        <item>Uranus</item>
-        <item>Neptune</item>
-    </string-array>
     <string name="title_activity_target_history">TargetHistory</string>
     <string name="weekly">Weekly</string>
     <string name="daily">Daily</string>
