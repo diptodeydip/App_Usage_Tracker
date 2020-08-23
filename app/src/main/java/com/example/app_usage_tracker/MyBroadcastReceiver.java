@@ -297,8 +297,8 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         networkStats = networkStatsManager.queryDetailsForUid(
                 ConnectivityManager.TYPE_MOBILE,
                 getSubscriberId(context),
-                System.currentTimeMillis()-1000*60*60,
-                System.currentTimeMillis()+1000*60*60,
+                System.currentTimeMillis()-(long)1000*(long)60*(long)60*(long)2,
+                System.currentTimeMillis()+(long)1000*(long)60*(long)60,
                 packageUid);
         double dataUsage = 0;
         while(networkStats.hasNextBucket()){
@@ -318,8 +318,8 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         networkStats = networkStatsManager.queryDetailsForUid(
                 ConnectivityManager.TYPE_WIFI,
                 "",
-                System.currentTimeMillis()-1000*60*60,
-                System.currentTimeMillis()+1000*60*60,
+                System.currentTimeMillis()-(long)1000*(long)60*(long)60*(long)2,
+                System.currentTimeMillis()+(long)1000*(long)60*(long)60,
                 packageUid);
 
         double dataUsage = 0;
@@ -459,7 +459,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
 
                 }
                 try {
-                    usageDetails.put(System.currentTimeMillis() + "", usage);
+                    usageDetails.put(start_time + "", usage);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

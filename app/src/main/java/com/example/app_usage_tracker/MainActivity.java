@@ -80,8 +80,8 @@ public class MainActivity extends AppCompatActivity{
 
 ///////
 
-//        String packageName = "com.facebook.katana";
-        String packageName = "com.example.app_usage_tracker";
+        String packageName = "com.facebook.katana";
+       // String packageName = "com.example.app_usage_tracker";
         PackageManager mPm = this.getPackageManager();
         ApplicationInfo appInfo = null;
 
@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity{
             appInfo = mPm.getApplicationInfo(packageName, 0);
 
             TextView tx = (TextView)findViewById(R.id.test);
-           // tx.setText(MyBroadcastReceiver.getMobileDataUsage(this,appInfo.uid)+"Mb");
+           tx.setText(MyBroadcastReceiver.getMobileDataUsage(this,appInfo.uid)+"Mb");
             TextView tx1 = (TextView)findViewById(R.id.test1);
             tx1.setText(MyBroadcastReceiver.getWifiDataUsage(this,appInfo.uid)+"Mb  StartTime:"+MyBroadcastReceiver.getCurrentTimeStamp(x)+
                     " EndTime: "+MyBroadcastReceiver.getCurrentTimeStamp(y));
