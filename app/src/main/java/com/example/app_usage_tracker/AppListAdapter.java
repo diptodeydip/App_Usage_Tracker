@@ -144,6 +144,17 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.ViewHold
     }
 
     public void filterApps(boolean filterSystemApp, boolean filterUnusedApp){
+        String debugString = "";
+        if(filterSystemApp && filterUnusedApp)
+            debugString = "Do not filter";
+        else if(filterSystemApp && !filterUnusedApp)
+            debugString = "Filter system apps only";
+        else if(!filterSystemApp && filterUnusedApp)
+            debugString = "Filter unused apps only";
+        else if(!filterSystemApp && !filterUnusedApp)
+            debugString = "Filter system and unused apps";
+        showToast(debugString);
+
         ArrayList<AppUsageInfo> filteredApps = new ArrayList<>();
         for(AppUsageInfo app:appsUsageInfoOriginal){
             if( !(filterSystemApp && app.isSystemApp()) && !(filterUnusedApp && app.getTimeInForeground() == 0) )
@@ -217,7 +228,7 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.ViewHold
             appName = itemView.findViewById(R.id.app_name);
             appUsage = itemView.findViewById(R.id.usage_time);
             lastTimeUsed = itemView.findViewById(R.id.last_time_used);
-            parentLayout = itemView.findViewById(R.id.item_layout);
+            parentLayout = itemView.findViewById(R.id.app_list_item_layout);
         }
     }
 }

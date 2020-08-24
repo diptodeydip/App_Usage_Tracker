@@ -5,6 +5,15 @@
     android:layout_height="match_parent"
     tools:context=".ui.main.DailyTargetHistory">
 
-    <!-- TODO: Update blank fragment layout -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/layoutBackground">
 
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/daily_target_list_recycler_view"
+            android:layout_marginTop="5dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </LinearLayout>
 </FrameLayout>

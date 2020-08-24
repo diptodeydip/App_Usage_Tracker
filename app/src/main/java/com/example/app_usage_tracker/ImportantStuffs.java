@@ -1,12 +1,19 @@
 package com.example.app_usage_tracker;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
+import android.os.Build;
 import android.provider.Settings;
 import android.util.Log;
+
+import androidx.core.app.NotificationCompat;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -28,6 +35,7 @@ public class ImportantStuffs {
     public static final String LAUNCHER_PACKAGE = "com.example.ui", THIS_APP_PACKAGE = "com.example.app_usage_tracker";
     public static final String SETTINGS_PACKAGE = "com.android.settings", FILE_MANAGER_PACKAGE = "com.amaze.filemanager";
     private static final Random random = new Random();
+    public static StringBuilder notificationString;
 
 
     public static String getAppName(String packageName, Context context) {
@@ -117,7 +125,7 @@ public class ImportantStuffs {
         return calendar.getTimeInMillis();
     }
 
-    public static long getRecentWeekFromTime(long time){
+    public static long getWeekStartTimeFromTime(long time){
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(time);
         calendar.set(Calendar.MILLISECOND, 0);
@@ -134,6 +142,17 @@ public class ImportantStuffs {
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MINUTE, 0);
         return calendar.getTimeInMillis();
+    }
+
+    public static String getWeekEndDateFromTime(long time){
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(time);
+        calendar.set(Calendar.MILLISECOND, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.DAY_OF_WEEK, 7);
+        return getDateFromMilliseconds(calendar.getTimeInMillis());
     }
 
     public static String getDateAndTimeFromMilliseconds(long milliseconds) {
@@ -268,6 +287,16 @@ public class ImportantStuffs {
         return random.nextInt(maxValue);
     }
 
+    public static String removeDot(String x){
+        x = x.replaceAll("[.]","_dot_");
+        return x;
+    }
+
+    public static String addDot(String x){
+        x = x.replaceAll("_dot_",".");
+        return x;
+    }
+
 
     public static void showLog(String message) {
         Log.v(TAG, message);
@@ -304,6 +333,43 @@ public class ImportantStuffs {
         }
         showLog(fullMessage);
     }
+
+    public static void displayNotification(String task, String desc, Context context) {
+
+        NotificationManager manager =
+                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        Intent notificationIntent = new Intent(context, AppList.class);
+        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context,
+                1, notificationIntent, 0);
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel("dip", "Dipto", NotificationManager.IMPORTANCE_DEFAULT);
+            // channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+            assert manager != null;
+            manager.createNotificationChannel(channel);
+        }
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "dip")
+                // .setContentTitle(task)
+                //.setContentText(desc)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                // .setContentIntent(pendingIntent)
+                //  .setDefaults(Notification.DEFAULT_ALL)
+                //.addAction(R.mipmap.ic_launcher,"click",notificationIntent1)
+                //.setTicker("testing it")
+                //    .setPriority(Notification.PRIORITY_HIGH)
+                //   .setFullScreenIntent(pendingIntent,true)
+                //  .setAutoCancel(true)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(desc).setBigContentTitle(task).setSummaryText("Click to expand"));
+
+        assert manager != null;
+        manager.notify(1, builder.build());
+
+    }
+
 
     public static void showErrorLog(String message) {
         Log.e(TAG, message);

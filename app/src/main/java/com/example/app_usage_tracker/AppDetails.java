@@ -9,6 +9,7 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -31,6 +32,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -61,11 +63,11 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
     ArrayList<Long> usageData;
     long usageCollectionTime;
 
-    private String currentPackage = "";
+    private String currentPackage = "", currentPackageNoDot = "";
 
     private JSONObject jsonInfo;
 
-    public static final int MODE_WEEKLY = 0, MODE_DAILY = 1, MODE_NONE = 2, MODE_BOTH = 3;
+    public static final int MODE_WEEKLY = 0, MODE_DAILY = 1;
     private int calendarMode = MODE_DAILY;
 
 
@@ -77,7 +79,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
         initStuffs();
         String appName = ImportantStuffs.getAppName(currentPackage, this);
         setTitle(appName);
-        createGraph();
+        new GraphAsyncTask(this).execute();
         testStuffs();
     }
 
@@ -98,6 +100,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
 
     private void initStuffs() {
         currentPackage = getIntent().getStringExtra("packageName");
+        currentPackageNoDot = ImportantStuffs.removeDot(currentPackage);
         initJson();
 
         usageCollectionTime = ImportantStuffs.getDayStartingHour();
@@ -113,12 +116,12 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
         jsonInfo = ImportantStuffs.getJsonObject("info.json", this);
         String thisAppInfo = "";
         try {
-            thisAppInfo = jsonInfo.getJSONObject("appsInfo").getJSONObject(currentPackage).toString();
+            thisAppInfo = jsonInfo.getJSONObject("appsInfo").getJSONObject(currentPackageNoDot).toString();
         } catch (JSONException e) {
             e.printStackTrace();
         }
         if(thisAppInfo.equals("")){
-            ImportantStuffs.showLog("No app info for", currentPackage);
+            ImportantStuffs.showLog("No app info for", ImportantStuffs.getAppName(currentPackage, this));
             try {
                 JSONObject thisAppInfoJson = new JSONObject();
                 thisAppInfoJson.put("targetTypes", new JSONArray());
@@ -126,7 +129,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
                 thisAppInfoJson.put("weeklyNotifications", new JSONArray("[0]"));
                 thisAppInfoJson.put("dailyTarget", 2*ImportantStuffs.MILLISECONDS_IN_HOUR);
                 thisAppInfoJson.put("dailyNotifications", new JSONArray("[0]"));
-                jsonInfo.getJSONObject("appsInfo").put(currentPackage, thisAppInfoJson);
+                jsonInfo.getJSONObject("appsInfo").put(currentPackageNoDot, thisAppInfoJson);
                 ImportantStuffs.saveFileLocally("info.json", jsonInfo.toString(), this);
                 ImportantStuffs.showLog("App info has been created successfully");
             } catch (JSONException e) {
@@ -137,7 +140,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
 
         {
             try {
-                thisAppInfo = jsonInfo.getJSONObject("appsInfo").getJSONObject(currentPackage).toString();
+                thisAppInfo = jsonInfo.getJSONObject("appsInfo").getJSONObject(currentPackageNoDot).toString();
             } catch (JSONException e) {
                 thisAppInfo = "";
                 e.printStackTrace();
@@ -148,7 +151,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
 
     private void initTargetNotificationStuffs(){
         try {
-            JSONObject thisAppInfoJson = jsonInfo.getJSONObject("appsInfo").getJSONObject(currentPackage);
+            JSONObject thisAppInfoJson = jsonInfo.getJSONObject("appsInfo").getJSONObject(currentPackageNoDot);
             JSONArray targetTypesJson = thisAppInfoJson.getJSONArray("targetTypes");
             for(int i=0; i<targetTypesJson.length(); i++)
                 selectedTargetTypeIndexes.add(targetTypesJson.getInt(i));
@@ -174,7 +177,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
         setDailyNotificationsLayout = findViewById(R.id.set_daily_notifications_type);
         dailyNotificationTypesTextView = findViewById(R.id.daily_notifications_text);
         try {
-            JSONObject thisAppInfoJson = jsonInfo.getJSONObject("appsInfo").getJSONObject(currentPackage);
+            JSONObject thisAppInfoJson = jsonInfo.getJSONObject("appsInfo").getJSONObject(currentPackageNoDot);
             JSONArray weeklyNotificationsJson = thisAppInfoJson.getJSONArray("weeklyNotifications");
             for(int i=0; i<weeklyNotificationsJson.length(); i++)
                 weeklySelectedNotificationIndexes.add(weeklyNotificationsJson.getInt(i));
@@ -338,7 +341,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
         String data = weeklySelectedNotificationIndexes.toString();
         try {
             JSONArray notificationTypesJson = new JSONArray(data);
-            jsonInfo.getJSONObject("appsInfo").getJSONObject(currentPackage).put("weeklyNotifications", notificationTypesJson);
+            jsonInfo.getJSONObject("appsInfo").getJSONObject(currentPackageNoDot).put("weeklyNotifications", notificationTypesJson);
             ImportantStuffs.saveFileLocally("info.json", jsonInfo.toString(), this);
 
         } catch (JSONException e) {
@@ -361,7 +364,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
         String data = dailySelectedNotificationIndexes.toString();
         try {
             JSONArray notificationTypesJson = new JSONArray(data);
-            jsonInfo.getJSONObject("appsInfo").getJSONObject(currentPackage).put("dailyNotifications", notificationTypesJson);
+            jsonInfo.getJSONObject("appsInfo").getJSONObject(currentPackageNoDot).put("dailyNotifications", notificationTypesJson);
             ImportantStuffs.saveFileLocally("info.json", jsonInfo.toString(), this);
 
         } catch (JSONException e) {
@@ -416,11 +419,11 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
         try {
             if(mode == MODE_WEEKLY) {
                 weeklyTarget = target;
-                jsonInfo.getJSONObject("appsInfo").getJSONObject(currentPackage).put("weeklyTarget", target);
+                jsonInfo.getJSONObject("appsInfo").getJSONObject(currentPackageNoDot).put("weeklyTarget", target);
             }
             else {
                 dailyTarget = target;
-                jsonInfo.getJSONObject("appsInfo").getJSONObject(currentPackage).put("dailyTarget", target);
+                jsonInfo.getJSONObject("appsInfo").getJSONObject(currentPackageNoDot).put("dailyTarget", target);
             }
             ImportantStuffs.saveFileLocally("info.json", jsonInfo.toString(), this);
         } catch (JSONException e) {
@@ -441,7 +444,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
         String data = selectedTargetTypeIndexes.toString();
         try {
             JSONArray targetTypes = new JSONArray(data);
-            jsonInfo.getJSONObject("appsInfo").getJSONObject(currentPackage).put("targetTypes", targetTypes);
+            jsonInfo.getJSONObject("appsInfo").getJSONObject(currentPackageNoDot).put("targetTypes", targetTypes);
             ImportantStuffs.saveFileLocally("info.json", jsonInfo.toString(), this);
 
         } catch (JSONException e) {
@@ -463,7 +466,8 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
         initYAxis();
 
         chart.invalidate();
-        chart.animateY(1000, Easing.EaseOutCubic);
+        runOnUiThread(()-> chart.animateY(1000, Easing.EaseOutCubic));
+
     }
 
     private void updateGraphData() {
@@ -555,9 +559,8 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
     }
 
     public void onWeeklyCalendarSelected(View view) {
-//        showToast("onWeeklyCalendarSelected");
         calendarMode = MODE_WEEKLY;
-        usageCollectionTime = ImportantStuffs.getRecentWeekFromTime(currentGraphDate);
+        usageCollectionTime = ImportantStuffs.getWeekStartTimeFromTime(currentGraphDate);
         usageData = AppsDataController.getWeeklyUsageDataInDailyList(usageCollectionTime, currentPackage, this);
         updateGraphData();
     }
@@ -620,5 +623,24 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
             fullMessage += message + " ";
         }
         showToast(fullMessage);
+    }
+
+
+    private class GraphAsyncTask extends AsyncTask<Void, Void, Void> {
+        private WeakReference<AppDetails> activityWeakReference;
+
+        GraphAsyncTask(AppDetails activity) {
+            activityWeakReference = new WeakReference<>(activity);
+        }
+
+        @Override
+        protected Void doInBackground(Void... aVoid) {
+            AppDetails activity = activityWeakReference.get();
+            if (activity == null || activity.isFinishing()) {
+                return null;
+            }
+            activity.createGraph();
+            return null;
+        }
     }
 }

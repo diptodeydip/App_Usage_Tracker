@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.Menu;
@@ -21,6 +22,7 @@ import android.widget.Toast;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -28,7 +30,10 @@ import java.util.HashMap;
 import static android.app.AppOpsManager.MODE_ALLOWED;
 
 public class AppList extends AppCompatActivity {
+    public static final String TAG = "temp";
     private HashMap<String, AppUsageInfo> appsUsageInfo;
+    private AppListAsyncTask appListAsyncTask;
+
     AppListAdapter adapter;
     SharedPreferences sharedPreference;
     SharedPreferences.Editor editor;
@@ -43,6 +48,7 @@ public class AppList extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_app_list);
+
         sharedPreference = getSharedPreferences(APP_LIST_SHARED_PREFERENCE, MODE_PRIVATE);
         editor = sharedPreference.edit();
 
@@ -62,10 +68,16 @@ public class AppList extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.app_list_menu, menu);
-        menu.findItem(sortBy).setChecked(true);
-        menu.findItem(R.id.system_app_filter).setChecked(systemAppFilter);
-        menu.findItem(R.id.unused_app_filter).setChecked(unusedAppFilter);
-        menu.findItem(R.id.sort_ascending).setChecked(sortOrderAscending);
+
+        try {
+            menu.findItem(R.id.system_app_filter).setChecked(systemAppFilter);
+            menu.findItem(R.id.unused_app_filter).setChecked(unusedAppFilter);
+            menu.findItem(R.id.sort_ascending).setChecked(sortOrderAscending);
+            menu.findItem(sortBy).setChecked(true);
+        } catch (Exception e){
+            ImportantStuffs.showErrorLog("Menu item check failed");
+        }
+
         return true;
     }
 
@@ -79,20 +91,21 @@ public class AppList extends AppCompatActivity {
 
         switch (item.getItemId()){
             case R.id.system_app_filter:
-                systemAppFilter = item.isChecked();
-                item.setChecked(!systemAppFilter);
+                systemAppFilter = !item.isChecked();
+                item.setChecked(systemAppFilter);
 
-                adapter.filterApps(!systemAppFilter, unusedAppFilter);
-                editor.putBoolean(SYSTEM_APP_FILTER, !systemAppFilter);
+                adapter.filterApps(systemAppFilter, unusedAppFilter);
+                editor.putBoolean(SYSTEM_APP_FILTER, systemAppFilter);
                 break;
 
             case R.id.unused_app_filter:
-                unusedAppFilter = item.isChecked();
-                item.setChecked(!unusedAppFilter);
+                unusedAppFilter = !item.isChecked();
+                item.setChecked(unusedAppFilter);
 
-                adapter.filterApps(!systemAppFilter, unusedAppFilter);
-                editor.putBoolean(UNUSED_APP_FILTER, !unusedAppFilter);
+                adapter.filterApps(systemAppFilter, unusedAppFilter);
+                editor.putBoolean(UNUSED_APP_FILTER, unusedAppFilter);
                 break;
+
 
             case R.id.sort_by_name:
                 sortBy = R.id.sort_by_name;
@@ -123,9 +136,9 @@ public class AppList extends AppCompatActivity {
                 break;
 
             case R.id.sort_ascending:
-                sortOrderAscending = item.isChecked();
-                item.setChecked(!sortOrderAscending);
-                editor.putBoolean(ASCENDING_SORT, !sortOrderAscending);
+                sortOrderAscending = !item.isChecked();
+                item.setChecked(sortOrderAscending);
+                editor.putBoolean(ASCENDING_SORT, sortOrderAscending);
                 break;
         }
 
@@ -143,9 +156,11 @@ public class AppList extends AppCompatActivity {
             finish();
             return;
         } else {
-            long startTime = ImportantStuffs.getDayStartingHour(), endTime = ImportantStuffs.getCurrentTime();
-            appsUsageInfo = AppsDataController.getAppsAllInfo(startTime, endTime, this);
-            createAppList();
+            appListAsyncTask = new AppListAsyncTask(this);
+            appListAsyncTask.execute();
+//            long startTime = ImportantStuffs.getDayStartingHour(), endTime = ImportantStuffs.getCurrentTime();
+//            appsUsageInfo = AppsDataController.getAppsAllInfo(startTime, endTime, this);
+//            createAppList();
         }
     }
 
@@ -196,8 +211,8 @@ public class AppList extends AppCompatActivity {
 //        }
     }
 
-    private void createAppList() {
-        RecyclerView recyclerView = findViewById(R.id.recycler_view);
+    public void createAppList() {
+        RecyclerView recyclerView = findViewById(R.id.app_list_recycler_view);
         ArrayList<AppUsageInfo> appsInfoList = new ArrayList<>(appsUsageInfo.values());
         adapter = new AppListAdapter(this, appsInfoList);
         recyclerView.setAdapter(adapter);
@@ -242,5 +257,35 @@ public class AppList extends AppCompatActivity {
             fullMessage += message + " ";
         }
         showToast(fullMessage);
+    }
+
+
+    private class AppListAsyncTask extends AsyncTask<Void, Void, Void>{
+        private WeakReference<AppList> activityWeakReference;
+
+        AppListAsyncTask(AppList activity) {
+            activityWeakReference = new WeakReference<>(activity);
+        }
+
+        @Override
+        protected Void doInBackground(Void... aVoid) {
+            AppList activity = activityWeakReference.get();
+            if (activity == null || activity.isFinishing()) {
+                return null;
+            }
+            long startTime = ImportantStuffs.getDayStartingHour(), endTime = ImportantStuffs.getCurrentTime();
+            appsUsageInfo = AppsDataController.getAppsAllInfo(startTime, endTime, activity);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            AppList activity = activityWeakReference.get();
+            if (activity == null || activity.isFinishing()) {
+                return;
+            }
+            activity.createAppList();
+            super.onPostExecute(aVoid);
+        }
     }
 }

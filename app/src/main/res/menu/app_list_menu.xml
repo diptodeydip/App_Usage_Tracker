@@ -9,14 +9,15 @@
         <menu>
             <item
                 android:id="@+id/system_app_filter"
-                android:title="Show system apps"
-                android:checkable="true">
+                android:title="Hide system apps"
+                android:checkable="true"
+                android:checked="false">
             </item>
             <item
                 android:id="@+id/unused_app_filter"
-                android:title="Show unused app"
+                android:title="Hide unused app"
                 android:checkable="true"
-                android:checked="false">
+                android:checked="true">
             </item>
         </menu>
     </item>
