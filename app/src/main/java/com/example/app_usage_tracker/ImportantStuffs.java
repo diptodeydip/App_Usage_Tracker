@@ -360,6 +360,7 @@ public class ImportantStuffs {
         showLog(fullMessage);
     }
 
+
     public static void displayNotification(String packageName, int percentage, int mode ,  Context context) {
 
         String channel_ID = "1";
@@ -440,7 +441,8 @@ public class ImportantStuffs {
         }catch (Exception e){}
 
     }
-    public static void saveNotficationInfo(Context context){
+
+    public static void saveNotificationInfo(Context context){
         try {
             SharedPreferences sharedPreference = context.getSharedPreferences(MainActivity.SHARED_PREFERENCE, MainActivity.MODE_PRIVATE);
             String regNo = sharedPreference.getString("regNo","");
@@ -449,6 +451,7 @@ public class ImportantStuffs {
         }catch (Exception e){}
 
     }
+
     public static void saveHistory(Context context){
         try {
             SharedPreferences sharedPreference = context.getSharedPreferences(MainActivity.SHARED_PREFERENCE, MainActivity.MODE_PRIVATE);
@@ -491,12 +494,11 @@ public class ImportantStuffs {
         try {
             saveUserInfo(context);
             saveInfo(context);
-            saveNotficationInfo(context);
+            saveNotificationInfo(context);
             saveHistory(context);
             saveAllAppName(context);
         }catch (Exception e){}
     }
-
 
 
 

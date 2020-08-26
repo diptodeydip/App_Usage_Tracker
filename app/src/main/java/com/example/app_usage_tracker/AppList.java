@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.AppOpsManager;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -17,6 +18,7 @@ import android.provider.Settings;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -171,12 +173,23 @@ public class AppList extends AppCompatActivity {
         adapter.sort(sortBy, sortOrderAscending);
     }
 
-
     private class AppListAsyncTask extends AsyncTask<Void, Void, Void>{
         private WeakReference<AppList> activityWeakReference;
+        ProgressDialog progressDialog;
 
         AppListAsyncTask(AppList activity) {
             activityWeakReference = new WeakReference<>(activity);
+            progressDialog = new ProgressDialog(activity, R.style.DialogTheme);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+//            progressDialog.setProgressStyle(R.style.StyledDialog);
+            progressDialog.setTitle("Loading apps usage info...");
+            progressDialog.setMessage("Wait a moment");
+            progressDialog.setCanceledOnTouchOutside(false);
+            progressDialog.show();
         }
 
         @Override
@@ -192,12 +205,13 @@ public class AppList extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
             AppList activity = activityWeakReference.get();
             if (activity == null || activity.isFinishing()) {
                 return;
             }
             activity.createAppList();
-            super.onPostExecute(aVoid);
+            progressDialog.cancel();
         }
     }
 }

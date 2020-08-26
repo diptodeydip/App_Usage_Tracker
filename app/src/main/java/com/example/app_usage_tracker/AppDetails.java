@@ -7,6 +7,7 @@ import androidx.core.content.ContextCompat;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
@@ -221,6 +222,8 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
                 selectedTargetTypeIndexes.remove(selectedTargetTypeIndexes.indexOf(which));
             setTargetTypes();
         }).setPositiveButton(R.string.set, (dialog, id) -> {});
+
+        builder.setOnDismissListener((dialog)-> AppsDataController.startAlarm(this, 50));
         builder.create();
         builder.show();
     }
@@ -312,6 +315,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
 
             setUsageTarget(mode, hour, min);
             dialog.dismiss();
+            AppsDataController.startAlarm(this, 500);
         });
 
         dialog.setTitle("Set target");

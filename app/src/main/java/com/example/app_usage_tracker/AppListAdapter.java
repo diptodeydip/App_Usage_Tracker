@@ -44,11 +44,7 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.ViewHold
         holder.appIcon.setImageDrawable(app.getAppIcon());
         String lastUsedTime = ImportantStuffs.getTimeInAgoFromMillisecond(app.getLastTimeUsed());
         holder.lastTimeUsed.setText(lastUsedTime);
-        holder.parentLayout.setOnClickListener( view -> {
-            Intent intent = new Intent(context, AppDetails.class);
-            intent.putExtra("packageName", app.getPackageName());
-            context.startActivity(intent);
-        });
+        holder.parentLayout.setOnClickListener( view -> gotoAppDetails(app.getPackageName()));
     }
 
     @Override
@@ -144,16 +140,16 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.ViewHold
     }
 
     public void filterApps(boolean filterSystemApp, boolean filterUnusedApp){
-        String debugString = "";
-        if(filterSystemApp && filterUnusedApp)
-            debugString = "Do not filter";
-        else if(filterSystemApp && !filterUnusedApp)
-            debugString = "Filter system apps only";
-        else if(!filterSystemApp && filterUnusedApp)
-            debugString = "Filter unused apps only";
-        else if(!filterSystemApp && !filterUnusedApp)
-            debugString = "Filter system and unused apps";
-        showToast(debugString);
+//        String debugString = "";
+//        if(filterSystemApp && filterUnusedApp)
+//            debugString = "Do not filter";
+//        else if(filterSystemApp && !filterUnusedApp)
+//            debugString = "Filter system apps only";
+//        else if(!filterSystemApp && filterUnusedApp)
+//            debugString = "Filter unused apps only";
+//        else if(!filterSystemApp && !filterUnusedApp)
+//            debugString = "Filter system and unused apps";
+//        showToast(debugString);
 
         ArrayList<AppUsageInfo> filteredApps = new ArrayList<>();
         for(AppUsageInfo app:appsUsageInfoOriginal){
@@ -164,6 +160,16 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.ViewHold
         notifyDataSetChanged();
     }
 
+    public void gotoAppDetails(String packageName){
+        String history = ImportantStuffs.getStringFromJsonObjectPath("History.json", context);
+        if(history.equals("")){
+            Toast.makeText(context, "Details hasn't been fully loaded yet. Wait a couple of seconds and press again.", Toast.LENGTH_LONG).show();
+            return;
+        }
+        Intent intent = new Intent(context, AppDetails.class);
+        intent.putExtra("packageName", packageName);
+        context.startActivity(intent);
+    }
 
 
     public void clearAll() {

@@ -89,251 +89,213 @@ public class AutoStartHelper {
     }
 
 
-    public void getAutoStartPermission(Context context) {
+    public DialogInterface.OnClickListener getAutoStartPermissionIntent(Context context) {
 
         String build_info = Build.BRAND.toLowerCase();
         switch (build_info) {
             case BRAND_SAMSUNG:
-                autoStartSamsung(context);
-                break;
+                return autoStartSamsung(context);
             case BRAND_ASUS:
-                autoStartAsus(context);
-                break;
+                return autoStartAsus(context);
             case BRAND_XIAOMI:
-                autoStartXiaomi(context);
-                break;
+                return autoStartXiaomi(context);
             case BRAND_LETV:
-                autoStartLetv(context);
-                break;
+                return autoStartLetv(context);
             case BRAND_HONOR:
-                autoStartHonor(context);
-                break;
+                return autoStartHonor(context);
             case BRAND_OPPO:
-                autoStartOppo(context);
-                break;
+                return autoStartOppo(context);
             case BRAND_VIVO:
-                autoStartVivo(context);
-                break;
+                return autoStartVivo(context);
             case BRAND_NOKIA:
-                autoStartNokia(context);
-                break;
+                return autoStartNokia(context);
+            default:
+                return general(context);
         }
 
     }
 
-    private void general(final Context context){
+    private DialogInterface.OnClickListener general(final Context context){
 
-        showAlert(context, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                try
-                {
-                    //Open the specific App Info page:
-                    Intent intent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                    intent.setData(Uri.parse("package:" + context.getPackageName()));
-                    context.startActivity(intent);
-                }
-                catch ( ActivityNotFoundException e )
-                {
-                    //Open the generic Apps page:
-                    Intent intent = new Intent(android.provider.Settings.ACTION_MANAGE_APPLICATIONS_SETTINGS);
-                    context.startActivity(intent);
-                }
+        return (dialog, which) -> {
+            try
+            {
+                //Open the specific App Info page:
+                Intent intent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                intent.setData(Uri.parse("package:" + context.getPackageName()));
+                context.startActivity(intent);
             }
-        });
+            catch ( ActivityNotFoundException e )
+            {
+                //Open the generic Apps page:
+                Intent intent = new Intent(android.provider.Settings.ACTION_MANAGE_APPLICATIONS_SETTINGS);
+                context.startActivity(intent);
+            }
+        };
     }
 
-    private void autoStartAsus(final Context context) {
+    private DialogInterface.OnClickListener autoStartAsus(final Context context) {
         if (isPackageExists(context, PACKAGE_ASUS_MAIN)) {
-            showAlert(context, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
+            return (dialog, which) -> {
 
-                    try {
-                        // PrefUtil.writeBoolean(context, PrefUtil.PREF_KEY_APP_AUTO_START, true);
-                        startIntent(context, PACKAGE_ASUS_MAIN, PACKAGE_ASUS_COMPONENT);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    dialog.dismiss();
+                try {
+                    // PrefUtil.writeBoolean(context, PrefUtil.PREF_KEY_APP_AUTO_START, true);
+                    startIntent(context, PACKAGE_ASUS_MAIN, PACKAGE_ASUS_COMPONENT);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            });
+                dialog.dismiss();
+            };
 
         }
-
-
+        return general(context);
     }
 
-    private void autoStartSamsung(final Context context) {
+    private DialogInterface.OnClickListener autoStartSamsung(final Context context) {
         if (isPackageExists(context, PACKAGE_SAMSUNG_MAIN)) {
-            showAlert(context, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
+            return (dialog, which) -> {
 
-                    try {
-                        // PrefUtil.writeBoolean(context, PrefUtil.PREF_KEY_APP_AUTO_START, true);
-                        startIntent(context, PACKAGE_SAMSUNG_MAIN, PACKAGE_SAMSUNG_COMPONENT);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    dialog.dismiss();
+                try {
+                    // PrefUtil.writeBoolean(context, PrefUtil.PREF_KEY_APP_AUTO_START, true);
+                    startIntent(context, PACKAGE_SAMSUNG_MAIN, PACKAGE_SAMSUNG_COMPONENT);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            });
+                dialog.dismiss();
+            };
 
         }
 
+        return general(context);
 
     }
 
-    private void showAlert(Context context, DialogInterface.OnClickListener onClickListener) {
-
-        new AlertDialog.Builder(context).setTitle("Allow AutoStart")
-                .setMessage("Please enable auto start in settings.")
-                .setPositiveButton("Go to Permission Page", onClickListener)
-                .setNegativeButton("Already Given", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        }})
-                .show().setCancelable(true);
-    }
-
-    private void autoStartXiaomi(final Context context) {
+    private DialogInterface.OnClickListener autoStartXiaomi(final Context context) {
         if (isPackageExists(context, PACKAGE_XIAOMI_MAIN)) {
-            showAlert(context, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
+            return (dialog, which) -> {
 
-                    try {
-                        // PrefUtil.writeBoolean(context, PrefUtil.PREF_KEY_APP_AUTO_START, true);
-                        startIntent(context, PACKAGE_XIAOMI_MAIN, PACKAGE_XIAOMI_COMPONENT);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                try {
+                    // PrefUtil.writeBoolean(context, PrefUtil.PREF_KEY_APP_AUTO_START, true);
+                    startIntent(context, PACKAGE_XIAOMI_MAIN, PACKAGE_XIAOMI_COMPONENT);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            });
+            };
 
 
         }
+        return general(context);
     }
 
-    private void autoStartLetv(final Context context) {
+    private DialogInterface.OnClickListener autoStartLetv(final Context context) {
         if (isPackageExists(context, PACKAGE_LETV_MAIN)) {
-            showAlert(context, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
+            return (dialog, which) -> {
 
-                    try {
-                       // PrefUtil.writeBoolean(context, PrefUtil.PREF_KEY_APP_AUTO_START, true);
-                        startIntent(context, PACKAGE_LETV_MAIN, PACKAGE_LETV_COMPONENT);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                try {
+                   // PrefUtil.writeBoolean(context, PrefUtil.PREF_KEY_APP_AUTO_START, true);
+                    startIntent(context, PACKAGE_LETV_MAIN, PACKAGE_LETV_COMPONENT);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            });
+            };
 
 
         }
+        return general(context);
     }
 
 
-    private void autoStartHonor(final Context context) {
+    private DialogInterface.OnClickListener autoStartHonor(final Context context) {
         if (isPackageExists(context, PACKAGE_HONOR_MAIN)) {
-            showAlert(context, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
+            return (dialog, which) -> {
 
-                    try {
-                       // PrefUtil.writeBoolean(context, PrefUtil.PREF_KEY_APP_AUTO_START, true);
-                        startIntent(context, PACKAGE_HONOR_MAIN, PACKAGE_HONOR_COMPONENT);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                try {
+                   // PrefUtil.writeBoolean(context, PrefUtil.PREF_KEY_APP_AUTO_START, true);
+                    startIntent(context, PACKAGE_HONOR_MAIN, PACKAGE_HONOR_COMPONENT);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            });
+            };
 
 
         }
+        return general(context);
     }
 
-    private void autoStartOppo(final Context context) {
+    private DialogInterface.OnClickListener autoStartOppo(final Context context) {
         if (isPackageExists(context, PACKAGE_OPPO_MAIN) || isPackageExists(context, PACKAGE_OPPO_FALLBACK)) {
-            showAlert(context, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
+            return (dialog, which) -> {
 
-                    try {
-                       // PrefUtil.writeBoolean(context, PrefUtil.PREF_KEY_APP_AUTO_START, true);
-                        startIntent(context, PACKAGE_OPPO_MAIN, PACKAGE_OPPO_COMPONENT);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        try {
-                            //PrefUtil.writeBoolean(context, PrefUtil.PREF_KEY_APP_AUTO_START, true);
-                            startIntent(context, PACKAGE_OPPO_FALLBACK, PACKAGE_OPPO_COMPONENT_FALLBACK);
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                            try {
-                               // PrefUtil.writeBoolean(context, PrefUtil.PREF_KEY_APP_AUTO_START, true);
-                                startIntent(context, PACKAGE_OPPO_MAIN, PACKAGE_OPPO_COMPONENT_FALLBACK_A);
-                            } catch (Exception exx) {
-                                exx.printStackTrace();
-                            }
-
-                        }
-
-                    }
-                }
-            });
-
-
-        }
-    }
-
-    private void autoStartVivo(final Context context) {
-        if (isPackageExists(context, PACKAGE_VIVO_MAIN) || isPackageExists(context, PACKAGE_VIVO_FALLBACK)) {
-            showAlert(context, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-
+                try {
+                   // PrefUtil.writeBoolean(context, PrefUtil.PREF_KEY_APP_AUTO_START, true);
+                    startIntent(context, PACKAGE_OPPO_MAIN, PACKAGE_OPPO_COMPONENT);
+                } catch (Exception e) {
+                    e.printStackTrace();
                     try {
                         //PrefUtil.writeBoolean(context, PrefUtil.PREF_KEY_APP_AUTO_START, true);
-                        startIntent(context, PACKAGE_VIVO_MAIN, PACKAGE_VIVO_COMPONENT);
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                        startIntent(context, PACKAGE_OPPO_FALLBACK, PACKAGE_OPPO_COMPONENT_FALLBACK);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
                         try {
                            // PrefUtil.writeBoolean(context, PrefUtil.PREF_KEY_APP_AUTO_START, true);
-                            startIntent(context, PACKAGE_VIVO_FALLBACK, PACKAGE_VIVO_COMPONENT_FALLBACK);
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                            try {
-                                //PrefUtil.writeBoolean(context, PrefUtil.PREF_KEY_APP_AUTO_START, true);
-                                startIntent(context, PACKAGE_VIVO_MAIN, PACKAGE_VIVO_COMPONENT_FALLBACK_A);
-                            } catch (Exception exx) {
-                                exx.printStackTrace();
-                            }
-
+                            startIntent(context, PACKAGE_OPPO_MAIN, PACKAGE_OPPO_COMPONENT_FALLBACK_A);
+                        } catch (Exception exx) {
+                            exx.printStackTrace();
                         }
 
                     }
 
                 }
-            });
+            };
+
+
         }
+        return general(context);
     }
 
-    private void autoStartNokia(final Context context) {
-        if (isPackageExists(context, PACKAGE_NOKIA_MAIN)) {
-            showAlert(context, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
+    private DialogInterface.OnClickListener autoStartVivo(final Context context) {
+        if (isPackageExists(context, PACKAGE_VIVO_MAIN) || isPackageExists(context, PACKAGE_VIVO_FALLBACK)) {
+            return (dialog, which) -> {
 
+                try {
+                    //PrefUtil.writeBoolean(context, PrefUtil.PREF_KEY_APP_AUTO_START, true);
+                    startIntent(context, PACKAGE_VIVO_MAIN, PACKAGE_VIVO_COMPONENT);
+                } catch (Exception e) {
+                    e.printStackTrace();
                     try {
-                        //PrefUtil.writeBoolean(context, PrefUtil.PREF_KEY_APP_AUTO_START, true);
-                        startIntent(context, PACKAGE_NOKIA_MAIN, PACKAGE_NOKIA_COMPONENT);
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                       // PrefUtil.writeBoolean(context, PrefUtil.PREF_KEY_APP_AUTO_START, true);
+                        startIntent(context, PACKAGE_VIVO_FALLBACK, PACKAGE_VIVO_COMPONENT_FALLBACK);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        try {
+                            //PrefUtil.writeBoolean(context, PrefUtil.PREF_KEY_APP_AUTO_START, true);
+                            startIntent(context, PACKAGE_VIVO_MAIN, PACKAGE_VIVO_COMPONENT_FALLBACK_A);
+                        } catch (Exception exx) {
+                            exx.printStackTrace();
+                        }
+
                     }
+
                 }
-            });
+
+            };
         }
+        return general(context);
+    }
+
+    private DialogInterface.OnClickListener autoStartNokia(final Context context) {
+        if (isPackageExists(context, PACKAGE_NOKIA_MAIN)) {
+            return (dialog, which) -> {
+
+                try {
+                    //PrefUtil.writeBoolean(context, PrefUtil.PREF_KEY_APP_AUTO_START, true);
+                    startIntent(context, PACKAGE_NOKIA_MAIN, PACKAGE_NOKIA_COMPONENT);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            };
+        }
+        return general(context);
     }
 
 

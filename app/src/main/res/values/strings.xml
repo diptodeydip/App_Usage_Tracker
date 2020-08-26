@@ -9,7 +9,8 @@
     <string name="title_activity_target_history">TargetHistory</string>
     <string name="weekly">Weekly</string>
     <string name="daily">Daily</string>
-    <string name="permission_message">Please permit usage access for "App Usage Tracker". The app won\'t work without this permission.</string>
+    <string name="usage_permission_message">Please permit USAGE ACCESS. This app won\'t work without usage access.</string>
+    <string name="auto_start_permission_message">Press SET To enable AUTOSTART. Without autostart enabled, App Usage Tracker will stop gathering usage statistics after each reboot unless you manually open the app. If you don\'t see autostart in the settings or you\'ve already enabled autostart then press ALREADY ENABLED.</string>
     <string name="cgpa_message">"Your cgpa will only be used for research purpose. Please do not provide wrong information. Your participation will be greatly appreciated."</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

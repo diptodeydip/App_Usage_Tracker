@@ -198,7 +198,7 @@ public class AppsDataController extends BroadcastReceiver {
         return appsUsageInfo;
     }
 
-    private static HashMap<String, AppUsageInfo> addOtherAppsInfo(HashMap<String, AppUsageInfo> appsInfo, Context context) {
+    public static HashMap<String, AppUsageInfo> addOtherAppsInfo(HashMap<String, AppUsageInfo> appsInfo, Context context) {
         PackageManager packageManager = context.getPackageManager();
         List<PackageInfo> installedPackages = context.getPackageManager().getInstalledPackages(0);
 

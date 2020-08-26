@@ -28,17 +28,6 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".AppDetails" />
         <activity android:name=".AppList"/>
-        <!-- <activity android:name=".AppwiseTargetStats" /> -->
-        <!-- <activity android:name=".TargetStats" /> -->
-        <!-- <activity android:name=".MainActivity" /> -->
-        <!-- <activity android:name=".SetTarget" /> -->
-        <!-- <activity android:name=".Info" /> -->
-        <!-- <activity android:name=".UsagePage" /> -->
-        <!-- <receiver android:name=".MyBroadcastReceiver"> -->
-        <!-- <intent-filter> -->
-        <!-- <action android:name="android.intent.action.BOOT_COMPLETED" /> -->
-        <!-- </intent-filter> -->
-        <!-- </receiver> -->
         <receiver
             android:name=".AppsDataController"
             android:enabled="true"
@@ -46,7 +35,6 @@
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
-
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>

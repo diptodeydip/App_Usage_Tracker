@@ -1,12 +1,14 @@
 package com.example.app_usage_tracker;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -14,19 +16,18 @@ import android.widget.Toast;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.judemanutd.autostarter.AutoStartPermissionHelper;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Calendar;
+import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity {
     TextInputEditText regiNumInput, cgpaInput;
     TextInputLayout regiLayout, cgpaLayout;
     RadioGroup genderRadioGroup;
 
-//    private static final String TAG = "temp";
     SharedPreferences sharedPreference;
     SharedPreferences.Editor editor;
     public static final String SHARED_PREFERENCE = "UserInfo";
@@ -44,8 +45,10 @@ public class MainActivity extends AppCompatActivity {
         if(checkIfUserRegistered() == true){
             if(initializeJsonIfNot() == false)
                 Toast.makeText(this, "Json initialization failed. App won't work properly.", Toast.LENGTH_SHORT).show();
-            else
+            else{
+                saveAppsInstallationTime();
                 AppsDataController.startAlarm(this, 500);
+            }
 
             Intent intent = new Intent(this, AppList.class);
             startActivity(intent);
@@ -66,14 +69,20 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        if (ImportantStuffs.isUsagePermissionEnabled(this) == true)
-            return;
-        startActivity(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS));
-        Toast.makeText(this, R.string.permission_message, Toast.LENGTH_LONG).show();
+        boolean autoStartEnabled = sharedPreference.getBoolean("autoStart", false);
+        boolean usagePermissionEnabled = ImportantStuffs.isUsagePermissionEnabled(this);
+        if(!usagePermissionEnabled)
+            showUsagePermissionDialog();
+        else if(!autoStartEnabled)
+            showAutoStartPermissionDialog();
     }
 
     private void testThings(){
-
+//        if( AutoStartPermissionHelper.getInstance().isAutoStartPermissionAvailable(this) )
+//            Toast.makeText(this, "Device is supported :D", Toast.LENGTH_SHORT).show();
+//        else
+//            Toast.makeText(this, "Not supported -_-", Toast.LENGTH_SHORT).show();
+//        AutoStartHelper.getInstance().getAutoStartPermission(this);
     }
 
 
@@ -102,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
 
         if(!regiLayout.isErrorEnabled() && !cgpaLayout.isErrorEnabled()){
             RadioButton genderButton = findViewById(genderRadioGroup.getCheckedRadioButtonId());
-            saveData(registrationNumber, cgpa, genderButton.getText().toString());
+            saveUserData(registrationNumber, cgpa, genderButton.getText().toString());
         }
     }
 
@@ -119,15 +128,57 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void saveData(String registrationNumber, String cgpa, String gender){
+    private void showUsagePermissionDialog(){
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this, R.style.DialogTheme);
+        dialog.setTitle("Usage access");
+        dialog.setMessage(R.string.usage_permission_message);
+        dialog.setCancelable(false);
+        dialog.setPositiveButton("set", (dialog12, which) -> MainActivity.this.startActivity(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)));
+        dialog.create();
+        dialog.setOnKeyListener((dialog1, keyCode, event) -> {
+            if( keyCode == KeyEvent.KEYCODE_BACK ){
+                dialog1.cancel();
+                MainActivity.this.finish();
+                return true;
+            }
+            return false;
+        });
+        dialog.show();
+    }
+
+    private void showAutoStartPermissionDialog(){
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this, R.style.DialogTheme);
+        dialog.setTitle("Enable autostart");
+        dialog.setMessage(R.string.auto_start_permission_message);
+        dialog.setCancelable(false);
+        dialog.setPositiveButton("set", AutoStartHelper.getInstance().getAutoStartPermissionIntent(this));
+        dialog.setNegativeButton("already enabled", (dialog12, which) -> {
+            editor.putBoolean("autoStart", true);
+            editor.commit();
+        });
+        dialog.create();
+        dialog.setOnKeyListener((dialog1, keyCode, event) -> {
+            if( keyCode == KeyEvent.KEYCODE_BACK ){
+                dialog1.cancel();
+                MainActivity.this.finish();
+                return true;
+            }
+            return false;
+        });
+        dialog.show();
+    }
+
+    private void saveUserData(String registrationNumber, String cgpa, String gender){
         editor.putString("regNo", registrationNumber);
         editor.putString("cg", cgpa);
         editor.putString("gender", gender);
         editor.commit();
         if(initializeJsonIfNot() == false)
             Toast.makeText(this, "Json initialization failed. App won't work properly.", Toast.LENGTH_SHORT).show();
-        else
-            AppsDataController.startAlarm(this, 500);
+        else{
+            AppsDataController.startAlarm(this, 100);
+            saveAppsInstallationTime();
+        }
 
         Intent intent = new Intent(this, AppList.class);
         startActivity(intent);
@@ -159,6 +210,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 jsonInfo.put("checkpoint", time);
                 jsonInfo.put("appsInfo", new JSONObject());
+                jsonInfo.put("appsInstallationInfo", new JSONObject());
             } catch (JSONException e) {
                 ImportantStuffs.showErrorLog("Checkpoint can't be initialized");
                 return false;
@@ -169,5 +221,45 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         return true;
+    }
+
+    private void saveAppsInstallationTime(){
+        JSONObject infoJson = ImportantStuffs.getJsonObject("info.json", this);
+        JSONObject appsInstallationInfoJson = null;
+        try {
+            appsInstallationInfoJson = infoJson.getJSONObject("appsInstallationInfo");
+        } catch (JSONException e) {
+            ImportantStuffs.showErrorLog("Can't find appsInstallationInfo");
+        }
+        HashMap<String, AppUsageInfo> allApps = new HashMap<>();
+        allApps = AppsDataController.addOtherAppsInfo(allApps, this);
+        for(HashMap.Entry entry:allApps.entrySet()){
+            String key = ImportantStuffs.removeDot((String) entry.getKey());
+            AppUsageInfo appInfo = (AppUsageInfo) entry.getValue();
+            String value = "";
+            try {
+                value = appsInstallationInfoJson.getJSONObject(key).toString();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            if(!value.equals(""))
+                return;
+            JSONObject jsonValue = new JSONObject();
+            try {
+                jsonValue.put("installationTime", appInfo.getInstallationTime());
+                jsonValue.put("appName", appInfo.getAppName());
+                appsInstallationInfoJson.put(key, jsonValue);
+            } catch (JSONException e) {
+                ImportantStuffs.showErrorLog("Can't save installation info for ", appInfo.getAppName());
+            }
+
+        }
+        try {
+            infoJson.put("appsInstallationInfo", appsInstallationInfoJson);
+            ImportantStuffs.saveFileLocally("info.json", infoJson.toString(), this);
+        } catch (JSONException e) {
+            ImportantStuffs.showErrorLog("Can't save installation info");
+        }
+
     }
 }

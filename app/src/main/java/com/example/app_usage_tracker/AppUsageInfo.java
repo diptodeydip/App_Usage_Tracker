@@ -17,7 +17,8 @@ class AppUsageInfo {
         String lastOpened = "Not opened today";
         if(lastTimeUsed != 0)
             lastOpened = ImportantStuffs.getTimeInAgoFromMillisecond(lastTimeUsed);
-        String result = String.format("Name: %s, Used time: %s, Last opened: %s, Launches: %d", appName, usedTime, lastOpened, launchCount);
+        String installationDate = ImportantStuffs.getDateFromMilliseconds(installationTime);
+        String result = String.format("Name: %s, Installation date: %s, Used time: %s, Last opened: %s, Launches: %d", appName, installationDate, usedTime, lastOpened, launchCount);
         return result;
     }
 
@@ -27,26 +28,6 @@ class AppUsageInfo {
         this.appIcon = appIcon;
         this.isSystemApp = isSystemApp;
         this.installationTime = installationDate;
-    }
-
-    AppUsageInfo(String appName, String packageName, Drawable appIcon, long installationDate, long timeInForeground, long lastTimeUsed, boolean isSystemApp) {
-        this.appName = appName;
-        this.packageName = packageName;
-        this.appIcon = appIcon;
-        this.isSystemApp = isSystemApp;
-        this.installationTime = installationDate;
-        this.timeInForeground = timeInForeground;
-        this.lastTimeUsed = lastTimeUsed;
-    }
-
-    AppUsageInfo(String targetType, long usageTarget, String[] notifications) {
-        this.usageTarget = usageTarget;
-        this.targetType = targetType;
-        this.notifications = notifications;
-    }
-
-    AppUsageInfo(String packageName){
-        this.packageName = packageName;
     }
 
 
