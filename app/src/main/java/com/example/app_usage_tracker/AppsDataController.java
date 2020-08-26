@@ -473,7 +473,8 @@ public class AppsDataController extends BroadcastReceiver {
         } catch (JSONException e) {}
     }
 
-    public JSONObject getSingleHistory(String targetType, String infoName , Long usedTime , String packageName , Context context, JSONObject individualApp, Long startTime, JSONArray notifications) throws JSONException {
+    public JSONObject getSingleHistory(String targetType, String infoName , Long usedTime , String packageName ,
+                                       Context context, JSONObject individualApp, Long startTime, JSONArray notifications) throws JSONException {
 
         JSONObject dateInfo = new JSONObject();
         dateInfo.put("target",  individualApp.getLong(targetType));
@@ -558,13 +559,13 @@ public class AppsDataController extends BroadcastReceiver {
                     notificationInfo.put(ImportantStuffs.removeDot(packageName), appData);
                     ImportantStuffs.saveFileLocally("notficationInfo.json", notificationInfo.toString(), context);
                     if (infoName == "DailyInfo") {
-                        ImportantStuffs.displayNotification(packageName,tempPercentage,1,context);
+                        ImportantStuffs.displayNotification(ImportantStuffs.addDot(packageName),tempPercentage,1,context);
                         // ImportantStuffs.notificationString.append(tempPercentage).append("% of daily target for ")
                         //        .append(ImportantStuffs.getAppName(ImportantStuffs.addDot(packageName),context)).append(" is used\n");
                     }
                     else
                     {
-                        ImportantStuffs.displayNotification(packageName,tempPercentage,0,context);
+                        ImportantStuffs.displayNotification(ImportantStuffs.addDot(packageName),tempPercentage,0,context);
                     //ImportantStuffs.notificationString.append(tempPercentage).append("% of weekly target for ")
                     //  .append(ImportantStuffs.getAppName(ImportantStuffs.addDot(packageName),context)).append(" is used\n");
                 }
