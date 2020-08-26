@@ -1,5 +1,6 @@
 package com.example.app_usage_tracker;
 
+import android.app.AppOpsManager;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -27,6 +28,8 @@ import java.io.FileWriter;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Random;
+
+import static android.app.AppOpsManager.MODE_ALLOWED;
 
 public class ImportantStuffs {
 
@@ -82,6 +85,19 @@ public class ImportantStuffs {
 //            showLog(getAppName(packageName, context));
             return false;
         }
+    }
+
+    public static boolean isUsagePermissionEnabled(Context context) {
+        try {
+            PackageManager pm = context.getPackageManager();
+            ApplicationInfo appInfo = pm.getApplicationInfo(context.getPackageName(), 0);
+            AppOpsManager appOps = (AppOpsManager) context.getSystemService(Context.APP_OPS_SERVICE);
+            int mode = appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, appInfo.uid, context.getPackageName());
+            return mode == MODE_ALLOWED;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
 

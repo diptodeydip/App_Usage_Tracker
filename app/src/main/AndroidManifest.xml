@@ -15,30 +15,30 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity
-            android:name=".TargetHistory"
-            android:label="@string/title_activity_target_history"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
-        <activity android:name=".AppDetails" />
-        <activity android:name=".AppList">
+        <activity android:name=".MainActivity" android:windowSoftInputMode="adjustPan">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".AppwiseTargetStats" />
-        <activity android:name=".TargetStats" />
-        <activity android:name=".MainActivity" />
-        <activity android:name=".SetTarget" />
-        <activity android:name=".Info" />
-        <activity android:name=".UsagePage" />
-
-        <receiver android:name=".MyBroadcastReceiver">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-            </intent-filter>
-        </receiver>
+        <activity
+            android:name=".TargetHistory"
+            android:label="@string/title_activity_target_history"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".AppDetails" />
+        <activity android:name=".AppList"/>
+        <!-- <activity android:name=".AppwiseTargetStats" /> -->
+        <!-- <activity android:name=".TargetStats" /> -->
+        <!-- <activity android:name=".MainActivity" /> -->
+        <!-- <activity android:name=".SetTarget" /> -->
+        <!-- <activity android:name=".Info" /> -->
+        <!-- <activity android:name=".UsagePage" /> -->
+        <!-- <receiver android:name=".MyBroadcastReceiver"> -->
+        <!-- <intent-filter> -->
+        <!-- <action android:name="android.intent.action.BOOT_COMPLETED" /> -->
+        <!-- </intent-filter> -->
+        <!-- </receiver> -->
         <receiver
             android:name=".AppsDataController"
             android:enabled="true"

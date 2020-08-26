@@ -26,13 +26,17 @@ import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
+import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.ref.WeakReference;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -84,17 +88,6 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
     }
 
     private void testStuffs(){
-//        {
-//            long total = 0;
-//            int index = 0;
-//            for(Long data:usageData){
-//                total += data;
-//                String time = ImportantStuffs.getTimeFromMillisecond(data);
-//                Log.d(TAG, index + " -- " + time);
-//                index++;
-//            }
-//            Log.d(TAG, "total -- "+ImportantStuffs.getTimeFromMillisecond(total));
-//        }
 
     }
 
@@ -467,6 +460,26 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
 
         chart.invalidate();
         runOnUiThread(()-> chart.animateY(1000, Easing.EaseOutCubic));
+
+        chart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
+            @Override
+            public void onValueSelected(Entry e, Highlight h) {
+                if(calendarMode == MODE_DAILY){
+                    int min = (int) e.getY();
+                    showToast(min + " min");
+                }
+                else{
+                    int hour = (int) e.getY();
+                    int min = (int) ((e.getY() - (float) hour) * 60f);
+                    showToast(hour + " hour "  + min + " min");
+                }
+            }
+
+            @Override
+            public void onNothingSelected() {
+
+            }
+        });
 
     }
 

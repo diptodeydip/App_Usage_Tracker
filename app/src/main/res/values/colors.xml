@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <color name="mtrl_textinput_default_box_stroke_color" tools:override="true">#aaaaaa</color>
+    
     <color name="colorPrimary">#254b62</color>
     <color name="colorPrimaryDark">#1d3e53</color>
     <color name="colorAccent">#77abb7</color>
     <color name="defaultColorAccent">#03DAC5</color>
+
+    <color name="registerButtonColor">#5eaaa8</color>
+    <color name="registerButtonPressedColor">#477C7B</color>
 
     <color name="layoutBackground">#222831</color>
     <color name="layoutBackgroundDark">#14171C</color>
@@ -31,4 +36,7 @@
     <color name="dialogBackgroundLight">#29a19c</color>
 
     <color name="barColor">#ffa36c</color>
+
+    <color name="radio_select_color">#e94560</color>
+    <color name="radio_deselect_color">#6e6d6d</color>
 </resources>

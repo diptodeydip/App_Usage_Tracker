@@ -48,11 +48,11 @@
                             android:layout_height="wrap_content"
                             android:layout_margin="2dp"
                             android:textSize="@dimen/primary_text"
+                            android:textColor="@color/white"
                             android:buttonTint="@color/radioUncheckedColor"
                             android:buttonTintMode="src_in"
                             android:onClick="onDailyCalendarSelected"
-                            android:text="Daily"
-                            android:textColor="@color/white" />
+                            android:text="Daily"/>
 
                         <RadioButton
                             android:id="@+id/weekly_radio_button"
@@ -71,7 +71,7 @@
                     <com.github.mikephil.charting.charts.BarChart
                         android:id="@+id/usage_graph"
                         android:layout_width="match_parent"
-                        android:layout_height="300dp" />
+                        android:layout_height="250dp" />
 
                     <LinearLayout
                         android:layout_width="match_parent"

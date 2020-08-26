@@ -44,6 +44,23 @@
         <item name="android:textColor">@color/white</item>
     </style>
 
+    <style name="LoginTextInputLayoutStyle" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textColorHint">@color/nearWhite</item>
+    </style>
+
+    <style name="MyCustomRadioButton" parent="@android:style/TextAppearance">
+
+        <item name="android:padding">5dp</item>
+        <item name="android:layout_margin">5dp</item>
+        <item name="android:minWidth">90dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">@drawable/selectable_text_color_checked_state</item>
+        <item name="android:background">@drawable/selectable_text_bg_color_checked_state</item>
+        <item name="android:foreground">?android:attr/selectableItemBackground</item>
+        <item name="android:textSize">@dimen/primary_text</item>
+    </style>
+
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />

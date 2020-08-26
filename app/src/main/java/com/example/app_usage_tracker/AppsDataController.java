@@ -469,12 +469,7 @@ public class AppsDataController extends BroadcastReceiver {
         } catch (JSONException e) {}
     }
 
-
-    public JSONObject getSingleHistory(String targetType, String infoName , Long usedTime , String packageName , Context context
-            , JSONObject individualApp, Long startTime, JSONArray notifications) throws JSONException {
-//                AppUsageInfo temp;
-//                assert data != null;
-//                temp = data.get(packageName);
+    public JSONObject getSingleHistory(String targetType, String infoName , Long usedTime , String packageName , Context context, JSONObject individualApp, Long startTime, JSONArray notifications) throws JSONException {
 
         JSONObject dateInfo = new JSONObject();
         dateInfo.put("target",  individualApp.getLong(targetType));
@@ -608,7 +603,6 @@ public class AppsDataController extends BroadcastReceiver {
                 targetInfos.add(ti);
             }
         }catch (Exception e){}
-        Log.d("historyvalue",targetInfos.get(0).date+" "+targetInfos.get(0).target+" "+targetInfos.get(0).usage+" "+targetInfos.get(0).mode);
         return  targetInfos;
     }
 }

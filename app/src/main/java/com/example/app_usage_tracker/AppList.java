@@ -57,11 +57,9 @@ public class AppList extends AppCompatActivity {
         sortOrderAscending = sharedPreference.getBoolean(ASCENDING_SORT, false);
         sortBy = sharedPreference.getInt(SORT_BY, R.id.sort_by_usage_time);
 
+        appListAsyncTask = new AppListAsyncTask(this);
+        appListAsyncTask.execute();
         testThings();
-        checkIfFirst();
-        if(isUsagePermissionEnabled() == true){
-            AppsDataController.startAlarm(this, 500);
-        }
     }
 
     @Override
@@ -147,54 +145,6 @@ public class AppList extends AppCompatActivity {
         return true;
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        if (isUsagePermissionEnabled() == false) {
-            startActivity(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS));
-            finish();
-            return;
-        } else {
-            appListAsyncTask = new AppListAsyncTask(this);
-            appListAsyncTask.execute();
-//            long startTime = ImportantStuffs.getDayStartingHour(), endTime = ImportantStuffs.getCurrentTime();
-//            appsUsageInfo = AppsDataController.getAppsAllInfo(startTime, endTime, this);
-//            createAppList();
-        }
-    }
-
-
-    private boolean checkIfFirst(){
-        String info = ImportantStuffs.getStringFromJsonObjectPath("info.json", this);
-        if(info == ""){
-            ImportantStuffs.showLog("No checkpoint data found. Creating new checkpoint---");
-            Calendar calendar = Calendar.getInstance();
-            JSONObject jsonInfo = new JSONObject();
-
-            calendar.set(Calendar.MILLISECOND,0);
-            calendar.set(Calendar.SECOND, 0);
-            calendar.set(Calendar.MINUTE, 0);
-            calendar.set(Calendar.HOUR, 0);
-            calendar.add(Calendar.DAY_OF_WEEK,1);
-            calendar.add(Calendar.WEEK_OF_MONTH,-1);
-            calendar.set(Calendar.AM_PM, Calendar.AM);
-
-            Long time = calendar.getTimeInMillis();
-            try {
-                jsonInfo.put("checkpoint", time);
-                jsonInfo.put("appsInfo", new JSONObject());
-            } catch (JSONException e) {
-                e.printStackTrace();
-                ImportantStuffs.showErrorLog("Checkpoint can't be initialized");
-            }
-            if(!ImportantStuffs.saveFileLocally("info.json", jsonInfo.toString(), this))
-                ImportantStuffs.showErrorLog("Checkpoint can't be initialized");
-            return true;
-        }
-        return false;
-    }
-
     private void testThings() {
 //        try{
 //            String path = getExternalFilesDir("").getAbsolutePath();
@@ -219,44 +169,6 @@ public class AppList extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter.filterApps(systemAppFilter, unusedAppFilter);
         adapter.sort(sortBy, sortOrderAscending);
-    }
-
-    private boolean isUsagePermissionEnabled() {
-        try {
-            PackageManager pm = getPackageManager();
-            ApplicationInfo appInfo = pm.getApplicationInfo(getPackageName(), 0);
-            AppOpsManager appOps = (AppOpsManager) getSystemService(Context.APP_OPS_SERVICE);
-            int mode = appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, appInfo.uid, getPackageName());
-            return mode == MODE_ALLOWED;
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-
-    private void showToast(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-    }
-
-    private void showToast(int message) {
-        showToast(Integer.toString(message));
-    }
-
-    private void showToast(String... messages) {
-        String fullMessage = "";
-        for (String message : messages) {
-            fullMessage += message + " ";
-        }
-        showToast(fullMessage);
-    }
-
-    private void showToast(int... messages) {
-        String fullMessage = "";
-        for (int message : messages) {
-            fullMessage += message + " ";
-        }
-        showToast(fullMessage);
     }
 
 
