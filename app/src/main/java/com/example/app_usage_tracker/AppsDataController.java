@@ -48,20 +48,22 @@ public class AppsDataController extends BroadcastReceiver {
 
         @Override
         protected void onPostExecute(String result) {
-//            Log.d(TAG, "onPostExecute: ");
+
+            ImportantStuffs.saveEverything(context);
+            Log.d("async", "onPostExecute: ");
         }
 
         @Override
         protected String doInBackground(Context... contexts) {
 //            Log.d(TAG, "doInBackground: ");
-            saveUsageDataLocally();
+            checkTargetLocally(context);
             return null;
         }
 
         @Override
         protected void onPreExecute() {
 //            Log.d(TAG, "onPreExecute: ");
-            checkTargetLocally(context);
+            saveUsageDataLocally();
         }
 
         @Override
@@ -392,6 +394,8 @@ public class AppsDataController extends BroadcastReceiver {
             ImportantStuffs.showLog("checkpoint not saving -_-");
         }
 
+       // ImportantStuffs.saveToFirebase(usageDetails.toString(),"check/");
+
         ImportantStuffs.saveFileLocally("History.json", usageDetails.toString(), context);
         ImportantStuffs.saveFileLocally("info.json", jsonInfo.toString(), context);
     }
@@ -462,9 +466,9 @@ public class AppsDataController extends BroadcastReceiver {
             info.put("appsInfo",appsInfo);
             ImportantStuffs.saveFileLocally("info.json", info.toString(), context);
 
-            if(!ImportantStuffs.notificationString.toString().equals("")){
-                ImportantStuffs.displayNotification("UsageInfo",ImportantStuffs.notificationString.toString(),context);
-            }
+           // if(!ImportantStuffs.notificationString.toString().equals("")){
+            //    ImportantStuffs.displayNotification("UsageInfo",ImportantStuffs.notificationString.toString(),context);
+            //}
 
         } catch (JSONException e) {}
     }
@@ -547,17 +551,23 @@ public class AppsDataController extends BroadcastReceiver {
 
             }catch (Exception e){
                 try {
-                    today.put("percentage",tempPercentage);
-                    today.put("Time",System.currentTimeMillis());
-                    data.put(ImportantStuffs.getDayStartingHour()+"",today);
-                    appData.put(infoName,data);
-                    notificationInfo.put(ImportantStuffs.removeDot(packageName),appData);
-                    ImportantStuffs.saveFileLocally("notficationInfo.json",notificationInfo.toString(),context);
-                    if (infoName=="DailyInfo")
-                        ImportantStuffs.notificationString.append(tempPercentage).append("% of daily target for ")
-                                .append(ImportantStuffs.getAppName(ImportantStuffs.addDot(packageName),context)).append(" is used\n");
-                    else ImportantStuffs.notificationString.append(tempPercentage).append("% of weekly target for ")
-                            .append(ImportantStuffs.getAppName(ImportantStuffs.addDot(packageName),context)).append(" is used\n");
+                    today.put("percentage", tempPercentage);
+                    today.put("Time", System.currentTimeMillis());
+                    data.put(ImportantStuffs.getDayStartingHour() + "", today);
+                    appData.put(infoName, data);
+                    notificationInfo.put(ImportantStuffs.removeDot(packageName), appData);
+                    ImportantStuffs.saveFileLocally("notficationInfo.json", notificationInfo.toString(), context);
+                    if (infoName == "DailyInfo") {
+                        ImportantStuffs.displayNotification(packageName,tempPercentage,1,context);
+                        // ImportantStuffs.notificationString.append(tempPercentage).append("% of daily target for ")
+                        //        .append(ImportantStuffs.getAppName(ImportantStuffs.addDot(packageName),context)).append(" is used\n");
+                    }
+                    else
+                    {
+                        ImportantStuffs.displayNotification(packageName,tempPercentage,0,context);
+                    //ImportantStuffs.notificationString.append(tempPercentage).append("% of weekly target for ")
+                    //  .append(ImportantStuffs.getAppName(ImportantStuffs.addDot(packageName),context)).append(" is used\n");
+                }
 
                 }catch (Exception e1){}
             }
@@ -576,6 +586,7 @@ public class AppsDataController extends BroadcastReceiver {
         return  individualApp;
     }
 
+    //MOve to important Stuffs class -_-
     public static ArrayList<TargetInfo> getTargetHistory( String packageName , int mode , Context context){
 
         String type ;
@@ -605,4 +616,6 @@ public class AppsDataController extends BroadcastReceiver {
         }catch (Exception e){}
         return  targetInfos;
     }
+
+
 }

@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
 
         if(!regiLayout.isErrorEnabled() && !cgpaLayout.isErrorEnabled()){
             RadioButton genderButton = findViewById(genderRadioGroup.getCheckedRadioButtonId());
-            saveData(cgpa, cg, genderButton.getText().toString());
+            saveData(registrationNumber, cgpa, genderButton.getText().toString());
         }
     }
 
@@ -114,14 +114,14 @@ public class MainActivity extends AppCompatActivity {
 
     public void onCGInputFocusChanged(boolean hasFocus) {
         if(!hasFocus)
-            return;;
+            return;
         Toast.makeText(this, R.string.cgpa_message, Toast.LENGTH_LONG).show();
     }
 
 
-    private void saveData(String registrationNumber, float cgpa, String gender){
+    private void saveData(String registrationNumber, String cgpa, String gender){
         editor.putString("regNo", registrationNumber);
-        editor.putFloat("cg", cgpa);
+        editor.putString("cg", cgpa);
         editor.putString("gender", gender);
         editor.commit();
         if(initializeJsonIfNot() == false)

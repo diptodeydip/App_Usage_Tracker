@@ -6,13 +6,20 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.provider.Settings;
 import android.util.Log;
+
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import androidx.core.app.NotificationCompat;
 
@@ -27,6 +34,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import static android.app.AppOpsManager.MODE_ALLOWED;
@@ -350,8 +360,9 @@ public class ImportantStuffs {
         showLog(fullMessage);
     }
 
-    public static void displayNotification(String task, String desc, Context context) {
+    public static void displayNotification(String packageName, int percentage, int mode ,  Context context) {
 
+        String channel_ID = "1";
         NotificationManager manager =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -362,16 +373,16 @@ public class ImportantStuffs {
 
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel("dip", "Dipto", NotificationManager.IMPORTANCE_DEFAULT);
+            NotificationChannel channel = new NotificationChannel(channel_ID, "2", NotificationManager.IMPORTANCE_DEFAULT);
             // channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
             assert manager != null;
             manager.createNotificationChannel(channel);
         }
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "dip")
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channel_ID)
                 // .setContentTitle(task)
                 //.setContentText(desc)
-                .setSmallIcon(R.mipmap.ic_launcher)
+
                 // .setContentIntent(pendingIntent)
                 //  .setDefaults(Notification.DEFAULT_ALL)
                 //.addAction(R.mipmap.ic_launcher,"click",notificationIntent1)
@@ -379,12 +390,114 @@ public class ImportantStuffs {
                 //    .setPriority(Notification.PRIORITY_HIGH)
                 //   .setFullScreenIntent(pendingIntent,true)
                 //  .setAutoCancel(true)
-                .setStyle(new NotificationCompat.BigTextStyle().bigText(desc).setBigContentTitle(task).setSummaryText("Click to expand"));
-
+                .setSmallIcon(R.mipmap.ic_launcher);
+        if(mode == 1 ){
+            builder.setStyle(new NotificationCompat.BigTextStyle().bigText(percentage+
+                    "% of daily target is used").setBigContentTitle(getAppName(packageName,context)).setSummaryText("Click to expand"));
+        }
+        else {
+            builder.setStyle(new NotificationCompat.BigTextStyle().bigText(percentage+
+                    "% of weekly target is used").setBigContentTitle(getAppName(packageName,context)).setSummaryText("Click to expand"));
+        }
         assert manager != null;
-        manager.notify(1, builder.build());
+        manager.notify((int) (System.currentTimeMillis()%200), builder.build());
+    }
+
+
+    public static void saveToFirebase(String jsonString, String path) {
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference myRef = database.getReference(path);
+
+        Map<String, Object> userMap = new Gson().fromJson(jsonString, new TypeToken<HashMap<String, Object>>() {
+        }.getType());
+        myRef.updateChildren(userMap);
+    }
+
+    public static void saveUserInfo(Context context){
+        try {
+            SharedPreferences sharedPreference = context.getSharedPreferences(MainActivity.SHARED_PREFERENCE, MainActivity.MODE_PRIVATE);
+            JSONObject ob = new JSONObject();
+            String cg = sharedPreference.getString("cg", "");
+            String regNo = sharedPreference.getString("regNo","");
+            String gender = sharedPreference.getString("gender","");
+            try {
+                ob.put("cg",cg);
+                ob.put("regNo",regNo);
+                ob.put("gender",gender);
+            }catch (Exception e){}
+
+            saveToFirebase(ob.toString(),"UserInfo/"+regNo);
+        }catch (Exception e){}
 
     }
+
+    public static void saveInfo(Context context){
+        try {
+            SharedPreferences sharedPreference = context.getSharedPreferences(MainActivity.SHARED_PREFERENCE, MainActivity.MODE_PRIVATE);
+            String regNo = sharedPreference.getString("regNo","");
+            String jsonString =  ImportantStuffs.getStringFromJsonObjectPath("info.json",context);
+            saveToFirebase(jsonString, "TargetHistory/"+regNo);
+        }catch (Exception e){}
+
+    }
+    public static void saveNotficationInfo(Context context){
+        try {
+            SharedPreferences sharedPreference = context.getSharedPreferences(MainActivity.SHARED_PREFERENCE, MainActivity.MODE_PRIVATE);
+            String regNo = sharedPreference.getString("regNo","");
+            String jsonString =  ImportantStuffs.getStringFromJsonObjectPath("notficationInfo.json",context);
+            saveToFirebase(jsonString, "NotificationFrequency/"+regNo);
+        }catch (Exception e){}
+
+    }
+    public static void saveHistory(Context context){
+        try {
+            SharedPreferences sharedPreference = context.getSharedPreferences(MainActivity.SHARED_PREFERENCE, MainActivity.MODE_PRIVATE);
+            String regNo = sharedPreference.getString("regNo","");
+            String jsonString = ImportantStuffs.getStringFromJsonObjectPath("History.json", context);
+            saveToFirebase(jsonString, "UsageHistory/"+regNo);
+        }catch (Exception e){}
+
+    }
+
+    public static void saveAllAppName(Context context){
+        try {
+            SharedPreferences sharedPreference = context.getSharedPreferences(MainActivity.SHARED_PREFERENCE, MainActivity.MODE_PRIVATE);
+            String regNo = sharedPreference.getString("regNo","");
+            final PackageManager pm = context.getPackageManager();
+
+//        //get a list of installed apps.
+            List<PackageInfo> packages = pm.getInstalledPackages(PackageManager.GET_META_DATA);
+
+            JSONObject installedApps = new JSONObject();
+            for(int i =0; i<packages.size();i++){
+//            if((packages.get(i).applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0){
+                String label = null;
+                //label = packages.get(i).applicationInfo.loadLabel(pm).toString();
+                label = getAppName(packages.get(i).packageName,context);
+                try {
+                    installedApps.put(removeDot(packages.get(i).packageName),label);
+                }catch (Exception e){}
+                //}
+            }
+
+
+            saveToFirebase(installedApps.toString(),"InstalledApps/"+regNo);
+        }catch (Exception e){}
+
+
+    }
+
+    public static void saveEverything(Context context){
+        try {
+            saveUserInfo(context);
+            saveInfo(context);
+            saveNotficationInfo(context);
+            saveHistory(context);
+            saveAllAppName(context);
+        }catch (Exception e){}
+    }
+
+
 
 
     public static void showErrorLog(String message) {
