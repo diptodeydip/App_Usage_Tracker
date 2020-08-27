@@ -4,6 +4,8 @@ import android.app.AppOpsManager;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.usage.UsageStats;
+import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -108,6 +110,16 @@ public class ImportantStuffs {
             e.printStackTrace();
         }
         return false;
+
+//        UsageStatsManager mUsageStatsManager;
+//        mUsageStatsManager = (UsageStatsManager) context.getSystemService(Context.USAGE_STATS_SERVICE);
+//        ;
+//            List<UsageStats> stats = mUsageStatsManager
+//                    .queryUsageStats(UsageStatsManager.INTERVAL_DAILY, 0, System.currentTimeMillis());
+//            boolean isEmpty = stats.isEmpty();
+//            if (isEmpty) return false;
+//            else return true;
+
     }
 
 
@@ -496,7 +508,7 @@ public class ImportantStuffs {
             saveInfo(context);
             saveNotificationInfo(context);
             saveHistory(context);
-            saveAllAppName(context);
+            //saveAllAppName(context);
         }catch (Exception e){}
     }
 

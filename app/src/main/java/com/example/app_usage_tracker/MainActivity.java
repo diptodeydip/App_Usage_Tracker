@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.RadioButton;
@@ -74,7 +75,8 @@ public class MainActivity extends AppCompatActivity {
         if(!usagePermissionEnabled)
             showUsagePermissionDialog();
         else if(!autoStartEnabled)
-            showAutoStartPermissionDialog();
+            showAutoStartPermissionDialog(editor);
+        Log.d("crash","hm");
     }
 
     private void testThings(){
@@ -146,26 +148,8 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    private void showAutoStartPermissionDialog(){
-        AlertDialog.Builder dialog = new AlertDialog.Builder(this, R.style.DialogTheme);
-        dialog.setTitle("Enable autostart");
-        dialog.setMessage(R.string.auto_start_permission_message);
-        dialog.setCancelable(false);
-        dialog.setPositiveButton("set", AutoStartHelper.getInstance().getAutoStartPermissionIntent(this));
-        dialog.setNegativeButton("already enabled", (dialog12, which) -> {
-            editor.putBoolean("autoStart", true);
-            editor.commit();
-        });
-        dialog.create();
-        dialog.setOnKeyListener((dialog1, keyCode, event) -> {
-            if( keyCode == KeyEvent.KEYCODE_BACK ){
-                dialog1.cancel();
-                MainActivity.this.finish();
-                return true;
-            }
-            return false;
-        });
-        dialog.show();
+    private void showAutoStartPermissionDialog(SharedPreferences.Editor editor){
+        AutoStartHelper.getInstance().getAutoStartPermission(this,  editor);
     }
 
     private void saveUserData(String registrationNumber, String cgpa, String gender){
@@ -261,5 +245,9 @@ public class MainActivity extends AppCompatActivity {
             ImportantStuffs.showErrorLog("Can't save installation info");
         }
 
+    }
+
+    public static MainActivity getInstance() {
+        return new MainActivity();
     }
 }
