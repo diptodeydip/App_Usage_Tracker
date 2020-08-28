@@ -41,6 +41,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
 
 public class AppDetails extends AppCompatActivity implements DatePickerDialog.OnDateSetListener{
 
@@ -84,7 +86,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
         initStuffs();
         String appName = ImportantStuffs.getAppName(currentPackage, this);
         setTitle(appName);
-        new GraphAsyncTask(this).execute();
+//        new GraphAsyncTask(this).execute();
         testStuffs();
     }
 
@@ -98,10 +100,11 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
         initJson();
 
         usageCollectionTime = ImportantStuffs.getDayStartingHour();
-        usageData = AppsDataController.getDailyUsageDataInHourlyList(usageCollectionTime, currentPackage, this);
+        currentGraphDate = ImportantStuffs.getDayStartingHour();
 
         chart = findViewById(R.id.usage_graph);
-        currentGraphDate = usageCollectionTime;
+
+        onDailyCalendarSelected(null);
 
         initTargetNotificationStuffs();
     }
@@ -463,8 +466,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
         initYAxis();
 
         chart.invalidate();
-        runOnUiThread(()-> chart.animateY(1000, Easing.EaseOutCubic));
-
+        chart.animateY(1000, Easing.EaseOutCubic);
         chart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
             @Override
             public void onValueSelected(Entry e, Highlight h) {
@@ -568,18 +570,19 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
 
 
     public void onDailyCalendarSelected(View view) {
-//        showToast("onDailyCalendarSelected");
         calendarMode = MODE_DAILY;
         usageCollectionTime = currentGraphDate;
-        usageData = AppsDataController.getDailyUsageDataInHourlyList(usageCollectionTime, currentPackage, this);
-        updateGraphData();
+        new GraphAsyncTask(this, MODE_DAILY).execute();
+//        usageData = AppsDataController.getDailyUsageDataInHourlyList(usageCollectionTime, currentPackage, this);
+//        updateGraphData();
     }
 
     public void onWeeklyCalendarSelected(View view) {
         calendarMode = MODE_WEEKLY;
         usageCollectionTime = ImportantStuffs.getWeekStartTimeFromTime(currentGraphDate);
-        usageData = AppsDataController.getWeeklyUsageDataInDailyList(usageCollectionTime, currentPackage, this);
-        updateGraphData();
+        new GraphAsyncTask(this, MODE_WEEKLY).execute();
+//        usageData = AppsDataController.getWeeklyUsageDataInDailyList(usageCollectionTime, currentPackage, this);
+//        updateGraphData();
     }
 
     public void onPickDateClicked(View view) {
@@ -645,19 +648,45 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
 
     private class GraphAsyncTask extends AsyncTask<Void, Void, Void> {
         private WeakReference<AppDetails> activityWeakReference;
+        private int mode;
 
-        GraphAsyncTask(AppDetails activity) {
+        GraphAsyncTask(AppDetails activity, int mode) {
             activityWeakReference = new WeakReference<>(activity);
+            this.mode = mode;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            AppDetails activity = activityWeakReference.get();
+            if (activity == null || activity.isFinishing())
+                return;
+
+            if(mode == MODE_DAILY)
+                activity.usageData = new ArrayList<>(Collections.nCopies(24, (long) 0));
+            else
+                activity.usageData = new ArrayList<>(Collections.nCopies(7, (long) 0));
+            activity.updateGraphData();
         }
 
         @Override
         protected Void doInBackground(Void... aVoid) {
             AppDetails activity = activityWeakReference.get();
-            if (activity == null || activity.isFinishing()) {
+            if (activity == null || activity.isFinishing())
                 return null;
-            }
-            activity.createGraph();
+
+            if(mode == MODE_DAILY)
+                activity.usageData = AppsDataController.getDailyUsageDataInHourlyList(usageCollectionTime, currentPackage, activity);
+            else
+                activity.usageData = AppsDataController.getWeeklyUsageDataInDailyList(usageCollectionTime, currentPackage, activity);
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            AppDetails activity = activityWeakReference.get();
+            if (activity == null || activity.isFinishing())
+                return;
+            activity.updateGraphData();
         }
     }
 }
