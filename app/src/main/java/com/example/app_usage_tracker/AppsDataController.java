@@ -124,42 +124,6 @@ public class AppsDataController extends BroadcastReceiver {
             }
         }
 
-//        for (Map.Entry<String, List<UsageEvents.Event>> entry : sameEvents.entrySet()) {
-//            int totalEvents = entry.getValue().size();
-//            if (totalEvents > 1) {
-//                for (int i = 0; i < totalEvents - 1; i++) {
-//                    UsageEvents.Event E0 = entry.getValue().get(i);
-//                    UsageEvents.Event E1 = entry.getValue().get(i + 1);
-//
-//                    if (E1.getEventType() == 1) {
-//                        appsUsageInfo.get(E1.getPackageName()).incrementLaunchCount();
-//                    }
-//                    if (E0.getEventType() == 1) {
-//                        appsUsageInfo.get(E1.getPackageName()).incrementLaunchCount();
-//                    }
-//
-//                    if (E0.getEventType() == 1 && E1.getEventType() == 2) {
-//                        long diff = E1.getTimeStamp() - E0.getTimeStamp();
-//                        appsUsageInfo.get(E0.getPackageName()).addToTimeInForeground(diff);
-//                    }
-//                }
-//            }
-//
-//            // shurur event jodi app closing hoy taile start_time and app closing time er difference add korlam
-//            if (entry.getValue().get(0).getEventType() == 2) {
-//                long diff = entry.getValue().get(0).getTimeStamp() - startTime;
-//                appsUsageInfo.get(entry.getValue().get(0).getPackageName()).addToTimeInForeground(diff);
-//            }
-//
-//            // shesher event jodi app starting hoy  tahole app starting time and end_time er diiferece add korlaam
-//            if (entry.getValue().get(totalEvents - 1).getEventType() == 1) {
-//                appsUsageInfo.get(entry.getValue().get(totalEvents - 1).getPackageName()).incrementLaunchCount();
-//                long diff = endTime - entry.getValue().get(totalEvents - 1).getTimeStamp();
-//                appsUsageInfo.get(entry.getValue().get(totalEvents - 1).getPackageName()).addToTimeInForeground(diff);
-//            }
-//
-//            appsUsageInfo.get(entry.getValue().get(totalEvents - 1).getPackageName()).lastTimeUsed = entry.getValue().get(totalEvents - 1).getTimeStamp();
-//        }
 
         for (Map.Entry<String, List<UsageEvents.Event>> entry : sameEvents.entrySet()) {
             String packageName = entry.getKey();

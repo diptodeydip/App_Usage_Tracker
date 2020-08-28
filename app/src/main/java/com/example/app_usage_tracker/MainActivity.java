@@ -44,11 +44,13 @@ public class MainActivity extends AppCompatActivity {
         editor = sharedPreference.edit();
 
         if(checkIfUserRegistered() == true){
-            if(initializeJsonIfNot() == false)
+            if (initializeJsonIfNot() == false) {
                 Toast.makeText(this, "Json initialization failed. App won't work properly.", Toast.LENGTH_SHORT).show();
-            else{
-                saveAppsInstallationTime();
-                AppsDataController.startAlarm(this, 500);
+                ImportantStuffs.showErrorLog("Json initialization failed. App won't work properly.");
+            } else {
+                new Thread(() -> saveAppsInstallationTime()).start();
+//                saveAppsInstallationTime();
+                AppsDataController.startAlarm(this, 100);
             }
 
             Intent intent = new Intent(this, AppList.class);
@@ -72,11 +74,11 @@ public class MainActivity extends AppCompatActivity {
 
         boolean autoStartEnabled = sharedPreference.getBoolean("autoStart", false);
         boolean usagePermissionEnabled = ImportantStuffs.isUsagePermissionEnabled(this);
+
         if(!usagePermissionEnabled)
             showUsagePermissionDialog();
         else if(!autoStartEnabled)
             showAutoStartPermissionDialog(editor);
-        Log.d("crash","hm");
     }
 
     private void testThings(){
@@ -227,7 +229,7 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
             if(!value.equals(""))
-                return;
+                continue;
             JSONObject jsonValue = new JSONObject();
             try {
                 jsonValue.put("installationTime", appInfo.getInstallationTime());
@@ -244,10 +246,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (JSONException e) {
             ImportantStuffs.showErrorLog("Can't save installation info");
         }
-
-    }
-
-    public static MainActivity getInstance() {
-        return new MainActivity();
+//        ImportantStuffs.showLog("Installation info saved");
     }
 }

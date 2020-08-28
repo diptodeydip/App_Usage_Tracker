@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.app.AppOpsManager;
 import android.app.ProgressDialog;
@@ -34,7 +35,9 @@ import static android.app.AppOpsManager.MODE_ALLOWED;
 public class AppList extends AppCompatActivity {
     public static final String TAG = "temp";
     private HashMap<String, AppUsageInfo> appsUsageInfo;
-    private AppListAsyncTask appListAsyncTask;
+//    private AppListAsyncTask appListAsyncTask;
+
+    private SwipeRefreshLayout refreshLayout;
 
     AppListAdapter adapter;
     SharedPreferences sharedPreference;
@@ -50,7 +53,8 @@ public class AppList extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_app_list);
-
+        testThings();
+//        refreshLayout.setRefreshing(true);
         sharedPreference = getSharedPreferences(APP_LIST_SHARED_PREFERENCE, MODE_PRIVATE);
         editor = sharedPreference.edit();
 
@@ -59,9 +63,13 @@ public class AppList extends AppCompatActivity {
         sortOrderAscending = sharedPreference.getBoolean(ASCENDING_SORT, false);
         sortBy = sharedPreference.getInt(SORT_BY, R.id.sort_by_usage_time);
 
-        appListAsyncTask = new AppListAsyncTask(this);
-        appListAsyncTask.execute();
-        testThings();
+        new AppListAsyncTask(this).execute();
+
+        refreshLayout = findViewById(R.id.refresh_layout);
+        refreshLayout.setOnRefreshListener(() -> {
+            refreshLayout.setRefreshing(false);
+            new AppListAsyncTask(this).execute();
+        });
     }
 
     @Override
@@ -148,19 +156,8 @@ public class AppList extends AppCompatActivity {
     }
 
     private void testThings() {
-//        try{
-//            String path = getExternalFilesDir("").getAbsolutePath();
-//            ImportantStuffs.showLog(path);
-//            File file = new File(path, "testFile8.json");
-//            FileWriter fw = new FileWriter(file.getAbsoluteFile());
-//            BufferedWriter bw = new BufferedWriter(fw);
-//            bw.write("hello :(");
-//            bw.close();
-//            fw.close();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            ImportantStuffs.showLog("Can't save file :(");
-//        }
+//        Toast.makeText(this, "App list started", Toast.LENGTH_SHORT).show();
+//        refreshLayout.getpro
     }
 
     public void createAppList() {
@@ -193,7 +190,7 @@ public class AppList extends AppCompatActivity {
         }
 
         @Override
-        protected Void doInBackground(Void... aVoid) {
+        protected Void doInBackground(Void... voids) {
             AppList activity = activityWeakReference.get();
             if (activity == null || activity.isFinishing()) {
                 return null;

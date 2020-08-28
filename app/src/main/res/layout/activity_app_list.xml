@@ -7,9 +7,16 @@
     android:background="@color/layoutBackground"
     tools:context=".AppList">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/app_list_recycler_view"
-        android:layout_marginTop="5dp"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/refresh_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="wrap_content">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/app_list_recycler_view"
+            android:layout_marginTop="5dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
 </LinearLayout>
