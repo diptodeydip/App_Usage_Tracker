@@ -272,16 +272,19 @@ public class ImportantStuffs {
 
             return data.toString();
         } catch (Exception e) {
+            showErrorLog("Can't read json string.");
+            e.printStackTrace();
             return "";
         }
     }
 
     public static JSONObject getJsonObject(String jsonFilePath, Context context){
         String jsonString = getStringFromJsonObjectPath(jsonFilePath, context);
-        JSONObject jsonObject = null;
+        JSONObject jsonObject = new JSONObject();
         try {
             jsonObject = new JSONObject(jsonString);
         } catch (JSONException e) {
+            showErrorLog("Can't read json object.");
             e.printStackTrace();
         }
         return jsonObject;

@@ -48,8 +48,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "Json initialization failed. App won't work properly.", Toast.LENGTH_SHORT).show();
                 ImportantStuffs.showErrorLog("Json initialization failed. App won't work properly.");
             } else {
-                new Thread(() -> saveAppsInstallationTime()).start();
-//                saveAppsInstallationTime();
+                saveAppsInstallationTime();
                 AppsDataController.startAlarm(this, 100);
             }
 
@@ -81,12 +80,26 @@ public class MainActivity extends AppCompatActivity {
             showAutoStartPermissionDialog(editor);
     }
 
-    private void testThings(){
-//        if( AutoStartPermissionHelper.getInstance().isAutoStartPermissionAvailable(this) )
-//            Toast.makeText(this, "Device is supported :D", Toast.LENGTH_SHORT).show();
-//        else
-//            Toast.makeText(this, "Not supported -_-", Toast.LENGTH_SHORT).show();
-//        AutoStartHelper.getInstance().getAutoStartPermission(this);
+    private void testThings() {
+//        JSONObject historyJson = ImportantStuffs.getJsonObject("History.json", this);
+//        String historyString = historyJson.toString();
+//        int historyLength = historyString.length();
+//        long startTime = Long.valueOf(historyJson.keys().next());
+//        long currentTime = ImportantStuffs.getCurrentTime();
+//        long diff = currentTime - startTime;
+//        float hour = ImportantStuffs.getHourFromTime(diff);
+//        float stringLengthPerDay = (historyLength / hour) * 24;
+//        int estimatedMaxDay = (int) ((Math.pow(2, 31) - 1) / stringLengthPerDay);
+//        ImportantStuffs.showLog(estimatedMaxDay);
+//
+//        String demoString = "{\"a\":\"b\", \"a\":\"c\"}";
+//        JSONObject demoObject = new JSONObject();
+//        try {
+//            demoObject = new JSONObject(demoString);
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//        ImportantStuffs.showLog(demoObject.toString());
     }
 
 
@@ -209,43 +222,45 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    private void saveAppsInstallationTime(){
-        JSONObject infoJson = ImportantStuffs.getJsonObject("info.json", this);
-        JSONObject appsInstallationInfoJson = null;
-        try {
-            appsInstallationInfoJson = infoJson.getJSONObject("appsInstallationInfo");
-        } catch (JSONException e) {
-            ImportantStuffs.showErrorLog("Can't find appsInstallationInfo");
-        }
-        HashMap<String, AppUsageInfo> allApps = new HashMap<>();
-        allApps = AppsDataController.addOtherAppsInfo(allApps, this);
-        for(HashMap.Entry entry:allApps.entrySet()){
-            String key = ImportantStuffs.removeDot((String) entry.getKey());
-            AppUsageInfo appInfo = (AppUsageInfo) entry.getValue();
-            String value = "";
+    private void saveAppsInstallationTime() {
+        new Thread(() -> {
+            JSONObject infoJson = ImportantStuffs.getJsonObject("info.json", this);
+            JSONObject appsInstallationInfoJson = null;
             try {
-                value = appsInstallationInfoJson.getJSONObject(key).toString();
+                appsInstallationInfoJson = infoJson.getJSONObject("appsInstallationInfo");
             } catch (JSONException e) {
-                e.printStackTrace();
+                ImportantStuffs.showErrorLog("Can't find appsInstallationInfo");
             }
-            if(!value.equals(""))
-                continue;
-            JSONObject jsonValue = new JSONObject();
-            try {
-                jsonValue.put("installationTime", appInfo.getInstallationTime());
-                jsonValue.put("appName", appInfo.getAppName());
-                appsInstallationInfoJson.put(key, jsonValue);
-            } catch (JSONException e) {
-                ImportantStuffs.showErrorLog("Can't save installation info for ", appInfo.getAppName());
-            }
+            HashMap<String, AppUsageInfo> allApps = new HashMap<>();
+            allApps = AppsDataController.addOtherAppsInfo(allApps, this);
+            for (HashMap.Entry entry : allApps.entrySet()) {
+                String key = ImportantStuffs.removeDot((String) entry.getKey());
+                AppUsageInfo appInfo = (AppUsageInfo) entry.getValue();
+                String value = "";
+                try {
+                    value = appsInstallationInfoJson.getJSONObject(key).toString();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                if (!value.equals(""))
+                    continue;
+                JSONObject jsonValue = new JSONObject();
+                try {
+                    jsonValue.put("installationTime", appInfo.getInstallationTime());
+                    jsonValue.put("appName", appInfo.getAppName());
+                    appsInstallationInfoJson.put(key, jsonValue);
+                } catch (JSONException e) {
+                    ImportantStuffs.showErrorLog("Can't save installation info for ", appInfo.getAppName());
+                }
 
-        }
-        try {
-            infoJson.put("appsInstallationInfo", appsInstallationInfoJson);
-            ImportantStuffs.saveFileLocally("info.json", infoJson.toString(), this);
-        } catch (JSONException e) {
-            ImportantStuffs.showErrorLog("Can't save installation info");
-        }
+            }
+            try {
+                infoJson.put("appsInstallationInfo", appsInstallationInfoJson);
+                ImportantStuffs.saveFileLocally("info.json", infoJson.toString(), this);
+            } catch (JSONException e) {
+                ImportantStuffs.showErrorLog("Can't save installation info");
+            }
+        }).start();
 //        ImportantStuffs.showLog("Installation info saved");
     }
 }

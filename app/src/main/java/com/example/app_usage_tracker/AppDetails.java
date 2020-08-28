@@ -500,7 +500,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
         chart.setDrawGridBackground(false);
         chart.setFitBars(true);
         chart.getDescription().setEnabled(false);
-        chart.setPinchZoom(false);
+//        chart.setPinchZoom(false);
         chart.getLegend().setTextColor(Color.WHITE);
         chart.getLegend().setEnabled(true);
         chart.setExtraBottomOffset(10f);
@@ -674,10 +674,12 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
             if (activity == null || activity.isFinishing())
                 return null;
 
-            if(mode == MODE_DAILY)
-                activity.usageData = AppsDataController.getDailyUsageDataInHourlyList(usageCollectionTime, currentPackage, activity);
+            JSONObject historyJsonObject = ImportantStuffs.getJsonObject("History.json", activity);
+
+            if (mode == MODE_DAILY)
+                activity.usageData = AppsDataController.getDailyUsageDataInHourlyList(historyJsonObject, usageCollectionTime, currentPackage, activity);
             else
-                activity.usageData = AppsDataController.getWeeklyUsageDataInDailyList(usageCollectionTime, currentPackage, activity);
+                activity.usageData = AppsDataController.getWeeklyUsageDataInDailyList(historyJsonObject, usageCollectionTime, currentPackage, activity);
             return null;
         }
 

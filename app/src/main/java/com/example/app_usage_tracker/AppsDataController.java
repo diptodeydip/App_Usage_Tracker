@@ -188,71 +188,64 @@ public class AppsDataController extends BroadcastReceiver {
     }
 
 
-    public static ArrayList<Long> getWeeklyUsageDataInDailyList(long weekStartTime, String packageName, Context context) {
+    public static ArrayList<Long> getWeeklyUsageDataInDailyList(JSONObject jsonObject, long weekStartTime, String packageName, Context context) {
         ArrayList<Long> usage = new ArrayList<>();
 
         long startTime = weekStartTime;
         long endTime = startTime + 6 * ImportantStuffs.MILLISECONDS_IN_DAY;
 
         for (long currentTime = startTime; currentTime <= endTime; currentTime += ImportantStuffs.MILLISECONDS_IN_DAY) {
-            long time = getDailyUsageData(currentTime, packageName, context);
+            long time = getDailyUsageData(jsonObject, currentTime, packageName, context);
             usage.add(time);
         }
         return usage;
     }
 
-    public static ArrayList<Long> getDailyUsageDataInHourlyList(long dayStartTime, String packageName, Context context) {
+    public static ArrayList<Long> getDailyUsageDataInHourlyList(JSONObject jsonObject, long dayStartTime, String packageName, Context context) {
         ArrayList<Long> usage = new ArrayList<>();
 
         long startTime = dayStartTime;
         long endTime = dayStartTime + 23 * ImportantStuffs.MILLISECONDS_IN_HOUR;
 
         for (long currentTime = startTime; currentTime <= endTime; currentTime += ImportantStuffs.MILLISECONDS_IN_HOUR) {
-            long time = getHourlyUsageData(currentTime, packageName, context);
+            long time = getHourlyUsageData(jsonObject, currentTime, packageName, context);
             usage.add(time);
         }
         return usage;
     }
 
-    public static long getWeeklyUsageData(long weekStartTime, String packageName, Context context){
+    public static long getWeeklyUsageData(JSONObject jsonObject, long weekStartTime, String packageName, Context context) {
         long usage = 0;
 
         long startTime = weekStartTime;
         long endTime = startTime + 6 * ImportantStuffs.MILLISECONDS_IN_DAY;
 
         for (long currentTime = startTime; currentTime <= endTime; currentTime += ImportantStuffs.MILLISECONDS_IN_DAY) {
-            long time = getDailyUsageData(currentTime, packageName, context);
+            long time = getDailyUsageData(jsonObject, currentTime, packageName, context);
             usage += time;
         }
         return usage;
     }
 
-    public static long getDailyUsageData(long dayStartTime, String packageName, Context context) {
+    public static long getDailyUsageData(JSONObject jsonObject, long dayStartTime, String packageName, Context context) {
         long usage = 0;
 
         long startTime = dayStartTime;
         long endTime = dayStartTime + 23 * ImportantStuffs.MILLISECONDS_IN_HOUR;
 
         for (long currentTime = startTime; currentTime <= endTime; currentTime += ImportantStuffs.MILLISECONDS_IN_HOUR) {
-            long time = getHourlyUsageData(currentTime, packageName, context);
+            long time = getHourlyUsageData(jsonObject, currentTime, packageName, context);
             usage += time;
         }
         return usage;
     }
 
-    public static long getHourlyUsageData(long hourStartTime, String packageName, Context context) {
+    public static long getHourlyUsageData(JSONObject jsonObject, long hourStartTime, String packageName, Context context) {
         long checkpoint = getCheckpoint(context);
         long currentHour = ImportantStuffs.getCurrentHour();
         long currentTime = ImportantStuffs.getCurrentTime();
 
         if (checkpoint >= hourStartTime) {
-            String history = ImportantStuffs.getStringFromJsonObjectPath("History.json", context);
-            JSONObject jsonObject;
-            try {
-                jsonObject = new JSONObject(history);
-            } catch (JSONException e) {
-                return 0;
-            }
 
             String key = String.valueOf(hourStartTime);
             try {
@@ -364,6 +357,7 @@ public class AppsDataController extends BroadcastReceiver {
     }
 
     public  void checkTargetLocally(Context context){
+        JSONObject historyJsonObject = ImportantStuffs.getJsonObject("History.json", context);
         JSONObject info = new JSONObject();
         String jsonString =  ImportantStuffs.getStringFromJsonObjectPath("info.json",context);
 
@@ -401,14 +395,14 @@ public class AppsDataController extends BroadcastReceiver {
                     int dailyOrWeekly =  targetTypes.getInt(i);
                     if(dailyOrWeekly == daily){
                         JSONArray dailyNotifications =  individualApp.getJSONArray("dailyNotifications");
-                        individualApp = getSingleHistory("dailyTarget","DailyInfo", getDailyUsageData(dailyTargetStartTime,ImportantStuffs.addDot(key),context), key,
-                                context, individualApp, dailyTargetStartTime,dailyNotifications);
+                        individualApp = getSingleHistory("dailyTarget", "DailyInfo", getDailyUsageData(historyJsonObject, dailyTargetStartTime, ImportantStuffs.addDot(key), context), key,
+                                context, individualApp, dailyTargetStartTime, dailyNotifications);
                     }
                     else {
                         JSONArray weeklyNotifications =  individualApp.getJSONArray("weeklyNotifications");
-                        individualApp = getSingleHistory("weeklyTarget","WeeklyInfo",
-                                getWeeklyUsageData(weeklyTargetStartTime,ImportantStuffs.addDot(key),context) , key,
-                                context, individualApp, weeklyTargetStartTime,weeklyNotifications);
+                        individualApp = getSingleHistory("weeklyTarget", "WeeklyInfo",
+                                getWeeklyUsageData(historyJsonObject, weeklyTargetStartTime, ImportantStuffs.addDot(key), context), key,
+                                context, individualApp, weeklyTargetStartTime, weeklyNotifications);
                     }
                 }
                 if(typeCount == 0){
