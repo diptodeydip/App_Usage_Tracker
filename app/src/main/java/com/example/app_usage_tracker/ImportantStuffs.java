@@ -515,7 +515,6 @@ public class ImportantStuffs {
     }
 
 
-
     public static void showErrorLog(String message) {
         Log.e(TAG, message);
     }
@@ -551,7 +550,6 @@ public class ImportantStuffs {
         }
         showLog(fullMessage);
     }
-
 
 //    private HashMap<String, AppUsageInfo> getAllAppsInfo() {
 //        PackageManager pm = getPackageManager();

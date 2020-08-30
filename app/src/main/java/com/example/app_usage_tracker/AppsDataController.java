@@ -44,34 +44,6 @@ public class AppsDataController extends BroadcastReceiver {
         }).start();
     }
 
-    private class AsyncUsageTask extends AsyncTask<Context, String, String> {
-
-        @Override
-        protected void onPostExecute(String result) {
-
-            ImportantStuffs.saveEverything(context);
-            Log.d("async", "onPostExecute: ");
-        }
-
-        @Override
-        protected String doInBackground(Context... contexts) {
-//            Log.d(TAG, "doInBackground: ");
-            checkTargetLocally(context);
-            return null;
-        }
-
-        @Override
-        protected void onPreExecute() {
-//            Log.d(TAG, "onPreExecute: ");
-            saveUsageDataLocally();
-        }
-
-        @Override
-        protected void onProgressUpdate(String... text) {
-//            Log.d(TAG, "onProgressUpdate: ");
-        }
-    }
-
     public static void startAlarm(Context context, long delayInMillisecond) {
         AlarmManager alarmMgr;
         PendingIntent alarmIntent;
@@ -543,7 +515,6 @@ public class AppsDataController extends BroadcastReceiver {
         return  individualApp;
     }
 
-    //MOve to important Stuffs class -_-
     public static ArrayList<TargetInfo> getTargetHistory( String packageName , int mode , Context context){
 
         String type ;
@@ -564,15 +535,27 @@ public class AppsDataController extends BroadcastReceiver {
             individualApp = appsInfo.getJSONObject(ImportantStuffs.removeDot(packageName));
             targetHistory = individualApp.getJSONObject(type);
             Iterator<String> keys = targetHistory.keys();
-            while (keys.hasNext()){
+            while (keys.hasNext()) {
                 String key = keys.next();
                 JSONObject ob = (JSONObject) targetHistory.get(key);
-                TargetInfo ti = new TargetInfo(ob.getLong("date"),ob.getLong("target"),ob.getLong("used"),mode);
+                TargetInfo ti = new TargetInfo(ob.getLong("date"), ob.getLong("target"), ob.getLong("used"), mode);
                 targetInfos.add(ti);
             }
-        }catch (Exception e){}
-        return  targetInfos;
+        } catch (Exception e) {
+        }
+        return targetInfos;
     }
 
 
+    private class AsyncUsageTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            ImportantStuffs.saveEverything(context);
+            checkTargetLocally(context);
+            saveUsageDataLocally();
+            return null;
+        }
+
+    }
 }
