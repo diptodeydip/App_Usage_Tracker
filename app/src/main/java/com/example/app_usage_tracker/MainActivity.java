@@ -131,11 +131,12 @@ public class MainActivity extends AppCompatActivity {
         if (!regiLayout.isErrorEnabled() && !cgpaLayout.isErrorEnabled()) {
             RadioButton genderButton = findViewById(genderRadioGroup.getCheckedRadioButtonId());
             saveUserData(registrationNumber, cgpa, genderButton.getText().toString());
+            Intent intent = new Intent(this, AppList.class);
+            startActivity(intent);
+            finish();
         }
 
-        Intent intent = new Intent(this, AppList.class);
-        startActivity(intent);
-        finish();
+
     }
 
     public void onMaleClicked(View view) {

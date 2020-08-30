@@ -386,17 +386,17 @@ public class ImportantStuffs {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channel_ID)
                 .setContentTitle(appName)
                 .setContentText(description)
-//                .setPriority(NotificationCompat.PRIORITY_MAX)
-//                .setContentIntent(pendingIntent)
-//                .setAutoCancel(true)
-//                .setCategory(NotificationCompat.CATEGORY_REMINDER)
-//                .setLargeIcon(icon)
-//                .setBadgeIconType(NotificationCompat.BADGE_ICON_SMALL)
-                .setSmallIcon(R.drawable.aut_icon);
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true)
+                .setCategory(NotificationCompat.CATEGORY_REMINDER)
+                .setLargeIcon(icon)
+                .setBadgeIconType(NotificationCompat.BADGE_ICON_SMALL)
+                .setSmallIcon(R.mipmap.app_icon_round);
 
         assert manager != null;
 
-        manager.notify((int) (System.currentTimeMillis() % 200), builder.build());
+        manager.notify((int) (System.currentTimeMillis()) % 200, builder.build());
     }
 
 
@@ -444,7 +444,7 @@ public class ImportantStuffs {
         try {
             SharedPreferences sharedPreference = context.getSharedPreferences(MainActivity.SHARED_PREFERENCE, MainActivity.MODE_PRIVATE);
             String regNo = sharedPreference.getString("regNo", "");
-            String jsonString = ImportantStuffs.getStringFromJsonObjectPath("notficationInfo.json", context);
+            String jsonString = ImportantStuffs.getStringFromJsonObjectPath("notificationInfo.json", context);
             saveToFirebase(jsonString, "NotificationFrequency/" + regNo);
         } catch (Exception e) {
         }
