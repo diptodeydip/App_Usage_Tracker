@@ -4,14 +4,15 @@ import android.app.AppOpsManager;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.usage.UsageStats;
-import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.os.Build;
@@ -42,6 +43,7 @@ import java.util.Map;
 import java.util.Random;
 
 import static android.app.AppOpsManager.MODE_ALLOWED;
+import static com.example.app_usage_tracker.AppDetails.MODE_DAILY;
 
 public class ImportantStuffs {
 
@@ -153,7 +155,7 @@ public class ImportantStuffs {
         return Calendar.getInstance().getTimeInMillis();
     }
 
-    public static long getRecentHourFromTime(long time){
+    public static long getRecentHourFromTime(long time) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(time);
         calendar.set(Calendar.MILLISECOND, 0);
@@ -162,7 +164,7 @@ public class ImportantStuffs {
         return calendar.getTimeInMillis();
     }
 
-    public static long getWeekStartTimeFromTime(long time){
+    public static long getWeekStartTimeFromTime(long time) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(time);
         calendar.set(Calendar.MILLISECOND, 0);
@@ -181,7 +183,7 @@ public class ImportantStuffs {
         return calendar.getTimeInMillis();
     }
 
-    public static String getWeekEndDateFromTime(long time){
+    public static String getWeekEndDateFromTime(long time) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(time);
         calendar.set(Calendar.MILLISECOND, 0);
@@ -201,7 +203,7 @@ public class ImportantStuffs {
         return formatter.format(calendar.getTime());
     }
 
-    public static String getDateFromMilliseconds(long milliseconds){
+    public static String getDateFromMilliseconds(long milliseconds) {
         String dateFormat = "dd MMM yyyy";
         SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
 
@@ -210,7 +212,7 @@ public class ImportantStuffs {
         return formatter.format(calendar.getTime());
     }
 
-    public static String getDayAndMonthFromMilliseconds(long milliseconds){
+    public static String getDayAndMonthFromMilliseconds(long milliseconds) {
         String dateFormat = "dd MMM";
         SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
 
@@ -219,36 +221,36 @@ public class ImportantStuffs {
         return formatter.format(calendar.getTime());
     }
 
-    public static String getTimeFromMillisecond(long time){
+    public static String getTimeFromMillisecond(long time) {
         String timeString = "";
         Long second = time / 1000;
         Long min = second / 60;
         Long hour = min / 60;
         Long min_hour = min % 60;
-        if(hour > 0)
+        if (hour > 0)
             timeString += hour + " hour " + min_hour + " min";
         else
             timeString = min_hour + " min";
         return timeString;
     }
 
-    public static float getMinuteFromTime(long time){
+    public static float getMinuteFromTime(long time) {
         float minute = time / (1000 * 60);
         return minute;
     }
 
-    public static float getHourFromTime(long time){
+    public static float getHourFromTime(long time) {
         float minute = (float) time / (float) MILLISECONDS_IN_HOUR;
         return minute;
     }
 
-    public static int getRemainingMinuteFromTime(long time){
+    public static int getRemainingMinuteFromTime(long time) {
         long remainingTime = time % MILLISECONDS_IN_HOUR;
         return (int) (remainingTime / MILLISECONDS_IN_MINUTE);
     }
 
-    public static String getTimeInAgoFromMillisecond(long time){
-        if(time == 0)
+    public static String getTimeInAgoFromMillisecond(long time) {
+        if (time == 0)
             return "";
         long interval = Calendar.getInstance().getTimeInMillis() - time;
         String agoTime = getTimeFromMillisecond(interval);
@@ -259,7 +261,7 @@ public class ImportantStuffs {
     public static String getStringFromJsonObjectPath(String jsonFilePath, Context context) {
         try {
             String path = context.getExternalFilesDir("").getAbsolutePath();
-            File file = new File(path + "/" +jsonFilePath);
+            File file = new File(path + "/" + jsonFilePath);
 
             StringBuilder data = new StringBuilder();
             BufferedReader br = new BufferedReader(new FileReader(file));
@@ -272,25 +274,25 @@ public class ImportantStuffs {
 
             return data.toString();
         } catch (Exception e) {
-            showErrorLog("Can't read json string.");
             e.printStackTrace();
+            showErrorLog("Can't read string from", jsonFilePath);
             return "";
         }
     }
 
-    public static JSONObject getJsonObject(String jsonFilePath, Context context){
+    public static JSONObject getJsonObject(String jsonFilePath, Context context) {
         String jsonString = getStringFromJsonObjectPath(jsonFilePath, context);
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject = new JSONObject(jsonString);
         } catch (JSONException e) {
-            showErrorLog("Can't read json object.");
             e.printStackTrace();
+            showErrorLog("Can't read", jsonFilePath);
         }
         return jsonObject;
     }
 
-    public static JSONArray getJsonArray(String jsonFilePath, Context context){
+    public static JSONArray getJsonArray(String jsonFilePath, Context context) {
         String jsonString = getStringFromJsonObjectPath(jsonFilePath, context);
         JSONArray jsonArray = null;
         try {
@@ -317,24 +319,187 @@ public class ImportantStuffs {
         return true;
     }
 
-    public static void playRandomSound(Context context){
+
+    public static Bitmap getBitmapFromDrawable(Drawable drawable) {
+        Bitmap bitmap = null;
+
+        if (drawable instanceof BitmapDrawable) {
+            BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
+            if (bitmapDrawable.getBitmap() != null) {
+                return bitmapDrawable.getBitmap();
+            }
+        }
+
+        if (drawable.getIntrinsicWidth() <= 0 || drawable.getIntrinsicHeight() <= 0) {
+            bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888); // Single color bitmap will be created of 1x1 pixel
+        } else {
+            bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        }
+
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+        return bitmap;
+    }
+
+    public static void playRandomSound(Context context) {
         MediaPlayer mediaPlayer = MediaPlayer.create(context, Settings.System.DEFAULT_ALARM_ALERT_URI);
         mediaPlayer.setLooping(false);
         mediaPlayer.start();
     }
 
-    public static int getRandomInt(int maxValue){
+    public static int getRandomInt(int maxValue) {
         return random.nextInt(maxValue);
     }
 
-    public static String removeDot(String x){
-        x = x.replaceAll("[.]","_dot_");
+    public static String removeDot(String x) {
+        x = x.replaceAll("[.]", "_dot_");
         return x;
     }
 
-    public static String addDot(String x){
-        x = x.replaceAll("_dot_",".");
+    public static String addDot(String x) {
+        x = x.replaceAll("_dot_", ".");
         return x;
+    }
+
+
+    public static void displayNotification(String packageName, int percentage, int mode, Context context) {
+        String channel_ID = "1";
+        NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(channel_ID, "Target", NotificationManager.IMPORTANCE_HIGH);
+//             channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+            assert manager != null;
+            manager.createNotificationChannel(channel);
+        }
+
+        Intent notificationIntent = new Intent(context, AppDetails.class);
+        notificationIntent.putExtra("packageName", packageName);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 1, notificationIntent, 0);
+
+        String appName = getAppName(packageName, context);
+        Drawable appIcon = getAppIcon(packageName, context);
+        Bitmap icon = getBitmapFromDrawable(appIcon);
+        String modeString = (mode == MODE_DAILY) ? "daily" : "weekly";
+        String description = percentage + "% of " + modeString + " target is used.";
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channel_ID)
+                .setContentTitle(appName)
+                .setContentText(description)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true)
+                .setCategory(NotificationCompat.CATEGORY_REMINDER)
+                .setLargeIcon(icon)
+                .setBadgeIconType(NotificationCompat.BADGE_ICON_SMALL)
+                .setSmallIcon(R.drawable.aut_icon);
+
+        assert manager != null;
+
+        manager.notify((int) (System.currentTimeMillis() % 200), builder.build());
+    }
+
+
+    public static void saveToFirebase(String jsonString, String path) {
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference myRef = database.getReference(path);
+
+        Map<String, Object> userMap = new Gson().fromJson(jsonString, new TypeToken<HashMap<String, Object>>() {
+        }.getType());
+        myRef.updateChildren(userMap);
+    }
+
+    public static void saveUserInfo(Context context) {
+        try {
+            SharedPreferences sharedPreference = context.getSharedPreferences(MainActivity.SHARED_PREFERENCE, MainActivity.MODE_PRIVATE);
+            JSONObject ob = new JSONObject();
+            String cg = sharedPreference.getString("cg", "");
+            String regNo = sharedPreference.getString("regNo", "");
+            String gender = sharedPreference.getString("gender", "");
+            try {
+                ob.put("cg", cg);
+                ob.put("regNo", regNo);
+                ob.put("gender", gender);
+            } catch (Exception e) {
+            }
+
+            saveToFirebase(ob.toString(), "UserInfo/" + regNo);
+        } catch (Exception e) {
+        }
+
+    }
+
+    public static void saveInfo(Context context) {
+        try {
+            SharedPreferences sharedPreference = context.getSharedPreferences(MainActivity.SHARED_PREFERENCE, MainActivity.MODE_PRIVATE);
+            String regNo = sharedPreference.getString("regNo", "");
+            String jsonString = ImportantStuffs.getStringFromJsonObjectPath("info.json", context);
+            saveToFirebase(jsonString, "TargetHistory/" + regNo);
+        } catch (Exception e) {
+        }
+
+    }
+
+    public static void saveNotificationInfo(Context context) {
+        try {
+            SharedPreferences sharedPreference = context.getSharedPreferences(MainActivity.SHARED_PREFERENCE, MainActivity.MODE_PRIVATE);
+            String regNo = sharedPreference.getString("regNo", "");
+            String jsonString = ImportantStuffs.getStringFromJsonObjectPath("notficationInfo.json", context);
+            saveToFirebase(jsonString, "NotificationFrequency/" + regNo);
+        } catch (Exception e) {
+        }
+
+    }
+
+    public static void saveHistory(Context context) {
+        try {
+            SharedPreferences sharedPreference = context.getSharedPreferences(MainActivity.SHARED_PREFERENCE, MainActivity.MODE_PRIVATE);
+            String regNo = sharedPreference.getString("regNo", "");
+            String jsonString = ImportantStuffs.getStringFromJsonObjectPath("History.json", context);
+            saveToFirebase(jsonString, "UsageHistory/" + regNo);
+        } catch (Exception e) {
+        }
+
+    }
+
+    public static void saveAllAppName(Context context) {
+        try {
+            SharedPreferences sharedPreference = context.getSharedPreferences(MainActivity.SHARED_PREFERENCE, MainActivity.MODE_PRIVATE);
+            String regNo = sharedPreference.getString("regNo", "");
+            final PackageManager pm = context.getPackageManager();
+
+//        //get a list of installed apps.
+            List<PackageInfo> packages = pm.getInstalledPackages(PackageManager.GET_META_DATA);
+
+            JSONObject installedApps = new JSONObject();
+            for (int i = 0; i < packages.size(); i++) {
+//            if((packages.get(i).applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0){
+                String label = null;
+                //label = packages.get(i).applicationInfo.loadLabel(pm).toString();
+                label = getAppName(packages.get(i).packageName, context);
+                try {
+                    installedApps.put(removeDot(packages.get(i).packageName), label);
+                } catch (Exception e) {
+                }
+                //}
+            }
+
+
+            saveToFirebase(installedApps.toString(), "InstalledApps/" + regNo);
+        } catch (Exception e) {
+        }
+
+
+    }
+
+    public static void saveEverything(Context context) {
+        try {
+            saveUserInfo(context);
+            saveInfo(context);
+            saveNotificationInfo(context);
+            saveHistory(context);
+            //saveAllAppName(context);
+        } catch (Exception e) {
+        }
     }
 
 
@@ -372,146 +537,6 @@ public class ImportantStuffs {
             fullMessage += message + " ";
         }
         showLog(fullMessage);
-    }
-
-
-    public static void displayNotification(String packageName, int percentage, int mode ,  Context context) {
-
-        String channel_ID = "1";
-        NotificationManager manager =
-                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-
-        Intent notificationIntent = new Intent(context, AppList.class);
-        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context,
-                1, notificationIntent, 0);
-
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(channel_ID, "2", NotificationManager.IMPORTANCE_DEFAULT);
-            // channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
-            assert manager != null;
-            manager.createNotificationChannel(channel);
-        }
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channel_ID)
-                // .setContentTitle(task)
-                //.setContentText(desc)
-
-                // .setContentIntent(pendingIntent)
-                //  .setDefaults(Notification.DEFAULT_ALL)
-                //.addAction(R.mipmap.ic_launcher,"click",notificationIntent1)
-                //.setTicker("testing it")
-                //    .setPriority(Notification.PRIORITY_HIGH)
-                //   .setFullScreenIntent(pendingIntent,true)
-                //  .setAutoCancel(true)
-                .setSmallIcon(R.mipmap.ic_launcher);
-        if(mode == 1 ){
-            builder.setStyle(new NotificationCompat.BigTextStyle().bigText(percentage+
-                    "% of daily target is used").setBigContentTitle(getAppName(packageName,context)).setSummaryText("Click to expand"));
-        }
-        else {
-            builder.setStyle(new NotificationCompat.BigTextStyle().bigText(percentage+
-                    "% of weekly target is used").setBigContentTitle(getAppName(packageName,context)).setSummaryText("Click to expand"));
-        }
-        assert manager != null;
-        manager.notify((int) (System.currentTimeMillis()%200), builder.build());
-    }
-
-
-    public static void saveToFirebase(String jsonString, String path) {
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference(path);
-
-        Map<String, Object> userMap = new Gson().fromJson(jsonString, new TypeToken<HashMap<String, Object>>() {
-        }.getType());
-        myRef.updateChildren(userMap);
-    }
-
-    public static void saveUserInfo(Context context){
-        try {
-            SharedPreferences sharedPreference = context.getSharedPreferences(MainActivity.SHARED_PREFERENCE, MainActivity.MODE_PRIVATE);
-            JSONObject ob = new JSONObject();
-            String cg = sharedPreference.getString("cg", "");
-            String regNo = sharedPreference.getString("regNo","");
-            String gender = sharedPreference.getString("gender","");
-            try {
-                ob.put("cg",cg);
-                ob.put("regNo",regNo);
-                ob.put("gender",gender);
-            }catch (Exception e){}
-
-            saveToFirebase(ob.toString(),"UserInfo/"+regNo);
-        }catch (Exception e){}
-
-    }
-
-    public static void saveInfo(Context context){
-        try {
-            SharedPreferences sharedPreference = context.getSharedPreferences(MainActivity.SHARED_PREFERENCE, MainActivity.MODE_PRIVATE);
-            String regNo = sharedPreference.getString("regNo","");
-            String jsonString =  ImportantStuffs.getStringFromJsonObjectPath("info.json",context);
-            saveToFirebase(jsonString, "TargetHistory/"+regNo);
-        }catch (Exception e){}
-
-    }
-
-    public static void saveNotificationInfo(Context context){
-        try {
-            SharedPreferences sharedPreference = context.getSharedPreferences(MainActivity.SHARED_PREFERENCE, MainActivity.MODE_PRIVATE);
-            String regNo = sharedPreference.getString("regNo","");
-            String jsonString =  ImportantStuffs.getStringFromJsonObjectPath("notficationInfo.json",context);
-            saveToFirebase(jsonString, "NotificationFrequency/"+regNo);
-        }catch (Exception e){}
-
-    }
-
-    public static void saveHistory(Context context){
-        try {
-            SharedPreferences sharedPreference = context.getSharedPreferences(MainActivity.SHARED_PREFERENCE, MainActivity.MODE_PRIVATE);
-            String regNo = sharedPreference.getString("regNo","");
-            String jsonString = ImportantStuffs.getStringFromJsonObjectPath("History.json", context);
-            saveToFirebase(jsonString, "UsageHistory/"+regNo);
-        }catch (Exception e){}
-
-    }
-
-    public static void saveAllAppName(Context context){
-        try {
-            SharedPreferences sharedPreference = context.getSharedPreferences(MainActivity.SHARED_PREFERENCE, MainActivity.MODE_PRIVATE);
-            String regNo = sharedPreference.getString("regNo","");
-            final PackageManager pm = context.getPackageManager();
-
-//        //get a list of installed apps.
-            List<PackageInfo> packages = pm.getInstalledPackages(PackageManager.GET_META_DATA);
-
-            JSONObject installedApps = new JSONObject();
-            for(int i =0; i<packages.size();i++){
-//            if((packages.get(i).applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0){
-                String label = null;
-                //label = packages.get(i).applicationInfo.loadLabel(pm).toString();
-                label = getAppName(packages.get(i).packageName,context);
-                try {
-                    installedApps.put(removeDot(packages.get(i).packageName),label);
-                }catch (Exception e){}
-                //}
-            }
-
-
-            saveToFirebase(installedApps.toString(),"InstalledApps/"+regNo);
-        }catch (Exception e){}
-
-
-    }
-
-    public static void saveEverything(Context context){
-        try {
-            saveUserInfo(context);
-            saveInfo(context);
-            saveNotificationInfo(context);
-            saveHistory(context);
-            //saveAllAppName(context);
-        }catch (Exception e){}
     }
 
 
@@ -579,7 +604,6 @@ public class ImportantStuffs {
 //        UsageEvents usageEvents = mUsageStatsManager.queryEvents(getDayStartTime(), getDayEndTime());
 //        return usageEvents.hasNextEvent();
 //    }
-
 
 
 //    private void initAppsUsageInfo(){

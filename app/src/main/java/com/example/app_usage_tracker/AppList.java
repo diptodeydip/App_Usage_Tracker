@@ -35,7 +35,6 @@ import static android.app.AppOpsManager.MODE_ALLOWED;
 public class AppList extends AppCompatActivity {
     public static final String TAG = "temp";
     private HashMap<String, AppUsageInfo> appsUsageInfo;
-//    private AppListAsyncTask appListAsyncTask;
 
     private SwipeRefreshLayout refreshLayout;
 
@@ -83,6 +82,7 @@ public class AppList extends AppCompatActivity {
             menu.findItem(R.id.sort_ascending).setChecked(sortOrderAscending);
             menu.findItem(sortBy).setChecked(true);
         } catch (Exception e){
+            e.printStackTrace();
             ImportantStuffs.showErrorLog("Menu item check failed");
         }
 

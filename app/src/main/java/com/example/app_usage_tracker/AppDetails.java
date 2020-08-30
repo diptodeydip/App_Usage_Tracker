@@ -82,9 +82,10 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_app_details);
+        currentPackage = getIntent().getStringExtra("packageName");
+        String appName = ImportantStuffs.getAppName(currentPackage, this);
 
         initStuffs();
-        String appName = ImportantStuffs.getAppName(currentPackage, this);
         setTitle(appName);
 //        new GraphAsyncTask(this).execute();
         testStuffs();
@@ -95,7 +96,6 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
     }
 
     private void initStuffs() {
-        currentPackage = getIntent().getStringExtra("packageName");
         currentPackageNoDot = ImportantStuffs.removeDot(currentPackage);
         initJson();
 
@@ -155,8 +155,8 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
             weeklyTarget = thisAppInfoJson.getLong("weeklyTarget");
             dailyTarget = thisAppInfoJson.getLong("dailyTarget");
         } catch (JSONException e) {
-            ImportantStuffs.showErrorLog("Can't initialize target");
             e.printStackTrace();
+            ImportantStuffs.showErrorLog("Can't initialize target");
         }
         targetTypesTextView = findViewById(R.id.target_types_text);
         targetTypes = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.target_types)));
@@ -182,8 +182,8 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
             for(int i=0; i<dailyNotificationsJson.length(); i++)
                 dailySelectedNotificationIndexes.add(dailyNotificationsJson.getInt(i));
         } catch (JSONException e) {
-            ImportantStuffs.showErrorLog("Can't initialize notifications");
             e.printStackTrace();
+            ImportantStuffs.showErrorLog("Can't initialize notifications");
         }
         setWeeklyNotificationsText();
         setDailyNotificationsText();
@@ -233,7 +233,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
 
     public void onSetWeeklyTargetClicked(View view) {
         int hour = (int) ImportantStuffs.getHourFromTime(weeklyTarget);
-        int min = (int) ImportantStuffs.getRemainingMinuteFromTime(weeklyTarget);
+        int min = ImportantStuffs.getRemainingMinuteFromTime(weeklyTarget);
         showTimePickerDialog(MODE_WEEKLY, hour, min, 24*7-1, 59);
     }
 
@@ -249,14 +249,18 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
             selectedItems[i] = true;
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.DialogTheme);
-        builder.setTitle(R.string.select_notification_type).setMultiChoiceItems(R.array.notification_types, selectedItems,(dialog, which, isChecked) -> {
-            boolean contains = weeklySelectedNotificationIndexes.contains(which);
-            if(isChecked && !contains)
-                weeklySelectedNotificationIndexes.add(which);
-            else if(!isChecked && contains)
-                weeklySelectedNotificationIndexes.remove(weeklySelectedNotificationIndexes.indexOf(which));
-            setWeeklyNotificationsText();
-        }).setPositiveButton(R.string.set, (dialog, id) -> {});
+        builder.setTitle(R.string.select_notification_type)
+                .setMultiChoiceItems(R.array.notification_types, selectedItems, (dialog, which, isChecked) -> {
+                    boolean contains = weeklySelectedNotificationIndexes.contains(which);
+                    if (isChecked && !contains)
+                        weeklySelectedNotificationIndexes.add(which);
+                    else if (!isChecked && contains)
+                        weeklySelectedNotificationIndexes.remove(weeklySelectedNotificationIndexes.indexOf(which));
+                    setWeeklyNotificationsText();
+                })
+                .setPositiveButton(R.string.set, (dialog, id) -> {
+                });
+        builder.setOnDismissListener((dialog) -> AppsDataController.startAlarm(this, 50));
 
         builder.create();
         builder.show();
@@ -268,14 +272,18 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
             selectedItems[i] = true;
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.DialogTheme);
-        builder.setTitle(R.string.select_notification_type).setMultiChoiceItems(R.array.notification_types, selectedItems, (dialog, which, isChecked) -> {
-            boolean contains = dailySelectedNotificationIndexes.contains(which);
-            if(isChecked && !contains)
-                dailySelectedNotificationIndexes.add(which);
-            else if(!isChecked && contains)
-                dailySelectedNotificationIndexes.remove(dailySelectedNotificationIndexes.indexOf(which));
-            setDailyNotificationsText();
-        }).setPositiveButton(R.string.set, (dialog, id) -> {});
+        builder.setTitle(R.string.select_notification_type)
+                .setMultiChoiceItems(R.array.notification_types, selectedItems, (dialog, which, isChecked) -> {
+                    boolean contains = dailySelectedNotificationIndexes.contains(which);
+                    if (isChecked && !contains)
+                        dailySelectedNotificationIndexes.add(which);
+                    else if (!isChecked && contains)
+                        dailySelectedNotificationIndexes.remove(dailySelectedNotificationIndexes.indexOf(which));
+                    setDailyNotificationsText();
+                })
+                .setPositiveButton(R.string.set, (dialog, id) -> {
+                });
+        builder.setOnDismissListener((dialog) -> AppsDataController.startAlarm(this, 50));
 
         builder.create();
         builder.show();

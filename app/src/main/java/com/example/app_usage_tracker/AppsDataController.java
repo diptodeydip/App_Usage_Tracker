@@ -38,10 +38,7 @@ public class AppsDataController extends BroadcastReceiver {
 
         startAlarm(context, 20 * ImportantStuffs.MILLISECONDS_IN_MINUTE);
 
-        new Thread(() -> {
-            AsyncUsageTask runner = new AsyncUsageTask();
-            runner.execute();
-        }).start();
+        new AsyncUsageTask().execute();
     }
 
     public static void startAlarm(Context context, long delayInMillisecond) {
@@ -322,27 +319,28 @@ public class AppsDataController extends BroadcastReceiver {
             ImportantStuffs.showLog("checkpoint not saving -_-");
         }
 
-       // ImportantStuffs.saveToFirebase(usageDetails.toString(),"check/");
+        // ImportantStuffs.saveToFirebase(usageDetails.toString(),"check/");
 
         ImportantStuffs.saveFileLocally("History.json", usageDetails.toString(), context);
         ImportantStuffs.saveFileLocally("info.json", jsonInfo.toString(), context);
     }
 
-    public  void checkTargetLocally(Context context){
+    public void checkTargetLocally(Context context) {
         JSONObject historyJsonObject = ImportantStuffs.getJsonObject("History.json", context);
         JSONObject info = new JSONObject();
-        String jsonString =  ImportantStuffs.getStringFromJsonObjectPath("info.json",context);
+        String jsonString = ImportantStuffs.getStringFromJsonObjectPath("info.json", context);
 
         try {
             info = new JSONObject(jsonString);
-        }catch (Exception e){}
+        } catch (Exception e) {
+        }
 
         try {
             JSONObject appsInfo = info.getJSONObject("appsInfo");
 
             Iterator<String> keys = appsInfo.keys();
 
-            long dailyTargetStartTime,weeklyTargetStartTime;
+            long dailyTargetStartTime, weeklyTargetStartTime;
 
             dailyTargetStartTime = ImportantStuffs.getDayStartingHour();
 
@@ -355,65 +353,62 @@ public class AppsDataController extends BroadcastReceiver {
 
             ImportantStuffs.notificationString = new StringBuilder();
 
-            while(keys.hasNext()) {
+            while (keys.hasNext()) {
                 String key = keys.next();
                 JSONObject individualApp = (JSONObject) appsInfo.get(key);
 
-                JSONArray targetTypes =  individualApp.getJSONArray("targetTypes");
+                JSONArray targetTypes = individualApp.getJSONArray("targetTypes");
                 int typeCount = targetTypes.length();
                 int daily = 1, weekly = 0;
 
-                for (int i = 0 ; i< typeCount ; i++){
-                    int dailyOrWeekly =  targetTypes.getInt(i);
-                    if(dailyOrWeekly == daily){
-                        JSONArray dailyNotifications =  individualApp.getJSONArray("dailyNotifications");
+                for (int i = 0; i < typeCount; i++) {
+                    int dailyOrWeekly = targetTypes.getInt(i);
+                    if (dailyOrWeekly == daily) {
+                        JSONArray dailyNotifications = individualApp.getJSONArray("dailyNotifications");
                         individualApp = getSingleHistory("dailyTarget", "DailyInfo", getDailyUsageData(historyJsonObject, dailyTargetStartTime, ImportantStuffs.addDot(key), context), key,
                                 context, individualApp, dailyTargetStartTime, dailyNotifications);
-                    }
-                    else {
-                        JSONArray weeklyNotifications =  individualApp.getJSONArray("weeklyNotifications");
+                    } else {
+                        JSONArray weeklyNotifications = individualApp.getJSONArray("weeklyNotifications");
                         individualApp = getSingleHistory("weeklyTarget", "WeeklyInfo",
                                 getWeeklyUsageData(historyJsonObject, weeklyTargetStartTime, ImportantStuffs.addDot(key), context), key,
                                 context, individualApp, weeklyTargetStartTime, weeklyNotifications);
                     }
                 }
-                if(typeCount == 0){
-                    individualApp = setRecentHistoryToNull("DailyInfo", individualApp , dailyTargetStartTime);
+                if (typeCount == 0) {
+                    individualApp = setRecentHistoryToNull("DailyInfo", individualApp, dailyTargetStartTime);
                     individualApp = setRecentHistoryToNull("WeeklyInfo", individualApp, weeklyTargetStartTime);
-                }
-                else if(typeCount == 1){
-                    if(targetTypes.getInt(0)==weekly){
-                        individualApp = setRecentHistoryToNull("DailyInfo", individualApp , dailyTargetStartTime);
-                    }
-                    else{
+                } else if (typeCount == 1) {
+                    if (targetTypes.getInt(0) == weekly) {
+                        individualApp = setRecentHistoryToNull("DailyInfo", individualApp, dailyTargetStartTime);
+                    } else {
                         individualApp = setRecentHistoryToNull("WeeklyInfo", individualApp, weeklyTargetStartTime);
                     }
                 }
 
-                appsInfo.put(key,individualApp);
+                appsInfo.put(key, individualApp);
             }
-            info.put("appsInfo",appsInfo);
+            info.put("appsInfo", appsInfo);
             ImportantStuffs.saveFileLocally("info.json", info.toString(), context);
 
-           // if(!ImportantStuffs.notificationString.toString().equals("")){
+            // if(!ImportantStuffs.notificationString.toString().equals("")){
             //    ImportantStuffs.displayNotification("UsageInfo",ImportantStuffs.notificationString.toString(),context);
             //}
 
-        } catch (JSONException e) {}
+        } catch (JSONException e) {
+        }
     }
 
-    public JSONObject getSingleHistory(String targetType, String infoName , Long usedTime , String packageName , Context context, JSONObject individualApp, Long startTime, JSONArray notifications) throws JSONException {
+    public JSONObject getSingleHistory(String targetType, String infoName, Long usedTime, String packageName, Context context, JSONObject individualApp, Long startTime, JSONArray notifications) throws JSONException {
 
         JSONObject dateInfo = new JSONObject();
-        dateInfo.put("target",  individualApp.getLong(targetType));
+        dateInfo.put("target", individualApp.getLong(targetType));
         double percentage = 0.0;
-        if (usedTime != 0)
-        {
+        if (usedTime != 0) {
             percentage = ((double) usedTime / (double) individualApp.getLong(targetType)) * 100.0;
             dateInfo.put("used", usedTime);
 
-        }
-        else dateInfo.put("used", 0);;
+        } else dateInfo.put("used", 0);
+        ;
 
         dateInfo.put("date", startTime);
         JSONObject date = new JSONObject();
@@ -422,17 +417,17 @@ public class AppsDataController extends BroadcastReceiver {
         } catch (Exception e) {
         }
 
-        date.put(startTime+"", dateInfo);
+        date.put(startTime + "", dateInfo);
         individualApp.put(infoName, date);
 
         //
-        checkNotification(infoName, (int) percentage,notifications,packageName);
+        checkNotification(infoName, (int) percentage, notifications, packageName);
         //
 
-        return  individualApp;
+        return individualApp;
     }
 
-    public void checkNotification(String infoName, int percentage , JSONArray notifications, String packageName){
+    public void checkNotification(String infoName, int percentage, JSONArray notifications, String packageName) {
 
         boolean flag = false;
         int tempPercentage = 0;
@@ -440,31 +435,34 @@ public class AppsDataController extends BroadcastReceiver {
         JSONObject notificationInfo = new JSONObject();
         JSONArray notificationTypes = new JSONArray();
         try {
-            notificationTypes.put(0,100);
-            notificationTypes.put(1,90);
-            notificationTypes.put(2,80);
-            notificationTypes.put(3,70);
-            notificationTypes.put(4,60);
-            notificationTypes.put(5,50);
-        }catch (Exception e){}
+            notificationTypes.put(0, 100);
+            notificationTypes.put(1, 90);
+            notificationTypes.put(2, 80);
+            notificationTypes.put(3, 70);
+            notificationTypes.put(4, 60);
+            notificationTypes.put(5, 50);
+        } catch (Exception e) {
+        }
 
 
         try {
-            String jsonString =  ImportantStuffs.getStringFromJsonObjectPath("notficationInfo.json",context);
+            String jsonString = ImportantStuffs.getStringFromJsonObjectPath("notficationInfo.json", context);
             notificationInfo = new JSONObject(jsonString);
-        }catch (Exception e){}
+        } catch (Exception e) {
+        }
 
 
-        for(int i = 0 ; i < notifications.length(); i++){
+        for (int i = 0; i < notifications.length(); i++) {
             try {
-                if(percentage >= notificationTypes.getInt(notifications.getInt(i)) && notificationTypes.getInt(notifications.getInt(i)) >= tempPercentage){
+                if (percentage >= notificationTypes.getInt(notifications.getInt(i)) && notificationTypes.getInt(notifications.getInt(i)) >= tempPercentage) {
                     flag = true;
                     tempPercentage = notificationTypes.getInt(notifications.getInt(i));
                 }
-            }catch (Exception e){}
+            } catch (Exception e) {
+            }
         }
 
-        if(flag) {
+        if (flag) {
 
             JSONObject data, today, appData;
             data = new JSONObject();
@@ -476,9 +474,8 @@ public class AppsDataController extends BroadcastReceiver {
 
                 today = data.getJSONObject(ImportantStuffs.getDayStartingHour() + "");
                 int p = today.getInt("percentage");
-                if(p != tempPercentage)throw  new Exception();
-
-            }catch (Exception e){
+                if (p != tempPercentage) throw new Exception();
+            } catch (Exception e) {
                 try {
                     today.put("percentage", tempPercentage);
                     today.put("Time", System.currentTimeMillis());
@@ -486,24 +483,23 @@ public class AppsDataController extends BroadcastReceiver {
                     appData.put(infoName, data);
                     notificationInfo.put(ImportantStuffs.removeDot(packageName), appData);
                     ImportantStuffs.saveFileLocally("notficationInfo.json", notificationInfo.toString(), context);
-                    if (infoName == "DailyInfo") {
-                        ImportantStuffs.displayNotification(ImportantStuffs.addDot(packageName),tempPercentage,1,context);
-                        // ImportantStuffs.notificationString.append(tempPercentage).append("% of daily target for ")
-                        //        .append(ImportantStuffs.getAppName(ImportantStuffs.addDot(packageName),context)).append(" is used\n");
-                    }
-                    else
-                    {
-                        ImportantStuffs.displayNotification(ImportantStuffs.addDot(packageName),tempPercentage,0,context);
-                    //ImportantStuffs.notificationString.append(tempPercentage).append("% of weekly target for ")
-                    //  .append(ImportantStuffs.getAppName(ImportantStuffs.addDot(packageName),context)).append(" is used\n");
-                }
+                    int mode = (infoName.equals("DailyInfo")) ? 1 : 0;
 
-                }catch (Exception e1){}
+                    try {
+                        ImportantStuffs.displayNotification(ImportantStuffs.addDot(packageName), tempPercentage, mode, context);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        ImportantStuffs.showErrorLog("Can't show notification");
+                    }
+
+                } catch (Exception e1) {
+
+                }
             }
         }
     }
 
-    public JSONObject setRecentHistoryToNull(String infoName, JSONObject individualApp , Long startTime) throws JSONException {
+    public JSONObject setRecentHistoryToNull(String infoName, JSONObject individualApp, Long startTime) throws JSONException {
         JSONObject date = new JSONObject();
         try {
             date = individualApp.getJSONObject(infoName);
@@ -512,24 +508,25 @@ public class AppsDataController extends BroadcastReceiver {
         date.put(startTime + "", null);
         individualApp.put(infoName, date);
 
-        return  individualApp;
+        return individualApp;
     }
 
-    public static ArrayList<TargetInfo> getTargetHistory( String packageName , int mode , Context context){
+    public static ArrayList<TargetInfo> getTargetHistory(String packageName, int mode, Context context) {
 
-        String type ;
-        if(mode == 0 )type = "WeeklyInfo";
+        String type;
+        if (mode == 0) type = "WeeklyInfo";
         else type = "DailyInfo";
 
         ArrayList<TargetInfo> targetInfos = new ArrayList<>();
 
         JSONObject info = new JSONObject();
-        String jsonString =  ImportantStuffs.getStringFromJsonObjectPath("info.json",context);
+        String jsonString = ImportantStuffs.getStringFromJsonObjectPath("info.json", context);
         try {
             info = new JSONObject(jsonString);
-        }catch (Exception e){}
+        } catch (Exception e) {
+        }
 
-        JSONObject appsInfo,targetHistory,individualApp;
+        JSONObject appsInfo, targetHistory, individualApp;
         try {
             appsInfo = info.getJSONObject("appsInfo");
             individualApp = appsInfo.getJSONObject(ImportantStuffs.removeDot(packageName));

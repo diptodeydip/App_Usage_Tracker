@@ -3,9 +3,11 @@ package com.example.app_usage_tracker;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
@@ -48,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "Json initialization failed. App won't work properly.", Toast.LENGTH_SHORT).show();
                 ImportantStuffs.showErrorLog("Json initialization failed. App won't work properly.");
             } else {
-                saveAppsInstallationTime();
+                new SaveInstallationInfoAsync(this).execute();
                 AppsDataController.startAlarm(this, 100);
             }
 
@@ -120,16 +122,20 @@ public class MainActivity extends AppCompatActivity {
         else
             regiLayout.setErrorEnabled(false);
 
-        if(cg < 1 || cg > 4)
+        if (cg < 1 || cg > 4)
             cgpaLayout.setError("Invalid cgpa");
         else
             cgpaLayout.setErrorEnabled(false);
 
 
-        if(!regiLayout.isErrorEnabled() && !cgpaLayout.isErrorEnabled()){
+        if (!regiLayout.isErrorEnabled() && !cgpaLayout.isErrorEnabled()) {
             RadioButton genderButton = findViewById(genderRadioGroup.getCheckedRadioButtonId());
             saveUserData(registrationNumber, cgpa, genderButton.getText().toString());
         }
+
+        Intent intent = new Intent(this, AppList.class);
+        startActivity(intent);
+        finish();
     }
 
     public void onMaleClicked(View view) {
@@ -176,16 +182,13 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Json initialization failed. App won't work properly.", Toast.LENGTH_SHORT).show();
         else{
             AppsDataController.startAlarm(this, 100);
-            saveAppsInstallationTime();
+            new SaveInstallationInfoAsync(this).execute();
         }
-
-        Intent intent = new Intent(this, AppList.class);
-        startActivity(intent);
-        finish();
     }
 
-    private boolean checkIfUserRegistered(){
-        if(sharedPreference.getString("regNo", "").equals(""))
+    private boolean checkIfUserRegistered() {
+        String regNo = sharedPreference.getString("regNo", "");
+        if (regNo.equals(""))
             return false;
         return true;
     }
@@ -211,28 +214,38 @@ public class MainActivity extends AppCompatActivity {
                 jsonInfo.put("appsInfo", new JSONObject());
                 jsonInfo.put("appsInstallationInfo", new JSONObject());
             } catch (JSONException e) {
+                e.printStackTrace();
                 ImportantStuffs.showErrorLog("Checkpoint can't be initialized");
                 return false;
             }
-            if(!ImportantStuffs.saveFileLocally("info.json", jsonInfo.toString(), this)){
+            if (!ImportantStuffs.saveFileLocally("info.json", jsonInfo.toString(), this)) {
                 ImportantStuffs.showErrorLog("Checkpoint can't be initialized");
                 return false;
             }
+            ImportantStuffs.showLog("info.json initialized.");
         }
         return true;
     }
 
-    private void saveAppsInstallationTime() {
-        new Thread(() -> {
-            JSONObject infoJson = ImportantStuffs.getJsonObject("info.json", this);
+    private class SaveInstallationInfoAsync extends AsyncTask<Void, Void, Void> {
+        private Context context;
+
+        public SaveInstallationInfoAsync(Context context) {
+            this.context = context;
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            JSONObject infoJson = ImportantStuffs.getJsonObject("info.json", context);
             JSONObject appsInstallationInfoJson = null;
             try {
                 appsInstallationInfoJson = infoJson.getJSONObject("appsInstallationInfo");
             } catch (JSONException e) {
+                e.printStackTrace();
                 ImportantStuffs.showErrorLog("Can't find appsInstallationInfo");
             }
             HashMap<String, AppUsageInfo> allApps = new HashMap<>();
-            allApps = AppsDataController.addOtherAppsInfo(allApps, this);
+            allApps = AppsDataController.addOtherAppsInfo(allApps, context);
             for (HashMap.Entry entry : allApps.entrySet()) {
                 String key = ImportantStuffs.removeDot((String) entry.getKey());
                 AppUsageInfo appInfo = (AppUsageInfo) entry.getValue();
@@ -250,17 +263,20 @@ public class MainActivity extends AppCompatActivity {
                     jsonValue.put("appName", appInfo.getAppName());
                     appsInstallationInfoJson.put(key, jsonValue);
                 } catch (JSONException e) {
+                    e.printStackTrace();
                     ImportantStuffs.showErrorLog("Can't save installation info for ", appInfo.getAppName());
                 }
 
             }
             try {
                 infoJson.put("appsInstallationInfo", appsInstallationInfoJson);
-                ImportantStuffs.saveFileLocally("info.json", infoJson.toString(), this);
+                ImportantStuffs.saveFileLocally("info.json", infoJson.toString(), context);
             } catch (JSONException e) {
+                e.printStackTrace();
                 ImportantStuffs.showErrorLog("Can't save installation info");
             }
-        }).start();
-//        ImportantStuffs.showLog("Installation info saved");
+            ImportantStuffs.showLog("Installation info saved");
+            return null;
+        }
     }
 }
