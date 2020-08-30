@@ -386,11 +386,12 @@ public class ImportantStuffs {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channel_ID)
                 .setContentTitle(appName)
                 .setContentText(description)
-                .setContentIntent(pendingIntent)
-                .setAutoCancel(true)
-                .setCategory(NotificationCompat.CATEGORY_REMINDER)
-                .setLargeIcon(icon)
-                .setBadgeIconType(NotificationCompat.BADGE_ICON_SMALL)
+//                .setPriority(NotificationCompat.PRIORITY_MAX)
+//                .setContentIntent(pendingIntent)
+//                .setAutoCancel(true)
+//                .setCategory(NotificationCompat.CATEGORY_REMINDER)
+//                .setLargeIcon(icon)
+//                .setBadgeIconType(NotificationCompat.BADGE_ICON_SMALL)
                 .setSmallIcon(R.drawable.aut_icon);
 
         assert manager != null;

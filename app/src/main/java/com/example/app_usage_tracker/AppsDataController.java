@@ -408,7 +408,6 @@ public class AppsDataController extends BroadcastReceiver {
             dateInfo.put("used", usedTime);
 
         } else dateInfo.put("used", 0);
-        ;
 
         dateInfo.put("date", startTime);
         JSONObject date = new JSONObject();
@@ -446,7 +445,7 @@ public class AppsDataController extends BroadcastReceiver {
 
 
         try {
-            String jsonString = ImportantStuffs.getStringFromJsonObjectPath("notficationInfo.json", context);
+            String jsonString = ImportantStuffs.getStringFromJsonObjectPath("notificationInfo.json", context);
             notificationInfo = new JSONObject(jsonString);
         } catch (Exception e) {
         }
@@ -482,7 +481,7 @@ public class AppsDataController extends BroadcastReceiver {
                     data.put(ImportantStuffs.getDayStartingHour() + "", today);
                     appData.put(infoName, data);
                     notificationInfo.put(ImportantStuffs.removeDot(packageName), appData);
-                    ImportantStuffs.saveFileLocally("notficationInfo.json", notificationInfo.toString(), context);
+                    ImportantStuffs.saveFileLocally("notificationInfo.json", notificationInfo.toString(), context);
                     int mode = (infoName.equals("DailyInfo")) ? 1 : 0;
 
                     try {
