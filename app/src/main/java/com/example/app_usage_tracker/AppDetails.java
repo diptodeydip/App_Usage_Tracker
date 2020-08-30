@@ -479,12 +479,12 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
             public void onValueSelected(Entry e, Highlight h) {
                 if(calendarMode == MODE_DAILY){
                     int min = (int) e.getY();
-                    Toast.makeText(AppDetails.this, "Target can't be 0", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(AppDetails.this, min + " min", Toast.LENGTH_SHORT).show();
                 }
                 else{
                     int hour = (int) e.getY();
                     int min = (int) ((e.getY() - (float) hour) * 60f);
-                    Toast.makeText(AppDetails.this, "Target can't be 0", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(AppDetails.this, String.format("%d hour %d min", hour, min), Toast.LENGTH_SHORT).show();
                 }
             }
 
