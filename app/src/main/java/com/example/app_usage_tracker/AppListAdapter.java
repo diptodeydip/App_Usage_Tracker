@@ -161,11 +161,6 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.ViewHold
     }
 
     public void gotoAppDetails(String packageName){
-        String history = ImportantStuffs.getStringFromJsonObjectPath("History.json", context);
-        if(history.equals("")){
-            Toast.makeText(context, "Details hasn't been fully loaded yet. Wait a couple of seconds and press again.", Toast.LENGTH_LONG).show();
-            return;
-        }
         Intent intent = new Intent(context, AppDetails.class);
         intent.putExtra("packageName", packageName);
         context.startActivity(intent);

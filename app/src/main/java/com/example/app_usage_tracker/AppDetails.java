@@ -82,34 +82,33 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_app_details);
+
+        String history = ImportantStuffs.getStringFromJsonObjectPath("History.json", this);
+        if (history.equals(""))
+            Toast.makeText(this, R.string.details_loading, Toast.LENGTH_LONG).show();
+
         currentPackage = getIntent().getStringExtra("packageName");
-        String appName = ImportantStuffs.getAppName(currentPackage, this);
-
-        initStuffs();
-        setTitle(appName);
-//        new GraphAsyncTask(this).execute();
-        testStuffs();
-    }
-
-    private void testStuffs(){
-
-    }
-
-    private void initStuffs() {
         currentPackageNoDot = ImportantStuffs.removeDot(currentPackage);
+        String appName = ImportantStuffs.getAppName(currentPackage, this);
+        setTitle(appName);
+
         initJson();
 
         usageCollectionTime = ImportantStuffs.getDayStartingHour();
         currentGraphDate = ImportantStuffs.getDayStartingHour();
-
         chart = findViewById(R.id.usage_graph);
 
         onDailyCalendarSelected(null);
 
         initTargetNotificationStuffs();
+        testStuffs();
     }
 
-    private void initJson(){
+    private void testStuffs() {
+
+    }
+
+    private void initJson() {
         jsonInfo = ImportantStuffs.getJsonObject("info.json", this);
         String thisAppInfo = "";
         try {
@@ -317,7 +316,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
             int min = minPicker.getValue();
 
             if(hour == 0 && min == 0){
-                showToast("Target can't be 0");
+                Toast.makeText(this, "Target can't be 0", Toast.LENGTH_SHORT).show();
                 if(mode == MODE_WEEKLY)
                     hour = 14;
                 else
@@ -480,12 +479,12 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
             public void onValueSelected(Entry e, Highlight h) {
                 if(calendarMode == MODE_DAILY){
                     int min = (int) e.getY();
-                    showToast(min + " min");
+                    Toast.makeText(AppDetails.this, "Target can't be 0", Toast.LENGTH_SHORT).show();
                 }
                 else{
                     int hour = (int) e.getY();
                     int min = (int) ((e.getY() - (float) hour) * 60f);
-                    showToast(hour + " hour "  + min + " min");
+                    Toast.makeText(AppDetails.this, "Target can't be 0", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -562,15 +561,21 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
     private BarDataSet getBarDataSetFromUsage(){
         ArrayList<BarEntry> dataValues = new ArrayList<>();
         int dataSize = usageData.size();
-        for(int i=0; i<dataSize; i++){
+        for (int i = 0; i < dataSize; i++) {
             float time;
-            if(dataSize == 24)
+            if (dataSize == 24)
                 time = ImportantStuffs.getMinuteFromTime(usageData.get(i));
             else
                 time = ImportantStuffs.getHourFromTime(usageData.get(i));
             dataValues.add(new BarEntry(i, time));
         }
-        BarDataSet barDataSet = new BarDataSet(dataValues, ImportantStuffs.getDateFromMilliseconds(currentGraphDate));
+        String usageDate = ImportantStuffs.getDateFromMilliseconds(currentGraphDate);
+        long usageSum = 0;
+        for (long usage : usageData)
+            usageSum += usage;
+        String usageString = ImportantStuffs.getTimeFromMillisecond(usageSum);
+
+        BarDataSet barDataSet = new BarDataSet(dataValues, usageDate + " (Overall Usage: " + usageString + ")");
         barDataSet.setColor(ContextCompat.getColor(this, R.color.barColor));
         barDataSet.setDrawValues(false);
         return barDataSet;
@@ -581,8 +586,6 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
         calendarMode = MODE_DAILY;
         usageCollectionTime = currentGraphDate;
         new GraphAsyncTask(this, MODE_DAILY).execute();
-//        usageData = AppsDataController.getDailyUsageDataInHourlyList(usageCollectionTime, currentPackage, this);
-//        updateGraphData();
     }
 
     public void onWeeklyCalendarSelected(View view) {
@@ -629,31 +632,6 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
     }
 
 
-    private void showToast(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-    }
-
-    private void showToast(int message) {
-        showToast(Integer.toString(message));
-    }
-
-    private void showToast(String... messages) {
-        String fullMessage = "";
-        for (String message : messages) {
-            fullMessage += message + " ";
-        }
-        showToast(fullMessage);
-    }
-
-    private void showToast(int... messages) {
-        String fullMessage = "";
-        for (int message : messages) {
-            fullMessage += message + " ";
-        }
-        showToast(fullMessage);
-    }
-
-
     private class GraphAsyncTask extends AsyncTask<Void, Void, Void> {
         private WeakReference<AppDetails> activityWeakReference;
         private int mode;
@@ -679,15 +657,17 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
         @Override
         protected Void doInBackground(Void... aVoid) {
             AppDetails activity = activityWeakReference.get();
-            if (activity == null || activity.isFinishing())
+            if (activity == null || activity.isFinishing()) {
                 return null;
+            }
 
             JSONObject historyJsonObject = ImportantStuffs.getJsonObject("History.json", activity);
 
-            if (mode == MODE_DAILY)
+            if (mode == MODE_DAILY) {
                 activity.usageData = AppsDataController.getDailyUsageDataInHourlyList(historyJsonObject, usageCollectionTime, currentPackage, activity);
-            else
+            } else {
                 activity.usageData = AppsDataController.getWeeklyUsageDataInDailyList(historyJsonObject, usageCollectionTime, currentPackage, activity);
+            }
             return null;
         }
 

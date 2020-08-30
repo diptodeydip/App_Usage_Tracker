@@ -485,6 +485,7 @@ public class AppsDataController extends BroadcastReceiver {
                     int mode = (infoName.equals("DailyInfo")) ? 1 : 0;
 
                     try {
+                        ImportantStuffs.showLog("Notification incoming...");
                         ImportantStuffs.displayNotification(ImportantStuffs.addDot(packageName), tempPercentage, mode, context);
                     } catch (Exception ex) {
                         ex.printStackTrace();
