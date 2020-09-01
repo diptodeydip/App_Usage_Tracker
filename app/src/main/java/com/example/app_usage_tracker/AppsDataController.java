@@ -38,7 +38,7 @@ public class AppsDataController extends BroadcastReceiver {
 
         startAlarm(context, 20 * ImportantStuffs.MILLISECONDS_IN_MINUTE);
 
-        new AsyncUsageTask().execute();
+        new AsyncUsageTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     public static void startAlarm(Context context, long delayInMillisecond) {

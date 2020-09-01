@@ -56,7 +56,8 @@ public class AppList extends AppCompatActivity {
             new AppListAsyncTask(this).execute();
 //            dunno();
         });
-        new AppListAsyncTask(this).execute();
+//        new AppListAsyncTask(this).execute();
+        new AppListAsyncTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 //        dunno();
     }
 

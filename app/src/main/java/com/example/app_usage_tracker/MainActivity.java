@@ -53,9 +53,7 @@ public class MainActivity extends AppCompatActivity {
                 ImportantStuffs.showErrorLog("Json initialization failed. App won't work properly.");
             } else {
                 AppsDataController.startAlarm(this, 100);
-                new Handler().postDelayed(() -> {
-                    new SaveInstallationInfoAsync(this).execute();
-                }, 2000);
+                new SaveInstallationInfoAsync(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 AppsDataController.startAlarm(this, 1000);
             }
 
@@ -188,9 +186,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Json initialization failed. App won't work properly.", Toast.LENGTH_SHORT).show();
         else {
             AppsDataController.startAlarm(this, 100);
-            new Handler().postDelayed(() -> {
-                new SaveInstallationInfoAsync(this).execute();
-            }, 2000);
+            new SaveInstallationInfoAsync(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
     }
 
