@@ -26,7 +26,7 @@ import java.util.Map;
 
 public class AppsDataController extends BroadcastReceiver {
     Context context;
-    public static final String TAG = "ahtrap";
+    public static final String TAG = "extra";
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -125,7 +125,15 @@ public class AppsDataController extends BroadcastReceiver {
         return appsUsageInfo;
     }
 
-    public static HashMap<String, AppUsageInfo> getAppsAllInfo(long startTime, long endTime, Context context) {
+    public static HashMap<String, AppUsageInfo> getAllAppsUsageInfoFromJson(long startTime, long endTime, Context context) {
+        HashMap<String, AppUsageInfo> appsUsageInfo = new HashMap<>();
+        appsUsageInfo = addOtherAppsInfo(appsUsageInfo, context);
+        long checkpoint = getCheckpoint(context);
+
+        return appsUsageInfo;
+    }
+
+    public static HashMap<String, AppUsageInfo> getAllAppsUsageInfo(long startTime, long endTime, Context context) {
         HashMap<String, AppUsageInfo> appsUsageInfo = getAppsUsageInfo(startTime, endTime, context);
         appsUsageInfo = addOtherAppsInfo(appsUsageInfo, context);
         return appsUsageInfo;
@@ -545,6 +553,9 @@ public class AppsDataController extends BroadcastReceiver {
 
 
     private class AsyncUsageTask extends AsyncTask<Void, Void, Void> {
+        public AsyncUsageTask() {
+            Log.d(TAG, "AsyncUsageTask: started");
+        }
 
         @Override
         protected Void doInBackground(Void... voids) {

@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -27,6 +28,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity {
+    public static final String TAG = "extra";
     TextInputEditText regiNumInput, cgpaInput;
     TextInputLayout regiLayout, cgpaLayout;
     RadioGroup genderRadioGroup;
@@ -50,8 +52,11 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "Json initialization failed. App won't work properly.", Toast.LENGTH_SHORT).show();
                 ImportantStuffs.showErrorLog("Json initialization failed. App won't work properly.");
             } else {
-                new SaveInstallationInfoAsync(this).execute();
                 AppsDataController.startAlarm(this, 100);
+                new Handler().postDelayed(() -> {
+                    new SaveInstallationInfoAsync(this).execute();
+                }, 2000);
+                AppsDataController.startAlarm(this, 1000);
             }
 
             Intent intent = new Intent(this, AppList.class);
@@ -181,9 +186,11 @@ public class MainActivity extends AppCompatActivity {
         editor.commit();
         if(initializeJsonIfNot() == false)
             Toast.makeText(this, "Json initialization failed. App won't work properly.", Toast.LENGTH_SHORT).show();
-        else{
+        else {
             AppsDataController.startAlarm(this, 100);
-            new SaveInstallationInfoAsync(this).execute();
+            new Handler().postDelayed(() -> {
+                new SaveInstallationInfoAsync(this).execute();
+            }, 2000);
         }
     }
 
@@ -233,6 +240,7 @@ public class MainActivity extends AppCompatActivity {
 
         public SaveInstallationInfoAsync(Context context) {
             this.context = context;
+            Log.d(TAG, "SaveInstallationInfoAsync: started");
         }
 
         @Override

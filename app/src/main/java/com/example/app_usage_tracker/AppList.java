@@ -6,34 +6,21 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import android.app.AppOpsManager;
 import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.Settings;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.ProgressBar;
-import android.widget.Toast;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 
-import static android.app.AppOpsManager.MODE_ALLOWED;
-
 public class AppList extends AppCompatActivity {
-    public static final String TAG = "temp";
+    public static final String TAG = "extra";
     private HashMap<String, AppUsageInfo> appsUsageInfo;
 
     private SwipeRefreshLayout refreshLayout;
@@ -62,13 +49,15 @@ public class AppList extends AppCompatActivity {
         sortOrderAscending = sharedPreference.getBoolean(ASCENDING_SORT, false);
         sortBy = sharedPreference.getInt(SORT_BY, R.id.sort_by_usage_time);
 
-        new AppListAsyncTask(this).execute();
 
         refreshLayout = findViewById(R.id.refresh_layout);
         refreshLayout.setOnRefreshListener(() -> {
             refreshLayout.setRefreshing(false);
             new AppListAsyncTask(this).execute();
+//            dunno();
         });
+        new AppListAsyncTask(this).execute();
+//        dunno();
     }
 
     @Override
@@ -175,6 +164,7 @@ public class AppList extends AppCompatActivity {
         ProgressDialog progressDialog;
 
         AppListAsyncTask(AppList activity) {
+            Log.d(TAG, "AppListAsyncTask: started");
             activityWeakReference = new WeakReference<>(activity);
             progressDialog = new ProgressDialog(activity, R.style.DialogTheme);
         }
@@ -182,7 +172,6 @@ public class AppList extends AppCompatActivity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-//            progressDialog.setProgressStyle(R.style.StyledDialog);
             progressDialog.setTitle("Loading apps usage info...");
             progressDialog.setMessage("Wait a moment");
             progressDialog.setCanceledOnTouchOutside(false);
@@ -196,7 +185,8 @@ public class AppList extends AppCompatActivity {
                 return null;
             }
             long startTime = ImportantStuffs.getDayStartingHour(), endTime = ImportantStuffs.getCurrentTime();
-            appsUsageInfo = AppsDataController.getAppsAllInfo(startTime, endTime, activity);
+            activity.appsUsageInfo = AppsDataController.getAllAppsUsageInfo(startTime, endTime, activity);
+//            activity.appsUsageInfo = new HashMap<>();
             return null;
         }
 
