@@ -40,7 +40,6 @@ public class AppList extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_app_list);
         testThings();
-//        refreshLayout.setRefreshing(true);
         sharedPreference = getSharedPreferences(APP_LIST_SHARED_PREFERENCE, MODE_PRIVATE);
         editor = sharedPreference.edit();
 
@@ -56,9 +55,8 @@ public class AppList extends AppCompatActivity {
             new AppListAsyncTask(this).execute();
 //            dunno();
         });
-//        new AppListAsyncTask(this).execute();
+
         new AppListAsyncTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-//        dunno();
     }
 
     @Override
