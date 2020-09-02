@@ -662,11 +662,12 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
             }
 
             JSONObject historyJsonObject = ImportantStuffs.getJsonObject("History.json", activity);
+            JSONObject currentHourChecker = ImportantStuffs.getJsonObject("notificationErrorChecker.json" , activity);
 
             if (mode == MODE_DAILY) {
-                activity.usageData = AppsDataController.getDailyUsageDataInHourlyList(historyJsonObject, usageCollectionTime, currentPackage, activity);
+                activity.usageData = AppsDataController.getDailyUsageDataInHourlyList(currentHourChecker,historyJsonObject, usageCollectionTime, currentPackage, activity);
             } else {
-                activity.usageData = AppsDataController.getWeeklyUsageDataInDailyList(historyJsonObject, usageCollectionTime, currentPackage, activity);
+                activity.usageData = AppsDataController.getWeeklyUsageDataInDailyList(currentHourChecker,historyJsonObject, usageCollectionTime, currentPackage, activity);
             }
             return null;
         }
