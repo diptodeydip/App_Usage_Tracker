@@ -408,13 +408,13 @@ public class AppsDataController extends BroadcastReceiver {
                     }
                 }
                 if (typeCount == 0) {
-                    individualApp = setRecentHistoryToNull("DailyInfo", individualApp, dailyTargetStartTime);
-                    individualApp = setRecentHistoryToNull("WeeklyInfo", individualApp, weeklyTargetStartTime);
+                    individualApp = setRecentHistoryToNull("DailyInfo", individualApp, dailyTargetStartTime, ImportantStuffs.addDot(key));
+                    individualApp = setRecentHistoryToNull("WeeklyInfo", individualApp, weeklyTargetStartTime, ImportantStuffs.addDot(key));
                 } else if (typeCount == 1) {
                     if (targetTypes.getInt(0) == weekly) {
-                        individualApp = setRecentHistoryToNull("DailyInfo", individualApp, dailyTargetStartTime);
+                        individualApp = setRecentHistoryToNull("DailyInfo", individualApp, dailyTargetStartTime, ImportantStuffs.addDot(key));
                     } else {
-                        individualApp = setRecentHistoryToNull("WeeklyInfo", individualApp, weeklyTargetStartTime);
+                        individualApp = setRecentHistoryToNull("WeeklyInfo", individualApp, weeklyTargetStartTime, ImportantStuffs.addDot(key));
                     }
                 }
 
@@ -533,7 +533,25 @@ public class AppsDataController extends BroadcastReceiver {
         }
     }
 
-    public JSONObject setRecentHistoryToNull(String infoName, JSONObject individualApp, Long startTime) throws JSONException {
+    public JSONObject setRecentHistoryToNull(String infoName, JSONObject individualApp, Long startTime, String packageName) throws JSONException {
+
+        //set notificationInfo of current day to null
+        JSONObject data, appData, notificationInfo;
+        notificationInfo = ImportantStuffs.getJsonObject("notificationInfo.json",context);
+        data = new JSONObject();
+        appData = new JSONObject();
+        try {
+            appData = notificationInfo.getJSONObject(ImportantStuffs.removeDot(packageName));
+            data = appData.getJSONObject(infoName);
+            data.put(ImportantStuffs.getDayStartingHour() + "", null);
+        }catch (Exception e){
+            data.put(ImportantStuffs.getDayStartingHour() + "", null);
+            appData.put(infoName, data);
+            notificationInfo.put(ImportantStuffs.removeDot(packageName), appData);
+        }
+        ImportantStuffs.saveFileLocally("notificationInfo.json", notificationInfo.toString(), context);
+        //
+
         JSONObject date = new JSONObject();
         try {
             date = individualApp.getJSONObject(infoName);
