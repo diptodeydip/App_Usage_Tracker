@@ -226,13 +226,41 @@ public class AppsDataController extends BroadcastReceiver {
                 return 0;
             }
         } else if (hourStartTime == currentHour) {
+
+            long time = 0 , savedTime = 0;
             HashMap<String, AppUsageInfo> map = getAppsUsageInfo(hourStartTime, currentTime, context);
             try {
-                return map.get(packageName).getTimeInForeground();
+                time = map.get(packageName).getTimeInForeground();
             } catch (Exception e) {
-                return 0;
             }
+
+            JSONObject currentHourChecker = ImportantStuffs.getJsonObject("notificationErrorChecker.json" , context);
+
+            try {
+                JSONObject ob = currentHourChecker.getJSONObject(packageName);
+                savedTime = ob.getLong(hourStartTime+"");
+
+                if(time>savedTime){
+                    ob.put(hourStartTime+"", time);
+                    currentHourChecker.put(packageName,ob);
+
+                }
+                else {
+                    time = savedTime;
+                }
+
+            }catch (Exception e){
+                try{
+                    JSONObject ob = new JSONObject();
+                    ob.put(hourStartTime+"",time);
+                    currentHourChecker.put(packageName,ob);
+                }catch (Exception e1){}
+            }
+
+            ImportantStuffs.saveFileLocally("notificationErrorChecker.json",currentHourChecker.toString(),context);
+            return time;
         }
+
         return 0;
     }
 
