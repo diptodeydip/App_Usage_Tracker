@@ -40,7 +40,8 @@ public class AppsDataController extends BroadcastReceiver {
 
         startAlarm(context, 20 * ImportantStuffs.MILLISECONDS_IN_MINUTE);
 
-        new AsyncUsageTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        new AsyncUsageTask1().execute();
+        new AsyncUsageTask2().execute();
     }
 
     public static void startAlarm(Context context, long delayInMillisecond) {
@@ -54,7 +55,7 @@ public class AppsDataController extends BroadcastReceiver {
 
         long alarmTime = calendar.getTimeInMillis() + delayInMillisecond;
 
-        alarmIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
+        alarmIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         alarmMgr.set(AlarmManager.RTC_WAKEUP, alarmTime, alarmIntent);
     }
 
@@ -596,18 +597,30 @@ public class AppsDataController extends BroadcastReceiver {
     }
 
 
-    private class AsyncUsageTask extends AsyncTask<Void, Void, Void> {
-        public AsyncUsageTask() {
-            Log.d(TAG, "AsyncUsageTask: started");
+    private class AsyncUsageTask1 extends AsyncTask<Void, Void, Void> {
+        public AsyncUsageTask1() {
+            Log.d(TAG, "AsyncUsageTask1: started");
         }
 
         @Override
         protected Void doInBackground(Void... voids) {
             saveUsageDataLocally();
+            return null;
+        }
+
+    }
+    private class AsyncUsageTask2 extends AsyncTask<Void, Void, Void> {
+        public AsyncUsageTask2() {
+            Log.d(TAG, "AsyncUsageTask2: started");
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
             checkTargetLocally(context);
             ImportantStuffs.saveEverything(context);
             return null;
         }
 
     }
+
 }
