@@ -305,15 +305,16 @@ public class AppsDataController extends BroadcastReceiver {
             return;
         }
 
-        String jsonString = ImportantStuffs.getStringFromJsonObjectPath("History.json", context);
-        JSONObject usageDetails = new JSONObject();
-        if (jsonString != "") {
-            try {
-                usageDetails = new JSONObject(jsonString);
-            } catch (Exception e) {
-                return;
-            }
-        }
+//        String jsonString = ImportantStuffs.getStringFromJsonObjectPath("History.json", context);
+//        JSONObject usageDetails = new JSONObject();
+//        if (jsonString != "") {
+//            try {
+//                usageDetails = new JSONObject(jsonString);
+//            } catch (Exception e) {
+//                return;
+//            }
+//        }
+        JSONObject usageDetails = ImportantStuffs.getJsonObject("History.json",context);
 
         for (long startTime = checkpoint + ImportantStuffs.MILLISECONDS_IN_HOUR; startTime <= goalPoint; startTime += ImportantStuffs.MILLISECONDS_IN_HOUR) {
             HashMap<String, AppUsageInfo> appsUsageInfo = getAppsUsageInfo(startTime, startTime + ImportantStuffs.MILLISECONDS_IN_HOUR, context);
@@ -382,7 +383,7 @@ public class AppsDataController extends BroadcastReceiver {
             // HashMap<String, AppUsageInfo> weeklyData = getAppsUsageInfo(weeklyTargetStartTime, System.currentTimeMillis(),context);
 
 
-            ImportantStuffs.notificationString = new StringBuilder();
+            //ImportantStuffs.notificationString = new StringBuilder();
 
             while (keys.hasNext()) {
                 String key = keys.next();
@@ -396,7 +397,8 @@ public class AppsDataController extends BroadcastReceiver {
                     int dailyOrWeekly = targetTypes.getInt(i);
                     if (dailyOrWeekly == daily) {
                         JSONArray dailyNotifications = individualApp.getJSONArray("dailyNotifications");
-                        individualApp = getSingleHistory("dailyTarget", "DailyInfo", getDailyUsageData(currentHourChecker,historyJsonObject, dailyTargetStartTime, ImportantStuffs.addDot(key), context), key,
+                        individualApp = getSingleHistory("dailyTarget", "DailyInfo",
+                                getDailyUsageData(currentHourChecker,historyJsonObject, dailyTargetStartTime, ImportantStuffs.addDot(key), context), key,
                                 context, individualApp, dailyTargetStartTime, dailyNotifications);
                     } else {
                         JSONArray weeklyNotifications = individualApp.getJSONArray("weeklyNotifications");
@@ -483,6 +485,7 @@ public class AppsDataController extends BroadcastReceiver {
 
 
         for (int i = 0; i < notifications.length(); i++) {
+            //Log.d("trycatch",notifications.length()+"");
             try {
                 if (percentage >= notificationTypes.getInt(notifications.getInt(i)) && notificationTypes.getInt(notifications.getInt(i)) >= tempPercentage) {
                     flag = true;
@@ -582,9 +585,9 @@ public class AppsDataController extends BroadcastReceiver {
 
         @Override
         protected Void doInBackground(Void... voids) {
-            ImportantStuffs.saveEverything(context);
-            checkTargetLocally(context);
             saveUsageDataLocally();
+            checkTargetLocally(context);
+            ImportantStuffs.saveEverything(context);
             return null;
         }
 

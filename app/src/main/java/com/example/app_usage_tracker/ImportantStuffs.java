@@ -171,7 +171,7 @@ public class ImportantStuffs {
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.DAY_OF_WEEK, 1);
+        calendar.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
         return calendar.getTimeInMillis();
     }
 
