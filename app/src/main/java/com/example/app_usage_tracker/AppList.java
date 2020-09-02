@@ -52,8 +52,7 @@ public class AppList extends AppCompatActivity {
         refreshLayout = findViewById(R.id.refresh_layout);
         refreshLayout.setOnRefreshListener(() -> {
             refreshLayout.setRefreshing(false);
-            new AppListAsyncTask(this).execute();
-//            dunno();
+            new AppListAsyncTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         });
 
         new AppListAsyncTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);

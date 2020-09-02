@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
                 ImportantStuffs.showErrorLog("Json initialization failed. App won't work properly.");
             } else {
                 AppsDataController.startAlarm(this, 5000);
-                new Handler().postDelayed( ()-> new SaveInstallationInfoAsync(this).execute(), 4000);
+                new Handler().postDelayed( ()-> new SaveInstallationInfoAsync(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR), 8000);
             }
 
             Intent intent = new Intent(this, AppList.class);

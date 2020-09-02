@@ -17,12 +17,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.Executable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 public class AppsDataController extends BroadcastReceiver {
     Context context;
@@ -38,7 +40,7 @@ public class AppsDataController extends BroadcastReceiver {
 
         startAlarm(context, 20 * ImportantStuffs.MILLISECONDS_IN_MINUTE);
 
-        new AsyncUsageTask().execute();
+        new AsyncUsageTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     public static void startAlarm(Context context, long delayInMillisecond) {
@@ -121,14 +123,6 @@ public class AppsDataController extends BroadcastReceiver {
             appUsageInfo.setLaunchCount(launchCount);
             appUsageInfo.setLastTimeUsed(lastUsedTime);
         }
-
-        return appsUsageInfo;
-    }
-
-    public static HashMap<String, AppUsageInfo> getAllAppsUsageInfoFromJson(long startTime, long endTime, Context context) {
-        HashMap<String, AppUsageInfo> appsUsageInfo = new HashMap<>();
-        appsUsageInfo = addOtherAppsInfo(appsUsageInfo, context);
-        long checkpoint = getCheckpoint(context);
 
         return appsUsageInfo;
     }
