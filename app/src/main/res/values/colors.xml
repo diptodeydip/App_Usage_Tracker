@@ -7,6 +7,8 @@
     <color name="colorAccent">#77abb7</color>
     <color name="defaultColorAccent">#03DAC5</color>
 
+    <color name="notificationColor">#75cfeb</color>
+
     <color name="registerButtonColor">#5eaaa8</color>
     <color name="registerButtonPressedColor">#477C7B</color>
 

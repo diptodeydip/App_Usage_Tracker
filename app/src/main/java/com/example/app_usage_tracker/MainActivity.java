@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         testThings();
 
         sharedPreference = getSharedPreferences(SHARED_PREFERENCE, MODE_PRIVATE);
@@ -85,6 +86,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void testThings() {
+//        ImportantStuffs.displayNotification(ImportantStuffs.THIS_APP_PACKAGE, 50, 0, this);
+        
 //        JSONObject historyJson = ImportantStuffs.getJsonObject("History.json", this);
 //        String historyString = historyJson.toString();
 //        int historyLength = historyString.length();

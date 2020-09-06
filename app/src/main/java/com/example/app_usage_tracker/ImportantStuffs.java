@@ -25,6 +25,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -392,7 +393,9 @@ public class ImportantStuffs {
                 .setCategory(NotificationCompat.CATEGORY_REMINDER)
                 .setLargeIcon(icon)
                 .setBadgeIconType(NotificationCompat.BADGE_ICON_SMALL)
-                .setSmallIcon(R.mipmap.app_icon_round);
+//                .setSmallIcon(R.mipmap.app_icon_round);
+                .setSmallIcon(R.drawable.aut_notification_icon)
+                .setColor(ContextCompat.getColor(context, R.color.notificationColor));
 
         assert manager != null;
 

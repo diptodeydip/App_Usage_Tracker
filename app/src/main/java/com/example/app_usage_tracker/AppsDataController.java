@@ -40,7 +40,6 @@ public class AppsDataController extends BroadcastReceiver {
 
         startAlarm(context, 20 * ImportantStuffs.MILLISECONDS_IN_MINUTE);
 
-        new AsyncUsageTask1().execute();
         new AsyncUsageTask2().execute();
     }
 
@@ -597,18 +596,6 @@ public class AppsDataController extends BroadcastReceiver {
     }
 
 
-    private class AsyncUsageTask1 extends AsyncTask<Void, Void, Void> {
-        public AsyncUsageTask1() {
-            Log.d(TAG, "AsyncUsageTask1: started");
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            saveUsageDataLocally();
-            return null;
-        }
-
-    }
     private class AsyncUsageTask2 extends AsyncTask<Void, Void, Void> {
         public AsyncUsageTask2() {
             Log.d(TAG, "AsyncUsageTask2: started");
@@ -616,6 +603,7 @@ public class AppsDataController extends BroadcastReceiver {
 
         @Override
         protected Void doInBackground(Void... voids) {
+            saveUsageDataLocally();
             checkTargetLocally(context);
             ImportantStuffs.saveEverything(context);
             return null;
