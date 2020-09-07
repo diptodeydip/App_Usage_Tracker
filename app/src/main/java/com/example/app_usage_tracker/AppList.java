@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class AppList extends AppCompatActivity {
-    public static final String TAG = "extra";
     private HashMap<String, AppUsageInfo> appsUsageInfo;
 
     private SwipeRefreshLayout refreshLayout;
@@ -162,14 +161,12 @@ public class AppList extends AppCompatActivity {
         ProgressDialog progressDialog;
 
         AppListAsyncTask(AppList activity) {
-            Log.d(TAG, "AppListAsyncTask: started");
             activityWeakReference = new WeakReference<>(activity);
             progressDialog = new ProgressDialog(activity, R.style.DialogTheme);
         }
 
         @Override
         protected void onPreExecute() {
-            super.onPreExecute();
             progressDialog.setTitle("Loading apps usage info...");
             progressDialog.setMessage("Wait a moment");
             progressDialog.setCanceledOnTouchOutside(false);
@@ -178,25 +175,36 @@ public class AppList extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(Void... voids) {
+            Log.d("flag", "AppListAsyncTask: started");
             AppList activity = activityWeakReference.get();
             if (activity == null || activity.isFinishing()) {
                 return null;
             }
             long startTime = ImportantStuffs.getDayStartingHour(), endTime = ImportantStuffs.getCurrentTime();
-            activity.appsUsageInfo = AppsDataController.getAllAppsUsageInfo(startTime, endTime, activity);
-//            activity.appsUsageInfo = new HashMap<>();
+            {
+                // temporary block
+                String startDate = ImportantStuffs.getDateAndTimeFromMilliseconds(startTime);
+                String endDate = ImportantStuffs.getDateAndTimeFromMilliseconds(endTime);
+                Log.d("temp", startDate + " " + endDate);
+            }
+            activity.appsUsageInfo = AppsDataController.getAppsUsageInfo(startTime, endTime, activity);
+            for(AppUsageInfo info:activity.appsUsageInfo.values()){
+                Log.d("extra", info.toString());
+            }
+
+            activity.appsUsageInfo = AppsDataController.addOtherAppsInfo(activity.appsUsageInfo, activity);
             return null;
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
             AppList activity = activityWeakReference.get();
             if (activity == null || activity.isFinishing()) {
                 return;
             }
             activity.createAppList();
             progressDialog.cancel();
+            Log.d("flag", "AppListAsyncTask: ended");
         }
     }
 }

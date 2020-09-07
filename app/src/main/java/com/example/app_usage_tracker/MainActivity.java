@@ -4,7 +4,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -53,8 +52,8 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "Json initialization failed. App won't work properly.", Toast.LENGTH_SHORT).show();
                 ImportantStuffs.showErrorLog("Json initialization failed. App won't work properly.");
             } else {
-                AppsDataController.startAlarm(this, 3000);
-                new Handler().postDelayed( ()-> new SaveInstallationInfoAsync(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR), 8000);
+                AppsDataController.startAlarm(this, 6000);
+                new Handler().postDelayed( ()-> new SaveInstallationInfoAsync(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR), 10000);
             }
 
             Intent intent = new Intent(this, AppList.class);
@@ -87,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void testThings() {
 //        ImportantStuffs.displayNotification(ImportantStuffs.THIS_APP_PACKAGE, 50, 0, this);
-        
+
 //        JSONObject historyJson = ImportantStuffs.getJsonObject("History.json", this);
 //        String historyString = historyJson.toString();
 //        int historyLength = historyString.length();
@@ -135,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (!regiLayout.isErrorEnabled() && !cgpaLayout.isErrorEnabled()) {
             RadioButton genderButton = findViewById(genderRadioGroup.getCheckedRadioButtonId());
-            saveUserData(registrationNumber, cgpa, genderButton.getText().toString());
+            saveUserDataForTheFirstTime(registrationNumber, cgpa, genderButton.getText().toString());
             Intent intent = new Intent(this, AppList.class);
             startActivity(intent);
             finish();
@@ -179,7 +178,7 @@ public class MainActivity extends AppCompatActivity {
         AutoStartHelper.getInstance().getAutoStartPermission(this,  editor);
     }
 
-    private void saveUserData(String registrationNumber, String cgpa, String gender){
+    private void saveUserDataForTheFirstTime(String registrationNumber, String cgpa, String gender){
         editor.putString("regNo", registrationNumber);
         editor.putString("cg", cgpa);
         editor.putString("gender", gender);
@@ -233,16 +232,17 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+
     private class SaveInstallationInfoAsync extends AsyncTask<Void, Void, Void> {
         private Context context;
 
         public SaveInstallationInfoAsync(Context context) {
             this.context = context;
-            Log.d(TAG, "SaveInstallationInfoAsync: started");
         }
 
         @Override
         protected Void doInBackground(Void... voids) {
+            Log.d("flag", "SaveInstallationInfoAsync: started");
             JSONObject infoJson = ImportantStuffs.getJsonObject("info.json", context);
             JSONObject appsInstallationInfoJson = null;
             try {
@@ -282,7 +282,8 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
                 ImportantStuffs.showErrorLog("Can't save installation info");
             }
-            ImportantStuffs.showLog("Installation info saved");
+            Log.d(TAG, "Installation info saved.");
+            Log.d("flag", "SaveInstallationInfoAsync: ended");
             return null;
         }
     }

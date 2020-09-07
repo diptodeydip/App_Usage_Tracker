@@ -17,14 +17,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.lang.reflect.Executable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executor;
 
 public class AppsDataController extends BroadcastReceiver {
     Context context;
@@ -40,7 +38,7 @@ public class AppsDataController extends BroadcastReceiver {
 
         startAlarm(context, 20 * ImportantStuffs.MILLISECONDS_IN_MINUTE);
 
-        new AsyncUsageTask2().execute();
+        new DataController().execute();
     }
 
     public static void startAlarm(Context context, long delayInMillisecond) {
@@ -596,16 +594,15 @@ public class AppsDataController extends BroadcastReceiver {
     }
 
 
-    private class AsyncUsageTask2 extends AsyncTask<Void, Void, Void> {
-        public AsyncUsageTask2() {
-            Log.d(TAG, "AsyncUsageTask2: started");
-        }
+    private class DataController extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected Void doInBackground(Void... voids) {
+            Log.d("flag", "DataController: started");
             saveUsageDataLocally();
             checkTargetLocally(context);
             ImportantStuffs.saveEverything(context);
+            Log.d("flag", "DataController: ended");
             return null;
         }
 

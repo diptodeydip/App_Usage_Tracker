@@ -19,7 +19,6 @@ import java.util.Collections;
 public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.ViewHolder> {
     private Context context;
     private ArrayList<AppUsageInfo> appsUsageInfo, appsUsageInfoOriginal;
-    private final String TAG = "ahtrap";
 
     public AppListAdapter(Context context, ArrayList<AppUsageInfo> appsUsageInfo) {
         this.context = context;
@@ -191,30 +190,6 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.ViewHold
         else
             timeString = min_hour + " min";
         return timeString;
-    }
-
-    private void showToast(String message) {
-        Toast.makeText(context, message, Toast.LENGTH_LONG).show();
-    }
-
-    private void showToast(int message) {
-        showToast(Integer.toString(message));
-    }
-
-    private void showToast(String... messages) {
-        String fullMessage = "";
-        for (String message : messages) {
-            fullMessage += message + " ";
-        }
-        showToast(fullMessage);
-    }
-
-    private void showToast(int... messages) {
-        String fullMessage = "";
-        for (int message : messages) {
-            fullMessage += message + " ";
-        }
-        showToast(fullMessage);
     }
 
 

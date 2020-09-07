@@ -46,7 +46,7 @@ import java.util.Collections;
 
 public class AppDetails extends AppCompatActivity implements DatePickerDialog.OnDateSetListener{
 
-    public static final String TAG = "extra", TAG_TEMP = "temp";
+    public static final String TAG = "extra";
 
     BarChart chart;
     long currentGraphDate;
@@ -98,7 +98,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
         currentGraphDate = ImportantStuffs.getDayStartingHour();
         chart = findViewById(R.id.usage_graph);
 
-        onDailyCalendarSelected(null);
+        new GraphAsyncTask(this, MODE_DAILY).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
         initTargetNotificationStuffs();
         testStuffs();
@@ -585,7 +585,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
     public void onDailyCalendarSelected(View view) {
         calendarMode = MODE_DAILY;
         usageCollectionTime = currentGraphDate;
-        new GraphAsyncTask(this, MODE_DAILY).execute();
+        new GraphAsyncTask(this, MODE_DAILY).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     public void onWeeklyCalendarSelected(View view) {
@@ -656,6 +656,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
 
         @Override
         protected Void doInBackground(Void... aVoid) {
+            Log.d("flag", "GraphAsync: started");
             AppDetails activity = activityWeakReference.get();
             if (activity == null || activity.isFinishing()) {
                 return null;
@@ -678,6 +679,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
             if (activity == null || activity.isFinishing())
                 return;
             activity.updateGraphData();
+            Log.d("flag", "GraphAsync: ended");
         }
     }
 }

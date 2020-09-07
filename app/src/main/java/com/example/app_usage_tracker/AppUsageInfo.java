@@ -4,7 +4,7 @@ import android.graphics.drawable.Drawable;
 
 class AppUsageInfo {
     Drawable appIcon;
-    String appName = "Demo", packageName = "";
+    String appName, packageName;
     long timeInForeground = 0, lastTimeUsed = 0, installationTime = 0, usageTarget = 0;
     int launchCount = 0;
     boolean isSystemApp = true;
