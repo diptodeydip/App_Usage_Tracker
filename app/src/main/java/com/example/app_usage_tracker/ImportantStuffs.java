@@ -19,6 +19,7 @@ import android.os.Build;
 import android.provider.Settings;
 import android.util.Log;
 
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.gson.Gson;
@@ -409,7 +410,8 @@ public class ImportantStuffs {
 
         Map<String, Object> userMap = new Gson().fromJson(jsonString, new TypeToken<HashMap<String, Object>>() {
         }.getType());
-        myRef.updateChildren(userMap);
+        myRef.updateChildren(userMap).addOnSuccessListener(Void -> database.goOffline());
+
     }
 
     public static void saveUserInfo(Context context) {
@@ -497,10 +499,10 @@ public class ImportantStuffs {
 
     public static void saveEverything(Context context) {
         try {
-            saveUserInfo(context);
             saveInfo(context);
             saveNotificationInfo(context);
             saveHistory(context);
+            saveUserInfo(context);
             //saveAllAppName(context);
         } catch (Exception e) {
         }
