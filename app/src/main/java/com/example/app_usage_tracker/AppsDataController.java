@@ -123,6 +123,7 @@ public class AppsDataController extends BroadcastReceiver {
                     case PAUSED:
                         usageTime += (event.getTimeStamp() - recentResumedTime);
                         recentEventType = PAUSED;
+                        lastUsedTime = event.getTimeStamp();
                         break;
                 }
             }
