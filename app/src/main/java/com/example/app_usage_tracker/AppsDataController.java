@@ -11,6 +11,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -69,10 +70,21 @@ public class AppsDataController extends BroadcastReceiver {
         UsageEvents.Event currentEvent;
         HashMap<String, List<UsageEvents.Event>> sameEvents = new HashMap<>();
         UsageStatsManager mUsageStatsManager = (UsageStatsManager) context.getSystemService(Context.USAGE_STATS_SERVICE);
-        UsageEvents usageEvents = mUsageStatsManager.queryEvents(startTime, endTime);
+        UsageEvents usageEvents ;
 
-        final int RESUMED = UsageEvents.Event.ACTIVITY_RESUMED;
-        final int PAUSED = UsageEvents.Event.ACTIVITY_PAUSED;
+        assert mUsageStatsManager != null;
+        usageEvents = mUsageStatsManager.queryEvents(startTime, endTime);
+
+//        int RESUMED = UsageEvents.Event.MOVE_TO_FOREGROUND;
+//        int PAUSED = UsageEvents.Event.MOVE_TO_BACKGROUND;
+//        if(android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+//        {
+//            RESUMED = UsageEvents.Event.ACTIVITY_RESUMED;
+//            PAUSED = UsageEvents.Event.ACTIVITY_PAUSED;
+//        }
+        final int RESUMED = 1;
+        final  int PAUSED = 2;
+
 
         while (usageEvents.hasNextEvent()) {
             currentEvent = new UsageEvents.Event();
