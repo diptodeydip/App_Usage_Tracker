@@ -44,6 +44,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        getSupportActionBar().setHomeAsUpIndicator(R.drawable.aut_icon);// set drawable icon
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         testThings();
 

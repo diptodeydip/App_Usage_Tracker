@@ -9,6 +9,7 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -87,6 +88,10 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
         currentPackage = getIntent().getStringExtra("packageName");
         currentPackageNoDot = ImportantStuffs.removeDot(currentPackage);
         String appName = ImportantStuffs.getAppName(currentPackage, this);
+
+//        Drawable appIcon = ImportantStuffs.getAppIcon(currentPackage, this);
+//        getSupportActionBar().setIcon(appIcon);
+
         setTitle(appName);
 
         initJson();

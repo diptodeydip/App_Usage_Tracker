@@ -309,10 +309,10 @@ public class AppsDataController extends BroadcastReceiver {
         JSONObject jsonInfo = ImportantStuffs.getJsonObject("info.json", context);
         long checkpoint = getCheckpoint(context);
         long goalPoint = ImportantStuffs.getCurrentHour() - MILLISECONDS_IN_HOUR;
-//        if (goalPoint == checkpoint) {
-//            ImportantStuffs.showLog("No new data to store");
-//            return;
-//        }
+        if (goalPoint == checkpoint) {
+            ImportantStuffs.showLog("No new data to store");
+            return;
+        }
         if (checkpoint == 0) {
             ImportantStuffs.showErrorLog("No valid checkpoint data found");
             return;
