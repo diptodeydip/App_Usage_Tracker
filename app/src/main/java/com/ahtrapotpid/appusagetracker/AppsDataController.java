@@ -1,4 +1,4 @@
-package com.ahtrapotpid.appUsageTracker;
+package com.ahtrapotpid.appusagetracker;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -24,8 +24,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import static com.ahtrapotpid.appUsageTracker.ImportantStuffs.MILLISECONDS_IN_DAY;
-import static com.ahtrapotpid.appUsageTracker.ImportantStuffs.MILLISECONDS_IN_HOUR;
+import static com.ahtrapotpid.appusagetracker.ImportantStuffs.MILLISECONDS_IN_DAY;
+import static com.ahtrapotpid.appusagetracker.ImportantStuffs.MILLISECONDS_IN_HOUR;
 
 public class AppsDataController extends BroadcastReceiver {
     Context context;

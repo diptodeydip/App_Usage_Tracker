@@ -1,4 +1,4 @@
-package com.ahtrapotpid.appUsageTracker.ui.main;
+package com.ahtrapotpid.appusagetracker.ui.main;
 
 import android.os.Bundle;
 
@@ -10,10 +10,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.ahtrapotpid.appUsageTracker.AppDetails;
-import com.ahtrapotpid.appUsageTracker.AppsDataController;
-import com.ahtrapotpid.appUsageTracker.R;
-import com.ahtrapotpid.appUsageTracker.TargetInfo;
+import com.ahtrapotpid.appusagetracker.AppDetails;
+import com.ahtrapotpid.appusagetracker.AppsDataController;
+import com.ahtrapotpid.appusagetracker.R;
+import com.ahtrapotpid.appusagetracker.TargetInfo;
 
 import java.util.ArrayList;
 

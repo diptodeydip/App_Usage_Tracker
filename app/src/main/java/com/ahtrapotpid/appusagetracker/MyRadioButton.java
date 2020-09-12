@@ -1,4 +1,4 @@
-package com.ahtrapotpid.appUsageTracker;
+package com.ahtrapotpid.appusagetracker;
 
 import android.content.Context;
 import android.util.AttributeSet;

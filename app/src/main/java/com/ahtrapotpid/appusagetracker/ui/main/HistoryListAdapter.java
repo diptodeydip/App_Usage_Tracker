@@ -1,4 +1,4 @@
-package com.ahtrapotpid.appUsageTracker.ui.main;
+package com.ahtrapotpid.appusagetracker.ui.main;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -10,8 +10,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.ahtrapotpid.appUsageTracker.R;
-import com.ahtrapotpid.appUsageTracker.TargetInfo;
+import com.ahtrapotpid.appusagetracker.R;
+import com.ahtrapotpid.appusagetracker.TargetInfo;
 
 import java.util.ArrayList;
 

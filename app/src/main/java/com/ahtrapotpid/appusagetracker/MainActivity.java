@@ -1,4 +1,4 @@
-package com.ahtrapotpid.appUsageTracker;
+package com.ahtrapotpid.appusagetracker;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,11 +23,8 @@ import com.google.android.material.textfield.TextInputLayout;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = "extra";
@@ -44,8 +41,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        getSupportActionBar().setHomeAsUpIndicator(R.drawable.aut_icon);// set drawable icon
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+//        getSupportActionBar().setHomeAsUpIndicator(R.drawable.aut_icon);// set drawable icon
+//        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         testThings();
 

@@ -1,4 +1,4 @@
-package com.ahtrapotpid.appUsageTracker.ui.main;
+package com.ahtrapotpid.appusagetracker.ui.main;
 
 import android.content.Context;
 
@@ -8,7 +8,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 
-import com.ahtrapotpid.appUsageTracker.R;
+import com.ahtrapotpid.appusagetracker.R;
 
 public class SectionsPagerAdapter extends FragmentPagerAdapter {
 

@@ -10,7 +10,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:708261496853:android:0484078acb5944766e261c",
         "android_client_info": {
-          "package_name": "com.ahtrapotpid.appUsageTracker"
+          "package_name": "com.ahtrapotpid.appusagetracker"
         }
       },
       "oauth_client": [
@@ -18,7 +18,7 @@
           "client_id": "708261496853-hujqjeco57019mohj6oamd3stjsm5os4.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.ahtrapotpid.appUsageTracker",
+            "package_name": "com.ahtrapotpid.appusagetracker",
             "certificate_hash": "0d10cdb0682514d7066169b82fbbdda6b2068016"
           }
         },

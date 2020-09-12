@@ -1,4 +1,4 @@
-package com.ahtrapotpid.appUsageTracker;
+package com.ahtrapotpid.appusagetracker;
 
 import android.os.Bundle;
 import android.widget.TextView;
@@ -9,7 +9,7 @@ import com.google.android.material.tabs.TabLayout;
 import androidx.viewpager.widget.ViewPager;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.ahtrapotpid.appUsageTracker.ui.main.SectionsPagerAdapter;
+import com.ahtrapotpid.appusagetracker.ui.main.SectionsPagerAdapter;
 
 public class TargetHistory extends AppCompatActivity {
 

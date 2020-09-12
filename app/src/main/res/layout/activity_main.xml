@@ -68,7 +68,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/recent_semester_cgpa">
 
-            <com.ahtrapotpid.appUsageTracker.MyRadioButton
+            <com.ahtrapotpid.appusagetracker.MyRadioButton
                 android:id="@+id/h1"
                 style="@style/MyCustomRadioButton"
                 android:layout_width="wrap_content"
@@ -79,7 +79,7 @@
                 android:text="male"
                 android:textSize="@dimen/primary_text" />
 
-            <com.ahtrapotpid.appUsageTracker.MyRadioButton
+            <com.ahtrapotpid.appusagetracker.MyRadioButton
                 android:id="@+id/h2"
                 style="@style/MyCustomRadioButton"
                 android:layout_width="wrap_content"

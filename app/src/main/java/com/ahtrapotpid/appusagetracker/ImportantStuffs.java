@@ -1,4 +1,4 @@
-package com.ahtrapotpid.appUsageTracker;
+package com.ahtrapotpid.appusagetracker;
 
 import android.app.AppOpsManager;
 import android.app.NotificationChannel;
@@ -10,7 +10,6 @@ import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
@@ -18,7 +17,6 @@ import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.provider.Settings;
-import android.util.DisplayMetrics;
 import android.util.Log;
 
 import com.google.firebase.database.DatabaseReference;
@@ -46,7 +44,7 @@ import java.util.Map;
 import java.util.Random;
 
 import static android.app.AppOpsManager.MODE_ALLOWED;
-import static com.ahtrapotpid.appUsageTracker.AppDetails.MODE_DAILY;
+import static com.ahtrapotpid.appusagetracker.AppDetails.MODE_DAILY;
 
 public class ImportantStuffs {
 
