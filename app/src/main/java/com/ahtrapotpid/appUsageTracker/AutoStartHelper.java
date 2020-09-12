@@ -1,4 +1,4 @@
-package com.example.app_usage_tracker;
+package com.ahtrapotpid.appUsageTracker;
 
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
@@ -10,7 +10,6 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
-import android.view.KeyEvent;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package com.example.app_usage_tracker;
+package com.ahtrapotpid.appUsageTracker;
 
 import android.app.AppOpsManager;
 import android.app.NotificationChannel;
@@ -19,7 +19,6 @@ import android.os.Build;
 import android.provider.Settings;
 import android.util.Log;
 
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.gson.Gson;
@@ -45,7 +44,7 @@ import java.util.Map;
 import java.util.Random;
 
 import static android.app.AppOpsManager.MODE_ALLOWED;
-import static com.example.app_usage_tracker.AppDetails.MODE_DAILY;
+import static com.ahtrapotpid.appUsageTracker.AppDetails.MODE_DAILY;
 
 public class ImportantStuffs {
 

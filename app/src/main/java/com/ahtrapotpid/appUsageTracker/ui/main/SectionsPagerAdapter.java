@@ -1,7 +1,6 @@
-package com.example.app_usage_tracker.ui.main;
+package com.ahtrapotpid.appUsageTracker.ui.main;
 
 import android.content.Context;
-import android.content.Intent;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
@@ -9,8 +8,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 
-import com.example.app_usage_tracker.AppDetails;
-import com.example.app_usage_tracker.R;
+import com.ahtrapotpid.appUsageTracker.R;
 
 public class SectionsPagerAdapter extends FragmentPagerAdapter {
 

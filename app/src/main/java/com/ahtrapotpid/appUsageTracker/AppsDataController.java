@@ -1,4 +1,4 @@
-package com.example.app_usage_tracker;
+package com.ahtrapotpid.appUsageTracker;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -11,7 +11,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -24,6 +23,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import static com.ahtrapotpid.appUsageTracker.ImportantStuffs.MILLISECONDS_IN_DAY;
+import static com.ahtrapotpid.appUsageTracker.ImportantStuffs.MILLISECONDS_IN_HOUR;
 
 public class AppsDataController extends BroadcastReceiver {
     Context context;
@@ -130,6 +132,9 @@ public class AppsDataController extends BroadcastReceiver {
             if (recentEventType == RESUMED)
                 usageTime += endTime - recentResumedTime;
 
+            if(usageTime > MILLISECONDS_IN_HOUR)
+                usageTime = MILLISECONDS_IN_HOUR;
+
             appUsageInfo.setTimeInForeground(usageTime);
             appUsageInfo.setLaunchCount(launchCount);
             appUsageInfo.setLastTimeUsed(lastUsedTime);
@@ -187,9 +192,9 @@ public class AppsDataController extends BroadcastReceiver {
         ArrayList<Long> usage = new ArrayList<>();
 
         long startTime = dayStartTime;
-        long endTime = dayStartTime + 23 * ImportantStuffs.MILLISECONDS_IN_HOUR;
+        long endTime = dayStartTime + 23 * MILLISECONDS_IN_HOUR;
 
-        for (long currentTime = startTime; currentTime <= endTime; currentTime += ImportantStuffs.MILLISECONDS_IN_HOUR) {
+        for (long currentTime = startTime; currentTime <= endTime; currentTime += MILLISECONDS_IN_HOUR) {
             long time = getHourlyUsageData(currentHourChecker,jsonObject, currentTime, packageName, context);
             usage.add(time);
         }
@@ -213,9 +218,9 @@ public class AppsDataController extends BroadcastReceiver {
         long usage = 0;
 
         long startTime = dayStartTime;
-        long endTime = dayStartTime + 23 * ImportantStuffs.MILLISECONDS_IN_HOUR;
+        long endTime = dayStartTime + 23 * MILLISECONDS_IN_HOUR;
 
-        for (long currentTime = startTime; currentTime <= endTime; currentTime += ImportantStuffs.MILLISECONDS_IN_HOUR) {
+        for (long currentTime = startTime; currentTime <= endTime; currentTime += MILLISECONDS_IN_HOUR) {
             long time = getHourlyUsageData(currentHourChecker,jsonObject, currentTime, packageName, context);
             usage += time;
         }
@@ -244,8 +249,6 @@ public class AppsDataController extends BroadcastReceiver {
                 time = map.get(packageName).getTimeInForeground();
             } catch (Exception e) {
             }
-
-            //JSONObject currentHourChecker = ImportantStuffs.getJsonObject("notificationErrorChecker.json" , context);
 
             try {
                 JSONObject ob = currentHourChecker.getJSONObject(packageName);
@@ -301,34 +304,24 @@ public class AppsDataController extends BroadcastReceiver {
         return checkpoint;
     }
 
-
     private void saveUsageDataLocally() {
         ImportantStuffs.showLog("Checking local data------");
         JSONObject jsonInfo = ImportantStuffs.getJsonObject("info.json", context);
         long checkpoint = getCheckpoint(context);
-        long goalPoint = ImportantStuffs.getCurrentHour() - ImportantStuffs.MILLISECONDS_IN_HOUR;
-        if (goalPoint == checkpoint) {
-            ImportantStuffs.showLog("No new data to store");
-            return;
-        }
+        long goalPoint = ImportantStuffs.getCurrentHour() - MILLISECONDS_IN_HOUR;
+//        if (goalPoint == checkpoint) {
+//            ImportantStuffs.showLog("No new data to store");
+//            return;
+//        }
         if (checkpoint == 0) {
             ImportantStuffs.showErrorLog("No valid checkpoint data found");
             return;
         }
 
-//        String jsonString = ImportantStuffs.getStringFromJsonObjectPath("History.json", context);
-//        JSONObject usageDetails = new JSONObject();
-//        if (jsonString != "") {
-//            try {
-//                usageDetails = new JSONObject(jsonString);
-//            } catch (Exception e) {
-//                return;
-//            }
-//        }
         JSONObject usageDetails = ImportantStuffs.getJsonObject("History.json",context);
 
-        for (long startTime = checkpoint + ImportantStuffs.MILLISECONDS_IN_HOUR; startTime <= goalPoint; startTime += ImportantStuffs.MILLISECONDS_IN_HOUR) {
-            HashMap<String, AppUsageInfo> appsUsageInfo = getAppsUsageInfo(startTime, startTime + ImportantStuffs.MILLISECONDS_IN_HOUR, context);
+        for (long startTime = checkpoint + MILLISECONDS_IN_HOUR; startTime <= goalPoint; startTime += MILLISECONDS_IN_HOUR) {
+            HashMap<String, AppUsageInfo> appsUsageInfo = getAppsUsageInfo(startTime, startTime + MILLISECONDS_IN_HOUR, context);
             JSONArray jsonAppInfo = new JSONArray();
             for (AppUsageInfo appInfo : appsUsageInfo.values()) {
                 JSONObject jsonObject = new JSONObject();
@@ -350,9 +343,8 @@ public class AppsDataController extends BroadcastReceiver {
             }
         }
 
-        String startPoint = ImportantStuffs.getDateAndTimeFromMilliseconds(checkpoint + ImportantStuffs.MILLISECONDS_IN_HOUR);
-        String endPoint = ImportantStuffs.getDateAndTimeFromMilliseconds(goalPoint + ImportantStuffs.MILLISECONDS_IN_HOUR);
-        ImportantStuffs.showLog("Data saved from", startPoint, "--", endPoint);
+        String startPoint = ImportantStuffs.getDateAndTimeFromMilliseconds(checkpoint + MILLISECONDS_IN_HOUR);
+        String endPoint = ImportantStuffs.getDateAndTimeFromMilliseconds(goalPoint + MILLISECONDS_IN_HOUR);
 
         try {
             jsonInfo.put("checkpoint", goalPoint);
@@ -361,10 +353,28 @@ public class AppsDataController extends BroadcastReceiver {
             ImportantStuffs.showLog("checkpoint not saving -_-");
         }
 
-        // ImportantStuffs.saveToFirebase(usageDetails.toString(),"check/");
+        long oldestTime = ImportantStuffs.getDayStartingHour() - 30 * MILLISECONDS_IN_DAY;
+        removeHistoryOlderThan(oldestTime, usageDetails);
 
         ImportantStuffs.saveFileLocally("History.json", usageDetails.toString(), context);
         ImportantStuffs.saveFileLocally("info.json", jsonInfo.toString(), context);
+        ImportantStuffs.showLog("Data saved from", startPoint, "--", endPoint);
+    }
+
+    private JSONObject removeHistoryOlderThan(long time, JSONObject history){
+        Iterator<String> keys = history.keys();
+        ArrayList<String> keysToRemove = new ArrayList<>();
+
+        while (keys.hasNext()){
+            String key = keys.next();
+            long value = Long.valueOf(key);
+            if(value < time)
+                keysToRemove.add(key);
+        }
+        for(String key:keysToRemove)
+            history.remove(key);
+
+        return history;
     }
 
     public void checkTargetLocally(Context context) {

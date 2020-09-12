@@ -1,4 +1,4 @@
-package com.example.app_usage_tracker.ui.main;
+package com.ahtrapotpid.appUsageTracker.ui.main;
 
 import android.os.Bundle;
 
@@ -10,12 +10,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
-import com.example.app_usage_tracker.AppDetails;
-import com.example.app_usage_tracker.AppsDataController;
-import com.example.app_usage_tracker.R;
-import com.example.app_usage_tracker.TargetInfo;
+import com.ahtrapotpid.appUsageTracker.AppDetails;
+import com.ahtrapotpid.appUsageTracker.AppsDataController;
+import com.ahtrapotpid.appUsageTracker.R;
+import com.ahtrapotpid.appUsageTracker.TargetInfo;
 
 import java.util.ArrayList;
 

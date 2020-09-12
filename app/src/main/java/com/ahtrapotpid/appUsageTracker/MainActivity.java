@@ -1,4 +1,4 @@
-package com.example.app_usage_tracker;
+package com.ahtrapotpid.appUsageTracker;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,8 +23,11 @@ import com.google.android.material.textfield.TextInputLayout;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = "extra";
@@ -85,27 +88,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void testThings() {
-//        ImportantStuffs.displayNotification(ImportantStuffs.THIS_APP_PACKAGE, 50, 0, this);
-
-//        JSONObject historyJson = ImportantStuffs.getJsonObject("History.json", this);
-//        String historyString = historyJson.toString();
-//        int historyLength = historyString.length();
-//        long startTime = Long.valueOf(historyJson.keys().next());
-//        long currentTime = ImportantStuffs.getCurrentTime();
-//        long diff = currentTime - startTime;
-//        float hour = ImportantStuffs.getHourFromTime(diff);
-//        float stringLengthPerDay = (historyLength / hour) * 24;
-//        int estimatedMaxDay = (int) ((Math.pow(2, 31) - 1) / stringLengthPerDay);
-//        ImportantStuffs.showLog(estimatedMaxDay);
-//
-//        String demoString = "{\"a\":\"b\", \"a\":\"c\"}";
-//        JSONObject demoObject = new JSONObject();
+//        String testJsonString = "{\"1\":[], \"2\":[], \"3\":[], \"4\":[], \"5\":[]}";
+//        JSONObject testJson;
 //        try {
-//            demoObject = new JSONObject(demoString);
-//        } catch (JSONException e) {
+//            testJson = new JSONObject(testJsonString);
+//            Log.d("temp", testJson.toString());
+//            Iterator<String> keys = testJson.keys();
+//            ArrayList<String> keysToRemove = new ArrayList<>();
+//            while (keys.hasNext()){
+//                String key = keys.next();
+//                long value = Long.valueOf(key);
+//                if(value < 3)
+//                    keysToRemove.add(key);
+//            }
+//            for(String key:keysToRemove)
+//                testJson.remove(key);
+//            Log.d("temp", testJson.toString());
+//        }catch (JSONException e) {
 //            e.printStackTrace();
 //        }
-//        ImportantStuffs.showLog(demoObject.toString());
     }
 
 
