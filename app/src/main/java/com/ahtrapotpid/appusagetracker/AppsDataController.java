@@ -353,7 +353,7 @@ public class AppsDataController extends BroadcastReceiver {
             ImportantStuffs.showLog("checkpoint not saving -_-");
         }
 
-        long oldestTime = ImportantStuffs.getDayStartingHour() - 30 * MILLISECONDS_IN_DAY;
+        long oldestTime = ImportantStuffs.getDayStartingHour() - MILLISECONDS_IN_DAY;
         removeHistoryOlderThan(oldestTime, usageDetails);
 
         ImportantStuffs.saveFileLocally("History.json", usageDetails.toString(), context);
