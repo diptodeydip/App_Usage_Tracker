@@ -41,9 +41,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        getSupportActionBar().setHomeAsUpIndicator(R.drawable.aut_icon);// set drawable icon
-//        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
         testThings();
 
         sharedPreference = getSharedPreferences(SHARED_PREFERENCE, MODE_PRIVATE);
@@ -121,8 +118,6 @@ public class MainActivity extends AppCompatActivity {
             regiLayout.setError("Registration number can't be empty");
         else if(registrationNumber.length() != 10)
             regiLayout.setError("Invalid registration number length");
-        else if(registrationNumber.charAt(0) != '2' || registrationNumber.charAt(1) != '0' || registrationNumber.charAt(2) != '1' )
-            regiLayout.setError("Invalid registration number");
         else
             regiLayout.setErrorEnabled(false);
 

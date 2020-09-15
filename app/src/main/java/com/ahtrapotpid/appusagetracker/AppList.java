@@ -157,6 +157,7 @@ public class AppList extends AppCompatActivity {
         adapter.sort(sortBy, sortOrderAscending);
     }
 
+
     private class AppListAsyncTask extends AsyncTask<Void, Void, Void>{
         private WeakReference<AppList> activityWeakReference;
         ProgressDialog progressDialog;
@@ -182,18 +183,18 @@ public class AppList extends AppCompatActivity {
                 return null;
             }
             long startTime = ImportantStuffs.getDayStartingHour(), endTime = ImportantStuffs.getCurrentTime();
-            {
-                // temporary block
-                String startDate = ImportantStuffs.getDateAndTimeFromMilliseconds(startTime);
-                String endDate = ImportantStuffs.getDateAndTimeFromMilliseconds(endTime);
-                Log.d("temp", startDate + " " + endDate);
-            }
+//            {
+//                // temporary block
+//                String startDate = ImportantStuffs.getDateAndTimeFromMilliseconds(startTime);
+//                String endDate = ImportantStuffs.getDateAndTimeFromMilliseconds(endTime);
+//                Log.d("temp", startDate + " " + endDate);
+//            }
             activity.appsUsageInfo = AppsDataController.getAppsUsageInfo(startTime, endTime, activity);
             for(AppUsageInfo info:activity.appsUsageInfo.values()){
                 Log.d("extra", info.toString());
             }
 
-            activity.appsUsageInfo = AppsDataController.addOtherAppsInfo(activity.appsUsageInfo, activity);
+//            activity.appsUsageInfo = AppsDataController.addOtherAppsInfo(activity.appsUsageInfo, activity);
             return null;
         }
 

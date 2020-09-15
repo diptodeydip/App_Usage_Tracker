@@ -174,6 +174,43 @@ public class AppsDataController extends BroadcastReceiver {
         return appsInfo;
     }
 
+    public static HashMap<String, AppUsageInfo> getAppsUsageInfoFromJson(long startTime, long endTime, Context context){
+        HashMap<String, AppUsageInfo> usageInfo = new HashMap<>();
+        JSONObject historyJson = ImportantStuffs.getJsonObject("history.json", context);
+        long checkPoint = getCheckpoint(context);
+        for(long time = startTime; time <= endTime && time <= checkPoint; time += MILLISECONDS_IN_HOUR){
+            try {
+                JSONArray appArray = historyJson.getJSONArray(String.valueOf(time));
+                for (int i = 0; i < appArray.length(); i++) {
+                    try {
+                        JSONObject appHourlyInfo = appArray.getJSONObject(i);
+                        String packageName = appHourlyInfo.getString("packageName");
+                        AppUsageInfo appUsageInfo = usageInfo.get(packageName);
+
+                        if(appUsageInfo == null){
+                            String appName = appHourlyInfo.getString("name");
+                            Drawable icon = ImportantStuffs.getAppIcon(packageName, context);
+                            long installationDate = ImportantStuffs.getAppInstallationDate(packageName, context);
+                            boolean isSystem = ImportantStuffs.isSystemPackage(packageName, context);
+                            appUsageInfo = new AppUsageInfo(appName, packageName, icon, installationDate, isSystem);
+                            usageInfo.put(packageName, appUsageInfo);
+                        }
+                        long foregroundTime = appHourlyInfo.getLong("foregroundTime");
+                        appUsageInfo.addToTimeInForeground(foregroundTime);
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return usageInfo;
+    }
+
 
     public static ArrayList<Long> getWeeklyUsageDataInDailyList(JSONObject currentHourChecker ,JSONObject jsonObject, long weekStartTime, String packageName, Context context) {
         ArrayList<Long> usage = new ArrayList<>();
@@ -309,6 +346,7 @@ public class AppsDataController extends BroadcastReceiver {
         JSONObject jsonInfo = ImportantStuffs.getJsonObject("info.json", context);
         long checkpoint = getCheckpoint(context);
         long goalPoint = ImportantStuffs.getCurrentHour() - MILLISECONDS_IN_HOUR;
+
         if (goalPoint == checkpoint) {
             ImportantStuffs.showLog("No new data to store");
             return;
@@ -353,7 +391,7 @@ public class AppsDataController extends BroadcastReceiver {
             ImportantStuffs.showLog("checkpoint not saving -_-");
         }
 
-        long oldestTime = ImportantStuffs.getDayStartingHour() - MILLISECONDS_IN_DAY;
+        long oldestTime = ImportantStuffs.getDayStartingHour() - 30 * MILLISECONDS_IN_DAY;
         removeHistoryOlderThan(oldestTime, usageDetails);
 
         ImportantStuffs.saveFileLocally("History.json", usageDetails.toString(), context);

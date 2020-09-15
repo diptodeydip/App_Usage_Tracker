@@ -5,11 +5,10 @@ import android.graphics.drawable.Drawable;
 class AppUsageInfo {
     Drawable appIcon;
     String appName, packageName;
-    long timeInForeground = 0, lastTimeUsed = 0, installationTime = 0, usageTarget = 0;
+    long timeInForeground = 0, lastTimeUsed = 0, installationTime, usageTarget = 0;
     int launchCount = 0;
-    boolean isSystemApp = true;
+    boolean isSystemApp;
     String targetType = "None";
-    String notifications[];
 
     @Override
     public String toString() {
@@ -71,10 +70,6 @@ class AppUsageInfo {
         return targetType;
     }
 
-    public String[] getNotifications() {
-        return notifications;
-    }
-
 
     public void setUsageTarget(long usageTarget) {
         this.usageTarget = usageTarget;
@@ -84,12 +79,12 @@ class AppUsageInfo {
         this.targetType = targetType;
     }
 
-    public void setNotifications(String[] notifications) {
-        this.notifications = notifications;
-    }
-
     public void setTimeInForeground(long timeInForeground) {
         this.timeInForeground = timeInForeground;
+    }
+
+    public void addToTimeInForeground(long time) {
+        this.timeInForeground += time;
     }
 
     public void setAppIcon(Drawable appIcon) {
@@ -114,6 +109,10 @@ class AppUsageInfo {
 
     public void setLaunchCount(int launchCount) {
         this.launchCount = launchCount;
+    }
+
+    public void addToLaunchCount(int count) {
+        this.launchCount += count;
     }
 
     public void setLastTimeUsed(long lastTimeUsed) {
