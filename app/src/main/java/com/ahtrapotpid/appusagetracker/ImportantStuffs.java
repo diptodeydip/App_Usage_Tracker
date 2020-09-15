@@ -18,12 +18,16 @@ import android.media.MediaPlayer;
 import android.os.Build;
 import android.provider.Settings;
 import android.util.Log;
+import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 
@@ -404,16 +408,16 @@ public class ImportantStuffs {
 
 
     public static void saveToFirebase(String jsonString, String path) {
+        if(jsonString.equals(""))return;
+
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference myRef = database.getReference(path);
 
-        Map<String, Object> userMap = new Gson().fromJson(jsonString, new TypeToken<HashMap<String, Object>>() {
-        }.getType());
-        myRef.updateChildren(userMap).addOnSuccessListener(Void -> database.goOffline());
-
+        Map<String, Object> userMap = getUserMap(jsonString);
+        myRef.updateChildren(userMap);
     }
 
-    public static void saveUserInfo(Context context) {
+    public static String getUserInfo(Context context) {
         try {
             SharedPreferences sharedPreference = context.getSharedPreferences(MainActivity.SHARED_PREFERENCE, MainActivity.MODE_PRIVATE);
             JSONObject ob = new JSONObject();
@@ -424,88 +428,50 @@ public class ImportantStuffs {
                 ob.put("cg", cg);
                 ob.put("regNo", regNo);
                 ob.put("gender", gender);
-            } catch (Exception e) {
-            }
+            } catch (Exception ignored) {}
 
-            saveToFirebase(ob.toString(), "UserInfo/" + regNo);
-        } catch (Exception e) {
-        }
+            return ob.toString();
 
+        } catch (Exception ignored) {}
+
+        return "";
     }
 
-    public static void saveInfo(Context context) {
-        try {
-            SharedPreferences sharedPreference = context.getSharedPreferences(MainActivity.SHARED_PREFERENCE, MainActivity.MODE_PRIVATE);
-            String regNo = sharedPreference.getString("regNo", "");
-            String jsonString = ImportantStuffs.getStringFromJsonObjectPath("info.json", context);
-            saveToFirebase(jsonString, "TargetHistory/" + regNo);
-        } catch (Exception e) {
-        }
-
-    }
-
-    public static void saveNotificationInfo(Context context) {
-        try {
-            SharedPreferences sharedPreference = context.getSharedPreferences(MainActivity.SHARED_PREFERENCE, MainActivity.MODE_PRIVATE);
-            String regNo = sharedPreference.getString("regNo", "");
-            String jsonString = ImportantStuffs.getStringFromJsonObjectPath("notificationInfo.json", context);
-            saveToFirebase(jsonString, "NotificationFrequency/" + regNo);
-        } catch (Exception e) {
-        }
-
-    }
-
-    public static void saveHistory(Context context) {
-        try {
-            SharedPreferences sharedPreference = context.getSharedPreferences(MainActivity.SHARED_PREFERENCE, MainActivity.MODE_PRIVATE);
-            String regNo = sharedPreference.getString("regNo", "");
-            String jsonString = ImportantStuffs.getStringFromJsonObjectPath("History.json", context);
-            saveToFirebase(jsonString, "UsageHistory/" + regNo);
-        } catch (Exception e) {
-        }
-
-    }
-
-    public static void saveAllAppName(Context context) {
-        try {
-            SharedPreferences sharedPreference = context.getSharedPreferences(MainActivity.SHARED_PREFERENCE, MainActivity.MODE_PRIVATE);
-            String regNo = sharedPreference.getString("regNo", "");
-            final PackageManager pm = context.getPackageManager();
-
-//        //get a list of installed apps.
-            List<PackageInfo> packages = pm.getInstalledPackages(PackageManager.GET_META_DATA);
-
-            JSONObject installedApps = new JSONObject();
-            for (int i = 0; i < packages.size(); i++) {
-//            if((packages.get(i).applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0){
-                String label = null;
-                //label = packages.get(i).applicationInfo.loadLabel(pm).toString();
-                label = getAppName(packages.get(i).packageName, context);
-                try {
-                    installedApps.put(removeDot(packages.get(i).packageName), label);
-                } catch (Exception e) {
-                }
-                //}
-            }
-
-
-            saveToFirebase(installedApps.toString(), "InstalledApps/" + regNo);
-        } catch (Exception e) {
-        }
-
-
-    }
 
     public static void saveEverything(Context context) {
         try {
-            saveInfo(context);
-            saveNotificationInfo(context);
-            saveHistory(context);
-            saveUserInfo(context);
-            //saveAllAppName(context);
-        } catch (Exception e) {
-        }
+            SharedPreferences sharedPreference = context.getSharedPreferences(MainActivity.SHARED_PREFERENCE, MainActivity.MODE_PRIVATE);
+            String regNo = sharedPreference.getString("regNo", "");
+
+            FirebaseDatabase database = FirebaseDatabase.getInstance();
+
+            //save 4json files recursively
+            DatabaseReference db = database.getReference("UsageHistory/" + regNo);
+            Map<String, Object> userMap = getUserMap(ImportantStuffs.getStringFromJsonObjectPath("History.json", context));
+
+            db.updateChildren(userMap).addOnCompleteListener(aVoid -> {
+                DatabaseReference db1 = database.getReference("UserInfo/" + regNo);
+                Map<String, Object> userMap1 = getUserMap(getUserInfo(context));
+                db1.updateChildren(userMap1).addOnCompleteListener(aVoid1 -> {
+                    DatabaseReference db2 = database.getReference("TargetHistory/" + regNo);
+                    Map<String, Object> userMap2 = getUserMap(ImportantStuffs.getStringFromJsonObjectPath("info.json", context));
+                    db2.updateChildren(userMap2).addOnCompleteListener(aVoid2 -> {
+                        DatabaseReference db3 = database.getReference("NotificationFrequency/" + regNo);
+                        Map<String, Object> userMap3 = getUserMap(ImportantStuffs.getStringFromJsonObjectPath("notificationInfo.json", context));
+                        db3.updateChildren(userMap3).addOnCompleteListener(aVoid3 -> database.goOffline());
+                    });
+                });
+            });
+
+        }catch (Exception ignored){}
     }
+
+    public static Map<String,Object> getUserMap(String jsonString){
+        return new Gson().fromJson(jsonString, new TypeToken<HashMap<String, Object>>() {
+        }.getType());
+    }
+
+
 
 
     public static void showLog(String message) {
@@ -580,6 +546,32 @@ public class ImportantStuffs {
         }
         showLog(fullMessage);
     }
+
+//    public static void saveAllAppName(Context context) {
+//        try {
+//            SharedPreferences sharedPreference = context.getSharedPreferences(MainActivity.SHARED_PREFERENCE, MainActivity.MODE_PRIVATE);
+//            String regNo = sharedPreference.getString("regNo", "");
+//            final PackageManager pm = context.getPackageManager();
+//
+////        //get a list of installed apps.
+//            List<PackageInfo> packages = pm.getInstalledPackages(PackageManager.GET_META_DATA);
+//
+//            JSONObject installedApps = new JSONObject();
+//            for (int i = 0; i < packages.size(); i++) {
+////            if((packages.get(i).applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0){
+//                String label = null;
+//                //label = packages.get(i).applicationInfo.loadLabel(pm).toString();
+//                label = getAppName(packages.get(i).packageName, context);
+//                try {
+//                    installedApps.put(removeDot(packages.get(i).packageName), label);
+//                } catch (Exception e) {
+//                }
+//                //}
+//            }
+//            saveToFirebase(installedApps.toString(), "InstalledApps/" + regNo);
+//        } catch (Exception e) {
+//        }
+//    }
 
 //    private HashMap<String, AppUsageInfo> getAllAppsInfo() {
 //        PackageManager pm = getPackageManager();

@@ -392,7 +392,7 @@ public class AppsDataController extends BroadcastReceiver {
         }
 
         long oldestTime = ImportantStuffs.getDayStartingHour() - 30 * MILLISECONDS_IN_DAY;
-        removeHistoryOlderThan(oldestTime, usageDetails);
+        usageDetails = removeHistoryOlderThan(oldestTime, usageDetails);
 
         ImportantStuffs.saveFileLocally("History.json", usageDetails.toString(), context);
         ImportantStuffs.saveFileLocally("info.json", jsonInfo.toString(), context);
@@ -405,7 +405,7 @@ public class AppsDataController extends BroadcastReceiver {
 
         while (keys.hasNext()){
             String key = keys.next();
-            long value = Long.valueOf(key);
+            long value = Long.parseLong(key);
             if(value < time)
                 keysToRemove.add(key);
         }
