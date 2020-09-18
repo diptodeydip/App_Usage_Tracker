@@ -8,8 +8,8 @@ android {
         applicationId "com.ahtrapotpid.appusagetracker"
         minSdkVersion 23
         targetSdkVersion 29
-        versionCode 2
-        versionName "1.1"
+        versionCode 3
+        versionName "1.2"
         multiDexEnabled true //had to add becasuse of this error "cannot fit requested classes in a single dex file (# methods: 97941 > 65536"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
