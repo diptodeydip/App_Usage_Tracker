@@ -2,18 +2,22 @@ package com.ahtrapotpid.appusagetracker;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.app.ActionBar;
 import android.app.ProgressDialog;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -23,15 +27,18 @@ public class AppList extends AppCompatActivity {
     private HashMap<String, AppUsageInfo> appsUsageInfo;
 
     private SwipeRefreshLayout refreshLayout;
+    private ConstraintLayout splashScreenLayout;
 
     AppListAdapter adapter;
     SharedPreferences sharedPreference;
     SharedPreferences.Editor editor;
     int sortBy;
-    boolean systemAppFilter, unusedAppFilter, sortOrderAscending;
+    boolean systemAppFilter, unusedAppFilter, sortOrderAscending, listLoaded = false;
     public static final String SYSTEM_APP_FILTER = "systemAppFilter", UNUSED_APP_FILTER = "unusedAppFilter";
     public static final String APP_LIST_SHARED_PREFERENCE = "AppListSharedPreference";
     public static final String ASCENDING_SORT = "sortOrderAscending", SORT_BY = "sortBy";
+
+    ProgressDialog progressDialog;
 
 
     @Override
@@ -39,9 +46,18 @@ public class AppList extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_app_list);
 
+        setFullScreenMode(true);
+        new Handler().postDelayed( ()-> hideSplashScreen(), 3000);
+
+        splashScreenLayout = findViewById(R.id.splash_screen);
+
         testThings();
         sharedPreference = getSharedPreferences(APP_LIST_SHARED_PREFERENCE, MODE_PRIVATE);
         editor = sharedPreference.edit();
+        progressDialog = new ProgressDialog(this, R.style.DialogTheme);
+        progressDialog.setTitle("Loading apps usage info...");
+        progressDialog.setMessage("Wait a moment");
+        progressDialog.setCanceledOnTouchOutside(false);
 
         systemAppFilter = sharedPreference.getBoolean(SYSTEM_APP_FILTER, false);
         unusedAppFilter = sharedPreference.getBoolean(UNUSED_APP_FILTER, true);
@@ -56,6 +72,7 @@ public class AppList extends AppCompatActivity {
         });
 
         new AppListAsyncTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
     }
 
     @Override
@@ -147,6 +164,26 @@ public class AppList extends AppCompatActivity {
 //        refreshLayout.getpro
     }
 
+    private void hideSplashScreen(){
+        setFullScreenMode(false);
+        splashScreenLayout.setVisibility(View.GONE);
+        refreshLayout.setVisibility(View.VISIBLE);
+        if(!listLoaded)
+            progressDialog.show();
+    }
+
+    private void setFullScreenMode(boolean mode){
+        View decorView = getWindow().getDecorView();
+        if(mode){
+            int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN;
+            decorView.setSystemUiVisibility(uiOptions);
+            getSupportActionBar().hide();
+        } else{
+            decorView.setSystemUiVisibility(0);
+            getSupportActionBar().show();
+        }
+    }
+
     public void createAppList() {
         RecyclerView recyclerView = findViewById(R.id.app_list_recycler_view);
         ArrayList<AppUsageInfo> appsInfoList = new ArrayList<>(appsUsageInfo.values());
@@ -160,7 +197,6 @@ public class AppList extends AppCompatActivity {
 
     private class AppListAsyncTask extends AsyncTask<Void, Void, Void>{
         private WeakReference<AppList> activityWeakReference;
-        ProgressDialog progressDialog;
 
         AppListAsyncTask(AppList activity) {
             activityWeakReference = new WeakReference<>(activity);
@@ -172,7 +208,7 @@ public class AppList extends AppCompatActivity {
             progressDialog.setTitle("Loading apps usage info...");
             progressDialog.setMessage("Wait a moment");
             progressDialog.setCanceledOnTouchOutside(false);
-            progressDialog.show();
+//            progressDialog.show();
         }
 
         @Override
@@ -194,7 +230,7 @@ public class AppList extends AppCompatActivity {
                 Log.d("extra", info.toString());
             }
 
-//            activity.appsUsageInfo = AppsDataController.addOtherAppsInfo(activity.appsUsageInfo, activity);
+            activity.appsUsageInfo = AppsDataController.addOtherAppsInfo(activity.appsUsageInfo, activity);
             return null;
         }
 
@@ -204,8 +240,9 @@ public class AppList extends AppCompatActivity {
             if (activity == null || activity.isFinishing()) {
                 return;
             }
+            activity.listLoaded = true;
             activity.createAppList();
-            progressDialog.cancel();
+            activity.progressDialog.cancel();
             Log.d("flag", "AppListAsyncTask: ended");
         }
     }

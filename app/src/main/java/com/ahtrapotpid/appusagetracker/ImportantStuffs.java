@@ -51,7 +51,6 @@ import static android.app.AppOpsManager.MODE_ALLOWED;
 import static com.ahtrapotpid.appusagetracker.AppDetails.MODE_DAILY;
 
 public class ImportantStuffs {
-
     public static final long MILLISECONDS_IN_MINUTE = 60000L, MILLISECONDS_IN_HOUR = 3600000L, MILLISECONDS_IN_DAY = 86400000L;
     public static final String TAG = "ahtrap";
     public static final String LAUNCHER_PACKAGE = "com.example.ui", THIS_APP_PACKAGE = "com.example.app_usage_tracker";
@@ -470,8 +469,6 @@ public class ImportantStuffs {
         return new Gson().fromJson(jsonString, new TypeToken<HashMap<String, Object>>() {
         }.getType());
     }
-
-
 
 
     public static void showLog(String message) {
