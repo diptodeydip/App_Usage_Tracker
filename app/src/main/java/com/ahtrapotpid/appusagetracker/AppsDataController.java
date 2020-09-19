@@ -490,7 +490,8 @@ public class AppsDataController extends BroadcastReceiver {
         }
     }
 
-    public JSONObject getSingleHistory(String targetType, String infoName, Long usedTime, String packageName, Context context, JSONObject individualApp, Long startTime, JSONArray notifications) throws JSONException {
+    public JSONObject getSingleHistory(String targetType, String infoName, Long usedTime, String packageName, Context context,
+                                       JSONObject individualApp, Long startTime, JSONArray notifications) throws JSONException {
 
         JSONObject dateInfo = new JSONObject();
         dateInfo.put("target", individualApp.getLong(targetType));

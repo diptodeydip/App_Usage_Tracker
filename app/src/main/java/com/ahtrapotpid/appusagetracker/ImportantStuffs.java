@@ -423,10 +423,17 @@ public class ImportantStuffs {
             String cg = sharedPreference.getString("cg", "");
             String regNo = sharedPreference.getString("regNo", "");
             String gender = sharedPreference.getString("gender", "");
+            String version = getAppVersion(context);
+            String versionWithoutDot = removeDot(version);
+            boolean IsSaved = sharedPreference.getBoolean(version,false);
             try {
                 ob.put("cg", cg);
                 ob.put("regNo", regNo);
                 ob.put("gender", gender);
+                if(!IsSaved){
+                    ob.put(versionWithoutDot,getCurrentHour());
+                    sharedPreference.edit().putBoolean(version,true).apply();
+                }
             } catch (Exception ignored) {}
 
             return ob.toString();
@@ -457,7 +464,7 @@ public class ImportantStuffs {
                     db2.updateChildren(userMap2).addOnCompleteListener(aVoid2 -> {
                         DatabaseReference db3 = database.getReference("NotificationFrequency/" + regNo);
                         String data = ImportantStuffs.getStringFromJsonObjectPath("notificationInfo.json", context);
-                        if(data != ""){
+                        if(!data.equals("")){
                             Map<String, Object> userMap3 = getUserMap(data);
                             db3.updateChildren(userMap3).addOnCompleteListener(aVoid3 -> database.goOffline());
                         }
