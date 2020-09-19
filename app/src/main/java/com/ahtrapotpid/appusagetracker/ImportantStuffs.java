@@ -456,18 +456,37 @@ public class ImportantStuffs {
                     Map<String, Object> userMap2 = getUserMap(ImportantStuffs.getStringFromJsonObjectPath("info.json", context));
                     db2.updateChildren(userMap2).addOnCompleteListener(aVoid2 -> {
                         DatabaseReference db3 = database.getReference("NotificationFrequency/" + regNo);
-                        Map<String, Object> userMap3 = getUserMap(ImportantStuffs.getStringFromJsonObjectPath("notificationInfo.json", context));
-                        db3.updateChildren(userMap3).addOnCompleteListener(aVoid3 -> database.goOffline());
+                        String data = ImportantStuffs.getStringFromJsonObjectPath("notificationInfo.json", context);
+                        if(data != ""){
+                            Map<String, Object> userMap3 = getUserMap(data);
+                            db3.updateChildren(userMap3).addOnCompleteListener(aVoid3 -> database.goOffline());
+                        }
+                        else{
+                            database.goOffline();
+                        }
                     });
                 });
             });
 
-        }catch (Exception ignored){}
+        }catch (Exception ignored){
+
+        }
     }
 
     public static Map<String,Object> getUserMap(String jsonString){
         return new Gson().fromJson(jsonString, new TypeToken<HashMap<String, Object>>() {
         }.getType());
+    }
+
+
+    public static String getAppVersion(Context context){
+        String versionName = "";
+        try {
+            versionName = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        return versionName;
     }
 
 

@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -84,25 +85,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void testThings() {
-//        String testJsonString = "{\"1\":[], \"2\":[], \"3\":[], \"4\":[], \"5\":[]}";
-//        JSONObject testJson;
+//        String versionName = "";
 //        try {
-//            testJson = new JSONObject(testJsonString);
-//            Log.d("temp", testJson.toString());
-//            Iterator<String> keys = testJson.keys();
-//            ArrayList<String> keysToRemove = new ArrayList<>();
-//            while (keys.hasNext()){
-//                String key = keys.next();
-//                long value = Long.valueOf(key);
-//                if(value < 3)
-//                    keysToRemove.add(key);
-//            }
-//            for(String key:keysToRemove)
-//                testJson.remove(key);
-//            Log.d("temp", testJson.toString());
-//        }catch (JSONException e) {
+//            versionName = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+//        } catch (PackageManager.NameNotFoundException e) {
 //            e.printStackTrace();
 //        }
+//        Toast.makeText(this, versionName, Toast.LENGTH_SHORT).show();
     }
 
 
@@ -177,6 +166,7 @@ public class MainActivity extends AppCompatActivity {
         editor.putString("regNo", registrationNumber);
         editor.putString("cg", cgpa);
         editor.putString("gender", gender);
+
         editor.commit();
         if(initializeJsonIfNot() == false)
             Toast.makeText(this, "Json initialization failed. App won't work properly.", Toast.LENGTH_SHORT).show();
