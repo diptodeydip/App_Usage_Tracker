@@ -41,6 +41,8 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 
+import static com.ahtrapotpid.appusagetracker.ImportantStuffs.MILLISECONDS_IN_HOUR;
+
 public class AppDetails extends AppCompatActivity implements DatePickerDialog.OnDateSetListener{
 
     public static final String TAG = "extra";
@@ -88,9 +90,6 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
         currentPackageNoDot = ImportantStuffs.removeDot(currentPackage);
         String appName = ImportantStuffs.getAppName(currentPackage, this);
 
-//        Drawable appIcon = ImportantStuffs.getAppIcon(currentPackage, this);
-//        getSupportActionBar().setIcon(appIcon);
-
         setTitle(appName);
 
         initJson();
@@ -119,13 +118,16 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
         }
         if(thisAppInfo.equals("")){
             ImportantStuffs.showLog("No app info for", ImportantStuffs.getAppName(currentPackage, this));
+            dailySelectedNotificationIndexes.add(0);
+            dailySelectedNotificationIndexes.add(2);
+            dailySelectedNotificationIndexes.add(5);
             try {
                 JSONObject thisAppInfoJson = new JSONObject();
                 thisAppInfoJson.put("targetTypes", new JSONArray());
-                thisAppInfoJson.put("weeklyTarget", 14*ImportantStuffs.MILLISECONDS_IN_HOUR);
-                thisAppInfoJson.put("weeklyNotifications", new JSONArray("[0]"));
-                thisAppInfoJson.put("dailyTarget", 2*ImportantStuffs.MILLISECONDS_IN_HOUR);
-                thisAppInfoJson.put("dailyNotifications", new JSONArray("[0]"));
+                thisAppInfoJson.put("weeklyTarget", 14*MILLISECONDS_IN_HOUR);
+                thisAppInfoJson.put("weeklyNotifications", new JSONArray(dailySelectedNotificationIndexes.toString()));
+                thisAppInfoJson.put("dailyTarget", 3*MILLISECONDS_IN_HOUR);
+                thisAppInfoJson.put("dailyNotifications", new JSONArray(dailySelectedNotificationIndexes.toString()));
                 jsonInfo.getJSONObject("appsInfo").put(currentPackageNoDot, thisAppInfoJson);
                 ImportantStuffs.saveFileLocally("info.json", jsonInfo.toString(), this);
                 ImportantStuffs.showLog("App info has been created successfully");
@@ -423,7 +425,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
         else
             dailyTargetTextView.setText(targetText);
 
-        long target = hour * ImportantStuffs.MILLISECONDS_IN_HOUR + min * ImportantStuffs.MILLISECONDS_IN_MINUTE;
+        long target = hour * MILLISECONDS_IN_HOUR + min * ImportantStuffs.MILLISECONDS_IN_MINUTE;
         try {
             if(mode == MODE_WEEKLY) {
                 weeklyTarget = target;
