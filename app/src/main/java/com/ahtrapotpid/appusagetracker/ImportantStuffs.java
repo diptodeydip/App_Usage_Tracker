@@ -397,7 +397,7 @@ public class ImportantStuffs {
                 .setAutoCancel(true)
                 .setCategory(NotificationCompat.CATEGORY_REMINDER)
                 .setLargeIcon(icon)
-                .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setBadgeIconType(NotificationCompat.BADGE_ICON_SMALL)
 //                .setSmallIcon(R.mipmap.app_icon_round);
                 .setSmallIcon(R.drawable.aut_notification_icon)
