@@ -1,6 +1,7 @@
 package com.ahtrapotpid.appusagetracker;
 
 import android.app.AppOpsManager;
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -388,6 +389,7 @@ public class ImportantStuffs {
         String description = percentage + "% of " + modeString + " target is used.";
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channel_ID)
+                .setDefaults(Notification.DEFAULT_ALL)
                 .setContentTitle(appName)
                 .setContentText(description)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
@@ -395,6 +397,7 @@ public class ImportantStuffs {
                 .setAutoCancel(true)
                 .setCategory(NotificationCompat.CATEGORY_REMINDER)
                 .setLargeIcon(icon)
+                .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
                 .setBadgeIconType(NotificationCompat.BADGE_ICON_SMALL)
 //                .setSmallIcon(R.mipmap.app_icon_round);
                 .setSmallIcon(R.drawable.aut_notification_icon)
