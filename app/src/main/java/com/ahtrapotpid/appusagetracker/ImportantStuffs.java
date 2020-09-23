@@ -469,7 +469,7 @@ public class ImportantStuffs {
                         String data = ImportantStuffs.getStringFromJsonObjectPath("notificationInfo.json", context);
                         if(!data.equals("")){
                             Map<String, Object> userMap3 = getUserMap(data);
-                            db3.updateChildren(userMap3).addOnCompleteListener(aVoid3 -> database.goOffline());
+                            db3.updateChildren(userMap3);//.addOnCompleteListener(aVoid3 -> database.goOffline());
                         }
                         else{
                             database.goOffline();
