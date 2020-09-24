@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
                 ImportantStuffs.showErrorLog("Json initialization failed. App won't work properly.");
             } else {
                 AppsDataController.startAlarm(this, 6000);
-                new Handler().postDelayed( ()-> new SaveInstallationInfoAsync(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR), 10000);
+//                new Handler().postDelayed( ()-> new SaveInstallationInfoAsync(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR), 10000);
             }
 
             Intent intent = new Intent(this, AppList.class);
@@ -171,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
         if(initializeJsonIfNot() == false)
             Toast.makeText(this, "Json initialization failed. App won't work properly.", Toast.LENGTH_SHORT).show();
         else {
-            new SaveInstallationInfoAsync(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+//            new SaveInstallationInfoAsync(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             AppsDataController.startAlarm(this, 3000);
         }
     }
@@ -186,6 +186,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean initializeJsonIfNot(){
         String info = ImportantStuffs.getStringFromJsonObjectPath("info.json", this);
         if(info == ""){
+            Log.d(TAG, "Initializing info.json");
             ImportantStuffs.showLog("No checkpoint data found. Creating new checkpoint---");
             Calendar calendar = Calendar.getInstance();
             JSONObject jsonInfo = new JSONObject();
@@ -212,64 +213,65 @@ public class MainActivity extends AppCompatActivity {
                 ImportantStuffs.showErrorLog("Checkpoint can't be initialized");
                 return false;
             }
-            ImportantStuffs.showLog("info.json initialized.");
         }
+        ImportantStuffs.showLog("info.json initialized.");
+        Log.d(TAG, "info.json initialized");
         return true;
     }
 
 
-    private class SaveInstallationInfoAsync extends AsyncTask<Void, Void, Void> {
-        private Context context;
-
-        public SaveInstallationInfoAsync(Context context) {
-            this.context = context;
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            Log.d("flag", "SaveInstallationInfoAsync: started");
-            JSONObject infoJson = ImportantStuffs.getJsonObject("info.json", context);
-            JSONObject appsInstallationInfoJson = null;
-            try {
-                appsInstallationInfoJson = infoJson.getJSONObject("appsInstallationInfo");
-            } catch (JSONException e) {
-                e.printStackTrace();
-                ImportantStuffs.showErrorLog("Can't find appsInstallationInfo");
-            }
-            HashMap<String, AppUsageInfo> allApps = new HashMap<>();
-            allApps = AppsDataController.addOtherAppsInfo(allApps, context);
-            for (HashMap.Entry entry : allApps.entrySet()) {
-                String key = ImportantStuffs.removeDot((String) entry.getKey());
-                AppUsageInfo appInfo = (AppUsageInfo) entry.getValue();
-                String value = "";
-                try {
-                    value = appsInstallationInfoJson.getJSONObject(key).toString();
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                if (!value.equals(""))
-                    continue;
-                JSONObject jsonValue = new JSONObject();
-                try {
-                    jsonValue.put("installationTime", appInfo.getInstallationTime());
-                    jsonValue.put("appName", appInfo.getAppName());
-                    appsInstallationInfoJson.put(key, jsonValue);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    ImportantStuffs.showErrorLog("Can't save installation info for ", appInfo.getAppName());
-                }
-
-            }
-            try {
-                infoJson.put("appsInstallationInfo", appsInstallationInfoJson);
-                ImportantStuffs.saveFileLocally("info.json", infoJson.toString(), context);
-            } catch (JSONException e) {
-                e.printStackTrace();
-                ImportantStuffs.showErrorLog("Can't save installation info");
-            }
-            Log.d(TAG, "Installation info saved.");
-            Log.d("flag", "SaveInstallationInfoAsync: ended");
-            return null;
-        }
-    }
+//    private class SaveInstallationInfoAsync extends AsyncTask<Void, Void, Void> {
+//        private Context context;
+//
+//        public SaveInstallationInfoAsync(Context context) {
+//            this.context = context;
+//        }
+//
+//        @Override
+//        protected Void doInBackground(Void... voids) {
+//            Log.d("flag", "SaveInstallationInfoAsync: started");
+//            JSONObject infoJson = ImportantStuffs.getJsonObject("info.json", context);
+//            JSONObject appsInstallationInfoJson = null;
+//            try {
+//                appsInstallationInfoJson = infoJson.getJSONObject("appsInstallationInfo");
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//                ImportantStuffs.showErrorLog("Can't find appsInstallationInfo");
+//            }
+//            HashMap<String, AppUsageInfo> allApps = new HashMap<>();
+//            allApps = AppsDataController.addOtherAppsInfo(allApps, context);
+//            for (HashMap.Entry entry : allApps.entrySet()) {
+//                String key = ImportantStuffs.removeDot((String) entry.getKey());
+//                AppUsageInfo appInfo = (AppUsageInfo) entry.getValue();
+//                String value = "";
+//                try {
+//                    value = appsInstallationInfoJson.getJSONObject(key).toString();
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//                if (!value.equals(""))
+//                    continue;
+//                JSONObject jsonValue = new JSONObject();
+//                try {
+//                    jsonValue.put("installationTime", appInfo.getInstallationTime());
+//                    jsonValue.put("appName", appInfo.getAppName());
+//                    appsInstallationInfoJson.put(key, jsonValue);
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                    ImportantStuffs.showErrorLog("Can't save installation info for ", appInfo.getAppName());
+//                }
+//
+//            }
+//            try {
+//                infoJson.put("appsInstallationInfo", appsInstallationInfoJson);
+//                ImportantStuffs.saveFileLocally("info.json", infoJson.toString(), context);
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//                ImportantStuffs.showErrorLog("Can't save installation info");
+//            }
+//            Log.d(TAG, "Installation info saved.");
+//            Log.d("flag", "SaveInstallationInfoAsync: ended");
+//            return null;
+//        }
+//    }
 }

@@ -118,16 +118,13 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
         }
         if(thisAppInfo.equals("")){
             ImportantStuffs.showLog("No app info for", ImportantStuffs.getAppName(currentPackage, this));
-            dailySelectedNotificationIndexes.add(0);
-            dailySelectedNotificationIndexes.add(2);
-            dailySelectedNotificationIndexes.add(5);
             try {
                 JSONObject thisAppInfoJson = new JSONObject();
                 thisAppInfoJson.put("targetTypes", new JSONArray());
                 thisAppInfoJson.put("weeklyTarget", 14*MILLISECONDS_IN_HOUR);
-                thisAppInfoJson.put("weeklyNotifications", new JSONArray(dailySelectedNotificationIndexes.toString()));
+                thisAppInfoJson.put("weeklyNotifications", new JSONArray("[0, 2, 5]"));
                 thisAppInfoJson.put("dailyTarget", 3*MILLISECONDS_IN_HOUR);
-                thisAppInfoJson.put("dailyNotifications", new JSONArray(dailySelectedNotificationIndexes.toString()));
+                thisAppInfoJson.put("dailyNotifications", new JSONArray("[0, 2, 5]"));
                 jsonInfo.getJSONObject("appsInfo").put(currentPackageNoDot, thisAppInfoJson);
                 ImportantStuffs.saveFileLocally("info.json", jsonInfo.toString(), this);
                 ImportantStuffs.showLog("App info has been created successfully");

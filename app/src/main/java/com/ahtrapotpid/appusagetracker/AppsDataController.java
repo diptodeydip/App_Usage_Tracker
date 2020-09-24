@@ -341,6 +341,53 @@ public class AppsDataController extends BroadcastReceiver {
         return checkpoint;
     }
 
+
+    private void saveInstallationInfo(){
+        Log.d(TAG, "Saving installation info");
+        JSONObject infoJson = ImportantStuffs.getJsonObject("info.json", context);
+        JSONObject appsInstallationInfoJson = null;
+        try {
+            appsInstallationInfoJson = infoJson.getJSONObject("appsInstallationInfo");
+        } catch (JSONException e) {
+            e.printStackTrace();
+            ImportantStuffs.showErrorLog("Can't find appsInstallationInfo");
+            return;
+        }
+        HashMap<String, AppUsageInfo> allApps = new HashMap<>();
+        allApps = AppsDataController.addOtherAppsInfo(allApps, context);
+        for (HashMap.Entry entry : allApps.entrySet()) {
+            String key = ImportantStuffs.removeDot((String) entry.getKey());
+            AppUsageInfo appInfo = (AppUsageInfo) entry.getValue();
+            String value = "";
+            try {
+                value = appsInstallationInfoJson.getJSONObject(key).toString();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            if (!value.equals(""))
+                continue;
+            JSONObject jsonValue = new JSONObject();
+            try {
+                jsonValue.put("installationTime", appInfo.getInstallationTime());
+                jsonValue.put("appName", appInfo.getAppName());
+                appsInstallationInfoJson.put(key, jsonValue);
+            } catch (JSONException e) {
+                e.printStackTrace();
+                ImportantStuffs.showErrorLog("Can't save installation info for ", appInfo.getAppName());
+            }
+
+        }
+        try {
+            infoJson.put("appsInstallationInfo", appsInstallationInfoJson);
+            ImportantStuffs.saveFileLocally("info.json", infoJson.toString(), context);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            ImportantStuffs.showErrorLog("Can't save installation info");
+            return;
+        }
+        Log.d(TAG, "Installation info saved.");
+    }
+
     private void saveUsageDataLocally() {
         ImportantStuffs.showLog("Checking local data------");
         JSONObject jsonInfo = ImportantStuffs.getJsonObject("info.json", context);
@@ -355,6 +402,8 @@ public class AppsDataController extends BroadcastReceiver {
             ImportantStuffs.showErrorLog("No valid checkpoint data found");
             return;
         }
+
+        Log.d(TAG, "Saving usage info");
 
         JSONObject usageDetails = ImportantStuffs.getJsonObject("History.json",context);
 
@@ -397,25 +446,11 @@ public class AppsDataController extends BroadcastReceiver {
         ImportantStuffs.saveFileLocally("History.json", usageDetails.toString(), context);
         ImportantStuffs.saveFileLocally("info.json", jsonInfo.toString(), context);
         ImportantStuffs.showLog("Data saved from", startPoint, "--", endPoint);
+        Log.d(TAG, "usage info saved");
     }
 
-    private JSONObject removeHistoryOlderThan(long time, JSONObject history){
-        Iterator<String> keys = history.keys();
-        ArrayList<String> keysToRemove = new ArrayList<>();
-
-        while (keys.hasNext()){
-            String key = keys.next();
-            long value = Long.parseLong(key);
-            if(value < time)
-                keysToRemove.add(key);
-        }
-        for(String key:keysToRemove)
-            history.remove(key);
-
-        return history;
-    }
-
-    public void checkTargetLocally(Context context) {
+    public void checkAndSaveTargetLocally(Context context) {
+        Log.d(TAG, "saving target info");
         JSONObject historyJsonObject = ImportantStuffs.getJsonObject("History.json", context);
         JSONObject currentHourChecker = ImportantStuffs.getJsonObject("notificationErrorChecker.json" , context);
         JSONObject info = new JSONObject();
@@ -424,6 +459,7 @@ public class AppsDataController extends BroadcastReceiver {
         try {
             info = new JSONObject(jsonString);
         } catch (Exception e) {
+            e.printStackTrace();
         }
 
         try {
@@ -437,12 +473,6 @@ public class AppsDataController extends BroadcastReceiver {
 
             weeklyTargetStartTime = ImportantStuffs.getWeekStartTimeFromTime(System.currentTimeMillis());
 
-
-            // HashMap<String, AppUsageInfo> dailyData = getAppsUsageInfo(dailyTargetStartTime, System.currentTimeMillis(),context);
-            // HashMap<String, AppUsageInfo> weeklyData = getAppsUsageInfo(weeklyTargetStartTime, System.currentTimeMillis(),context);
-
-
-            //ImportantStuffs.notificationString = new StringBuilder();
 
             while (keys.hasNext()) {
                 String key = keys.next();
@@ -481,13 +511,27 @@ public class AppsDataController extends BroadcastReceiver {
             }
             info.put("appsInfo", appsInfo);
             ImportantStuffs.saveFileLocally("info.json", info.toString(), context);
-
-            // if(!ImportantStuffs.notificationString.toString().equals("")){
-            //    ImportantStuffs.displayNotification("UsageInfo",ImportantStuffs.notificationString.toString(),context);
-            //}
+            Log.d(TAG, "target info saved");
 
         } catch (JSONException e) {
+            e.printStackTrace();
         }
+    }
+
+    private JSONObject removeHistoryOlderThan(long time, JSONObject history){
+        Iterator<String> keys = history.keys();
+        ArrayList<String> keysToRemove = new ArrayList<>();
+
+        while (keys.hasNext()){
+            String key = keys.next();
+            long value = Long.parseLong(key);
+            if(value < time)
+                keysToRemove.add(key);
+        }
+        for(String key:keysToRemove)
+            history.remove(key);
+
+        return history;
     }
 
     public JSONObject getSingleHistory(String targetType, String infoName, Long usedTime, String packageName, Context context,
@@ -656,13 +700,15 @@ public class AppsDataController extends BroadcastReceiver {
     }
 
 
+
     private class DataController extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected Void doInBackground(Void... voids) {
             Log.d("flag", "DataController: started");
+            saveInstallationInfo();
             saveUsageDataLocally();
-            checkTargetLocally(context);
+            checkAndSaveTargetLocally(context);
             ImportantStuffs.saveEverything(context);
             Log.d("flag", "DataController: ended");
             return null;

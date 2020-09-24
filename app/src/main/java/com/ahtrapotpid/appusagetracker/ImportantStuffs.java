@@ -480,7 +480,7 @@ public class ImportantStuffs {
             });
 
         }catch (Exception ignored){
-
+            ignored.printStackTrace();
         }
     }
 
