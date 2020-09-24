@@ -225,7 +225,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
             setTargetTypes();
         }).setPositiveButton(R.string.set, (dialog, id) -> {});
 
-        builder.setOnDismissListener((dialog)-> AppsDataController.startAlarm(this, 50));
+        builder.setOnDismissListener((dialog)-> AppsDataController.startAlarm(this, 4000));
         builder.create();
         builder.show();
     }
@@ -259,7 +259,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
                 })
                 .setPositiveButton(R.string.set, (dialog, id) -> {
                 });
-        builder.setOnDismissListener((dialog) -> AppsDataController.startAlarm(this, 50));
+        builder.setOnDismissListener((dialog) -> AppsDataController.startAlarm(this, 4000));
 
         builder.create();
         builder.show();
@@ -282,7 +282,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
                 })
                 .setPositiveButton(R.string.set, (dialog, id) -> {
                 });
-        builder.setOnDismissListener((dialog) -> AppsDataController.startAlarm(this, 50));
+        builder.setOnDismissListener((dialog) -> AppsDataController.startAlarm(this, 4000));
 
         builder.create();
         builder.show();
@@ -325,7 +325,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
 
             setUsageTarget(mode, hour, min);
             dialog.dismiss();
-            AppsDataController.startAlarm(this, 500);
+            AppsDataController.startAlarm(this, 4000);
         });
 
         dialog.setTitle("Set target");
