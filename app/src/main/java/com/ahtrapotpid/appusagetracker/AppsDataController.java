@@ -77,15 +77,8 @@ public class AppsDataController extends BroadcastReceiver {
         assert mUsageStatsManager != null;
         usageEvents = mUsageStatsManager.queryEvents(startTime, endTime);
 
-//        int RESUMED = UsageEvents.Event.MOVE_TO_FOREGROUND;
-//        int PAUSED = UsageEvents.Event.MOVE_TO_BACKGROUND;
-//        if(android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-//        {
-//            RESUMED = UsageEvents.Event.ACTIVITY_RESUMED;
-//            PAUSED = UsageEvents.Event.ACTIVITY_PAUSED;
-//        }
         final int RESUMED = 1;
-        final  int PAUSED = 2;
+        final int PAUSED = 2;
 
 
         while (usageEvents.hasNextEvent()) {
@@ -176,7 +169,16 @@ public class AppsDataController extends BroadcastReceiver {
 
     public static HashMap<String, AppUsageInfo> getAppsUsageInfoFromJson(long startTime, long endTime, Context context){
         HashMap<String, AppUsageInfo> usageInfo = new HashMap<>();
-        JSONObject historyJson = ImportantStuffs.getJsonObject("history.json", context);
+        Log.d("temp", "getting all apps");
+        usageInfo = addOtherAppsInfo(usageInfo, context);
+        Log.d("temp", "all apps got");
+
+        Log.d("temp", "saving usage data");
+        saveUsageData(context);
+        Log.d("temp", "usage data saved");
+
+        Log.d("temp", "getting usage info from json");
+        JSONObject historyJson = ImportantStuffs.getJsonObject("History.json", context);
         long checkPoint = getCheckpoint(context);
         for(long time = startTime; time <= endTime && time <= checkPoint; time += MILLISECONDS_IN_HOUR){
             try {
@@ -185,16 +187,11 @@ public class AppsDataController extends BroadcastReceiver {
                     try {
                         JSONObject appHourlyInfo = appArray.getJSONObject(i);
                         String packageName = appHourlyInfo.getString("packageName");
+                        if(!usageInfo.containsKey(packageName))
+                            continue;
+
                         AppUsageInfo appUsageInfo = usageInfo.get(packageName);
 
-                        if(appUsageInfo == null){
-                            String appName = appHourlyInfo.getString("name");
-                            Drawable icon = ImportantStuffs.getAppIcon(packageName, context);
-                            long installationDate = ImportantStuffs.getAppInstallationDate(packageName, context);
-                            boolean isSystem = ImportantStuffs.isSystemPackage(packageName, context);
-                            appUsageInfo = new AppUsageInfo(appName, packageName, icon, installationDate, isSystem);
-                            usageInfo.put(packageName, appUsageInfo);
-                        }
                         long foregroundTime = appHourlyInfo.getLong("foregroundTime");
                         appUsageInfo.addToTimeInForeground(foregroundTime);
 
@@ -208,8 +205,77 @@ public class AppsDataController extends BroadcastReceiver {
                 e.printStackTrace();
             }
         }
+        Log.d("temp", "usage info from json got");
+
+        Log.d("temp", "getting live data");
+        HashMap<String, AppUsageInfo> liveUsageInfo = getAppsUsageInfo(checkPoint + MILLISECONDS_IN_HOUR, endTime, context);
+        for(Map.Entry<String, AppUsageInfo> entry : liveUsageInfo.entrySet()){
+            String packageName = entry.getKey();
+            if(!usageInfo.containsKey(packageName))
+                continue;
+            usageInfo.get(packageName).addToTimeInForeground(entry.getValue().timeInForeground);
+        }
+        Log.d("temp", "live data got");
         return usageInfo;
     }
+    private static void saveUsageData(Context context) {
+        Log.d("temp", "Checking local data------");
+        JSONObject jsonInfo = ImportantStuffs.getJsonObject("info.json", context);
+        long checkpoint = getCheckpoint(context);
+        long goalPoint = ImportantStuffs.getCurrentHour() - MILLISECONDS_IN_HOUR;
+
+        if (goalPoint == checkpoint) {
+            Log.d("temp", "No new data to store");
+            return;
+        }
+        if (checkpoint == 0) {
+            Log.d("temp", "No valid checkpoint data found");
+            return;
+        }
+
+        Log.d("temp", "Saving usage info");
+
+        JSONObject usageDetails = ImportantStuffs.getJsonObject("History.json",context);
+        for (long startTime = checkpoint + MILLISECONDS_IN_HOUR; startTime <= goalPoint; startTime += MILLISECONDS_IN_HOUR) {
+            HashMap<String, AppUsageInfo> appsUsageInfo = getAppsUsageInfo(startTime, startTime + MILLISECONDS_IN_HOUR, context);
+            JSONArray jsonAppInfo = new JSONArray();
+            for (AppUsageInfo appInfo : appsUsageInfo.values()) {
+                JSONObject jsonObject = new JSONObject();
+                try {
+                    jsonObject.put("name", appInfo.getAppName());
+                    jsonObject.put("packageName", appInfo.getPackageName());
+                    jsonObject.put("foregroundTime", appInfo.getTimeInForeground());
+                    jsonObject.put("launchCount", appInfo.getLaunchCount());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                jsonAppInfo.put(jsonObject);
+            }
+
+            try {
+                usageDetails.put(String.valueOf(startTime), jsonAppInfo);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+        String startPoint = ImportantStuffs.getDateAndTimeFromMilliseconds(checkpoint + MILLISECONDS_IN_HOUR);
+        String endPoint = ImportantStuffs.getDateAndTimeFromMilliseconds(goalPoint + MILLISECONDS_IN_HOUR);
+
+        try {
+            jsonInfo.put("checkpoint", goalPoint);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            Log.d("temp", "checkpoint not saving -_-");
+        }
+
+        long oldestTime = ImportantStuffs.getDayStartingHour() - 30 * MILLISECONDS_IN_DAY;
+
+        ImportantStuffs.saveFileLocally("History.json", usageDetails.toString(), context);
+        ImportantStuffs.saveFileLocally("info.json", jsonInfo.toString(), context);
+        Log.d("temp", "Data saved from" + " " + startPoint + " -- " + endPoint);
+    }
+
 
 
     public static ArrayList<Long> getWeeklyUsageDataInDailyList(JSONObject currentHourChecker ,JSONObject jsonObject, long weekStartTime, String packageName, Context context) {

@@ -244,12 +244,15 @@ public class AppList extends AppCompatActivity {
                 return null;
             }
             long startTime = ImportantStuffs.getDayStartingHour(), endTime = ImportantStuffs.getCurrentTime();
-            activity.appsUsageInfo = AppsDataController.getAppsUsageInfo(startTime, endTime, activity);
-            for(AppUsageInfo info:activity.appsUsageInfo.values()){
-                Log.d("extra", info.toString());
-            }
+            activity.appsUsageInfo = AppsDataController.getAllAppsUsageInfo(startTime, endTime, activity);
 
-            activity.appsUsageInfo = AppsDataController.addOtherAppsInfo(activity.appsUsageInfo, activity);
+//            activity.appsUsageInfo = AppsDataController.getAppsUsageInfo(startTime, endTime, activity);
+//            for(AppUsageInfo info:activity.appsUsageInfo.values()){
+//                Log.d("extra", info.toString());
+//            }
+//            activity.appsUsageInfo = AppsDataController.addOtherAppsInfo(activity.appsUsageInfo, activity);
+
+//            activity.appsUsageInfo = AppsDataController.getAppsUsageInfoFromJson(startTime, endTime, activity);
             return null;
         }
 
@@ -263,7 +266,7 @@ public class AppList extends AppCompatActivity {
             activity.createAppList();
             activity.progressDialog.cancel();
             Log.d("flag", "AppListAsyncTask: ended");
-            AppsDataController.startAlarm(activity, 500);
+//            AppsDataController.startAlarm(activity, 500);
         }
     }
 }
