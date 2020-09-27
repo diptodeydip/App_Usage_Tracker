@@ -265,8 +265,8 @@ public class AppList extends AppCompatActivity {
             activity.listLoaded = true;
             activity.createAppList();
             activity.progressDialog.cancel();
+            AppsDataController.startAlarm(activity, 500);
             Log.d("flag", "AppListAsyncTask: ended");
-//            AppsDataController.startAlarm(activity, 500);
         }
     }
 }
