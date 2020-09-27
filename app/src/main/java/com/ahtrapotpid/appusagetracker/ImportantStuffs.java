@@ -466,15 +466,16 @@ public class ImportantStuffs {
                     DatabaseReference db2 = database.getReference("TargetHistory/" + regNo);
                     Map<String, Object> userMap2 = getUserMap(ImportantStuffs.getStringFromJsonObjectPath("info.json", context));
                     db2.updateChildren(userMap2).addOnCompleteListener(aVoid2 -> {
-                        DatabaseReference db3 = database.getReference("NotificationFrequency/" + regNo);
-                        String data = ImportantStuffs.getStringFromJsonObjectPath("notificationInfo.json", context);
-                        if(!data.equals("")){
-                            Map<String, Object> userMap3 = getUserMap(data);
-                            db3.updateChildren(userMap3).addOnCompleteListener(aVoid3 -> database.goOffline());
-                        }
-                        else{
-                            database.goOffline();
-                        }
+//                        DatabaseReference db3 = database.getReference("NotificationFrequency/" + regNo);
+//                        String data = ImportantStuffs.getStringFromJsonObjectPath("notificationInfo.json", context);
+//                        if(!data.equals("")){
+//                            Map<String, Object> userMap3 = getUserMap(data);
+//                            db3.updateChildren(userMap3).addOnCompleteListener(aVoid3 -> database.goOffline());
+//                        }
+//                        else{
+//                            database.goOffline();
+//                        }
+                        database.goOffline();
                     });
                 });
             });
