@@ -12,10 +12,12 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
 import android.util.Log;
@@ -54,10 +56,10 @@ import static com.ahtrapotpid.appusagetracker.AppDetails.MODE_DAILY;
 public class ImportantStuffs {
     public static final long MILLISECONDS_IN_MINUTE = 60000L, MILLISECONDS_IN_HOUR = 3600000L, MILLISECONDS_IN_DAY = 86400000L;
     public static final String TAG = "ahtrap";
-    public static final String LAUNCHER_PACKAGE = "com.example.ui", THIS_APP_PACKAGE = "com.example.app_usage_tracker";
+    public static final String LAUNCHER_PACKAGE = "com.example.ui", THIS_APP_PACKAGE = "com.ahtrapotpid.appusagetracker";
     public static final String SETTINGS_PACKAGE = "com.android.settings", FILE_MANAGER_PACKAGE = "com.amaze.filemanager";
+    public static final String USAGE_CHANNEL_ID = "1", UPDATE_CHANNEL_ID = "22";
     private static final Random random = new Random();
-    public static StringBuilder notificationString;
 
 
     public static String getAppName(String packageName, Context context) {
@@ -368,12 +370,11 @@ public class ImportantStuffs {
     }
 
 
-    public static void displayNotification(String packageName, int percentage, int mode, Context context) {
-        String channel_ID = "1";
+    public static void displayUsageNotification(String packageName, int percentage, int mode, Context context) {
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(channel_ID, "Target", NotificationManager.IMPORTANCE_HIGH);
-//             channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+            NotificationChannel channel = new NotificationChannel(USAGE_CHANNEL_ID, "Target", NotificationManager.IMPORTANCE_HIGH);
+             channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
             assert manager != null;
             manager.createNotificationChannel(channel);
         }
@@ -388,7 +389,7 @@ public class ImportantStuffs {
         String modeString = (mode == MODE_DAILY) ? "daily" : "weekly";
         String description = percentage + "% of " + modeString + " target is used.";
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channel_ID)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, USAGE_CHANNEL_ID)
                 .setDefaults(Notification.DEFAULT_ALL)
                 .setContentTitle(appName)
                 .setContentText(description)
@@ -399,13 +400,49 @@ public class ImportantStuffs {
                 .setLargeIcon(icon)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setBadgeIconType(NotificationCompat.BADGE_ICON_SMALL)
-//                .setSmallIcon(R.mipmap.app_icon_round);
                 .setSmallIcon(R.drawable.aut_notification_icon)
                 .setColor(ContextCompat.getColor(context, R.color.notificationColor));
 
         assert manager != null;
 
         manager.notify((int) (System.currentTimeMillis()) % 200, builder.build());
+    }
+
+    public static void displayUpdateNotification(Context context){
+        NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+//        manager.cancel(Integer.valueOf(UPDATE_CHANNEL_ID));
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(UPDATE_CHANNEL_ID, "Update", NotificationManager.IMPORTANCE_LOW);
+            channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+            assert manager != null;
+            manager.createNotificationChannel(channel);
+        }
+
+        final String appPackageName = context.getPackageName(); // getPackageName() from Context or Activity object
+        Intent notificationIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName));
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 1, notificationIntent, 0);
+
+        Bitmap icon = BitmapFactory.decodeResource(context.getResources(), R.drawable.update);
+        String description = context.getResources().getString(R.string.update_description);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, UPDATE_CHANNEL_ID)
+                .setDefaults(Notification.DEFAULT_ALL)
+                .setContentTitle("Click to update")
+                .setStyle(new NotificationCompat.BigTextStyle()
+                .bigText(description))
+                .setPriority(NotificationCompat.PRIORITY_MIN)
+                .setAutoCancel(true)
+                .setCategory(NotificationCompat.CATEGORY_REMINDER)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setOngoing(true)
+                .setLargeIcon(icon)
+                .setBadgeIconType(NotificationCompat.BADGE_ICON_SMALL)
+                .setContentIntent(pendingIntent)
+                .setSmallIcon(R.drawable.aut_notification_icon)
+                .setColor(ContextCompat.getColor(context, R.color.notificationColor));
+
+        manager.notify(Integer.valueOf(UPDATE_CHANNEL_ID), builder.build());
     }
 
 

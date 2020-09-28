@@ -7,6 +7,7 @@ import android.app.usage.UsageStatsManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
@@ -30,6 +31,7 @@ import static com.ahtrapotpid.appusagetracker.ImportantStuffs.MILLISECONDS_IN_HO
 public class AppsDataController extends BroadcastReceiver {
     Context context;
     public static final String TAG = "extra";
+    public static final String SHARED_PREFERENCE = "AppInfo";
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -408,6 +410,27 @@ public class AppsDataController extends BroadcastReceiver {
     }
 
 
+    public static void checkVersionUpdate(Context context){
+        SharedPreferences sharedPreference = context.getSharedPreferences(SHARED_PREFERENCE, Context.MODE_PRIVATE);
+        savePlayStoreAppVersion(sharedPreference);
+
+        String installedVersion = ImportantStuffs.getAppVersion(context);
+        String playStoreVersion = sharedPreference.getString("playStoreVersion", installedVersion);
+        if(playStoreVersion.compareTo(installedVersion) == 1)
+            ImportantStuffs.displayUpdateNotification(context);
+    }
+
+
+    private static void savePlayStoreAppVersion(SharedPreferences sharedPreferences){
+        //get version from firebase and save to playStoreVersion
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+
+
+
+//        editor.putString("playStoreVersion", "1.4");
+//        editor.commit();
+    }
+
     private void saveInstallationInfo(){
         Log.d(TAG, "Saving installation info");
         JSONObject infoJson = ImportantStuffs.getJsonObject("info.json", context);
@@ -690,7 +713,7 @@ public class AppsDataController extends BroadcastReceiver {
 
                     try {
                         ImportantStuffs.showLog("Notification incoming...");
-                        ImportantStuffs.displayNotification(ImportantStuffs.addDot(packageName), tempPercentage, mode, context);
+                        ImportantStuffs.displayUsageNotification(ImportantStuffs.addDot(packageName), tempPercentage, mode, context);
                     } catch (Exception ex) {
                         ex.printStackTrace();
                         ImportantStuffs.showErrorLog("Can't show notification");
@@ -776,6 +799,7 @@ public class AppsDataController extends BroadcastReceiver {
             saveUsageDataLocally();
             checkAndSaveTargetLocally(context);
             ImportantStuffs.saveEverything(context);
+            checkVersionUpdate(context);
             Log.d("flag", "DataController: ended");
             return null;
         }

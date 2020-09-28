@@ -628,7 +628,6 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
             onDailyCalendarSelected(null);
         else
             onWeeklyCalendarSelected(null);
-//        testStuffs();
     }
 
 

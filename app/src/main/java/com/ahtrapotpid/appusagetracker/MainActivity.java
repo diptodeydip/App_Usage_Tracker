@@ -87,6 +87,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void testThings() {
+//        ImportantStuffs.displayUpdateNotification(this);
+//        ImportantStuffs.displayUpdateNotification(this);
+//        ImportantStuffs.displayUpdateNotification(this);
+
 //        String versionName = "";
 //        try {
 //            versionName = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
