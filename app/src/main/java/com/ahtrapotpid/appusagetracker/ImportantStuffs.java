@@ -459,27 +459,25 @@ public class ImportantStuffs {
     public static String getUserInfo(Context context) {
         try {
             SharedPreferences sharedPreference = context.getSharedPreferences(MainActivity.SHARED_PREFERENCE, MainActivity.MODE_PRIVATE);
-            JSONObject ob = new JSONObject();
-            String cg = sharedPreference.getString("cg", "");
-            String regNo = sharedPreference.getString("regNo", "");
-            String gender = sharedPreference.getString("gender", "");
             String version = getAppVersion(context);
-            String versionWithoutDot = removeDot(version);
-            boolean IsSaved = sharedPreference.getBoolean(version,false);
-            try {
-                ob.put("cg", cg);
-                ob.put("regNo", regNo);
-                ob.put("gender", gender);
-                if(!IsSaved){
-                    ob.put(versionWithoutDot,getCurrentHour());
-                    sharedPreference.edit().putBoolean(version,true).apply();
+            long IsSaved = sharedPreference.getLong(version,0);
+
+            if(IsSaved==0){
+                sharedPreference.edit().putLong(version,getCurrentHour()).apply();
+            }
+            JSONObject ob = new JSONObject();
+            Map<String,?> map = sharedPreference.getAll();
+
+            for (Map.Entry<String,?> entry : map.entrySet())
+            {
+                try {
+                    ob.put(removeDot(entry.getKey()), entry.getValue());
                 }
-            } catch (Exception ignored) {}
-
+                catch (Exception E){}
+            }
+            //Log.d("objectcheck","ok");
             return ob.toString();
-
         } catch (Exception ignored) {}
-
         return "";
     }
 
