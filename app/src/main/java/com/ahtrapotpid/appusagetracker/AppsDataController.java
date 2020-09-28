@@ -13,6 +13,13 @@ import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.view.View;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -31,7 +38,6 @@ import static com.ahtrapotpid.appusagetracker.ImportantStuffs.MILLISECONDS_IN_HO
 public class AppsDataController extends BroadcastReceiver {
     Context context;
     public static final String TAG = "extra";
-    public static final String SHARED_PREFERENCE = "AppInfo";
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -411,25 +417,26 @@ public class AppsDataController extends BroadcastReceiver {
 
 
     public static void checkVersionUpdate(Context context){
-        SharedPreferences sharedPreference = context.getSharedPreferences(SHARED_PREFERENCE, Context.MODE_PRIVATE);
-        savePlayStoreAppVersion(sharedPreference);
 
+        //FirebaseDatabase.getInstance().getReference().child("UpdateApp").child("CheckerNode").child("version").setValue("1.3");
         String installedVersion = ImportantStuffs.getAppVersion(context);
-        String playStoreVersion = sharedPreference.getString("playStoreVersion", installedVersion);
-        if(playStoreVersion.compareTo(installedVersion) == 1)
-            ImportantStuffs.displayUpdateNotification(context);
+
+        Query q = FirebaseDatabase.getInstance().getReference("UpdateApp")
+                .orderByChild("version").equalTo(installedVersion);
+        q.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.getChildrenCount()==0){
+                    ImportantStuffs.displayUpdateNotification(context);
+                }
+                //Log.d("versionchecker",installedVersion+"  "+dataSnapshot.getChildrenCount());
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
     }
 
-
-    private static void savePlayStoreAppVersion(SharedPreferences sharedPreferences){
-        //get version from firebase and save to playStoreVersion
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-
-
-
-//        editor.putString("playStoreVersion", "1.4");
-//        editor.commit();
-    }
 
     private void saveInstallationInfo(){
         Log.d(TAG, "Saving installation info");
