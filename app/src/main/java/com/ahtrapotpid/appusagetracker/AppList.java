@@ -207,7 +207,7 @@ public class AppList extends AppCompatActivity {
     }
 
     public void createAppList() {
-        RecyclerView recyclerView = findViewById(R.id.app_list_recycler_view);
+        RecyclerView recyclerView = findViewById(R.id.weekly_app_list_recycler_view);
         ArrayList<AppUsageInfo> appsInfoList = new ArrayList<>(appsUsageInfo.values());
         adapter = new AppListAdapter(this, appsInfoList);
         recyclerView.setAdapter(adapter);
@@ -244,6 +244,7 @@ public class AppList extends AppCompatActivity {
                 return null;
             }
             long startTime = ImportantStuffs.getDayStartingHour(), endTime = ImportantStuffs.getCurrentTime();
+
             activity.appsUsageInfo = AppsDataController.getAllAppsUsageInfo(startTime, endTime, activity);
 
 //            activity.appsUsageInfo = AppsDataController.getAppsUsageInfo(startTime, endTime, activity);

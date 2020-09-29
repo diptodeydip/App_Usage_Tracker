@@ -1,4 +1,4 @@
-package com.ahtrapotpid.appusagetracker.ui.main;
+package com.ahtrapotpid.appusagetracker.applist;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -42,14 +42,6 @@ public class HistoryListAdapter extends RecyclerView.Adapter<HistoryListAdapter.
         holder.usage.setText("Usage: "+targetInfo.getStringUsage());
         holder.target.setText("Target: "+targetInfo.getStringTarget());
         holder.percentage.setText(targetInfo.getStringPercentage());
-
-//        AppUsageInfo app = appsUsageInfo.get(position);
-//        holder.appName.setText(app.getAppName());
-//        String time = getTimeFromMillisecond(app.getTimeInForeground());
-//        holder.appUsage.setText(time);
-//        holder.appIcon.setImageDrawable(app.getAppIcon());
-//        String lastUsedTime = ImportantStuffs.getTimeInAgoFromMillisecond(app.getLastTimeUsed());
-//        holder.lastTimeUsed.setText(lastUsedTime);
     }
 
     @Override

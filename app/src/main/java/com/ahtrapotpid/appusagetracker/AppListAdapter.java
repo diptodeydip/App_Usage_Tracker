@@ -2,6 +2,7 @@ package com.ahtrapotpid.appusagetracker;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +20,7 @@ import java.util.Collections;
 public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.ViewHolder> {
     private Context context;
     private ArrayList<AppUsageInfo> appsUsageInfo, appsUsageInfoOriginal;
+    public static final String TAG = "temp";
 
     public AppListAdapter(Context context, ArrayList<AppUsageInfo> appsUsageInfo) {
         this.context = context;

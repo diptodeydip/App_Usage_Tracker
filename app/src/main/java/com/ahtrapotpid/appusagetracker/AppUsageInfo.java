@@ -2,13 +2,12 @@ package com.ahtrapotpid.appusagetracker;
 
 import android.graphics.drawable.Drawable;
 
-class AppUsageInfo {
+public class AppUsageInfo {
     Drawable appIcon;
     String appName, packageName;
-    long timeInForeground = 0, lastTimeUsed = 0, installationTime, usageTarget = 0;
+    long timeInForeground = 0, lastTimeUsed = 0, installationTime;
     int launchCount = 0;
     boolean isSystemApp;
-    String targetType = "None";
 
     @Override
     public String toString() {
@@ -29,6 +28,13 @@ class AppUsageInfo {
         this.installationTime = installationDate;
     }
 
+    public AppUsageInfo getClone(){
+        AppUsageInfo clone = new AppUsageInfo(appName, packageName, appIcon, installationTime, isSystemApp);
+        clone.setTimeInForeground(timeInForeground);
+        clone.setLastTimeUsed(lastTimeUsed);
+        clone.setLaunchCount(launchCount);
+        return clone;
+    }
 
     public Drawable getAppIcon() {
         return appIcon;
@@ -62,22 +68,7 @@ class AppUsageInfo {
         return installationTime;
     }
 
-    public long getUsageTarget() {
-        return usageTarget;
-    }
 
-    public String getTargetType() {
-        return targetType;
-    }
-
-
-    public void setUsageTarget(long usageTarget) {
-        this.usageTarget = usageTarget;
-    }
-
-    public void setTargetType(String targetType) {
-        this.targetType = targetType;
-    }
 
     public void setTimeInForeground(long timeInForeground) {
         this.timeInForeground = timeInForeground;

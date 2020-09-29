@@ -1,4 +1,4 @@
-package com.ahtrapotpid.appusagetracker.ui.main;
+package com.ahtrapotpid.appusagetracker.applist;
 
 import android.content.Context;
 
@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 
+import com.ahtrapotpid.appusagetracker.AppListTabbed;
 import com.ahtrapotpid.appusagetracker.R;
 
 public class SectionsPagerAdapter extends FragmentPagerAdapter {
@@ -15,22 +16,22 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
     @StringRes
     private static final int[] TAB_TITLES = new int[]{R.string.daily, R.string.weekly};
     private final Context mContext;
-    private String currentPackage;
+    public AppListTabbed appListTabbed;
 
-    public SectionsPagerAdapter(Context context, FragmentManager fm, String currentPackage) {
+    public SectionsPagerAdapter(AppListTabbed appListTabbed, FragmentManager fm) {
         super(fm);
-        mContext = context;
-        this.currentPackage = currentPackage;
+        mContext = appListTabbed;
+        this.appListTabbed = appListTabbed;
     }
 
     @Override
     public Fragment getItem(int position) {
-        Fragment targetHistory;
+        Fragment appList;
         if(position == 0)
-            targetHistory = DailyTargetHistory.newInstance(currentPackage);
+            appList = new DailyAppList(appListTabbed);
         else
-            targetHistory = WeeklyTargetHistory.newInstance(currentPackage);
-        return targetHistory;
+            appList = new WeeklyAppList(appListTabbed);
+        return appList;
     }
 
     @Nullable

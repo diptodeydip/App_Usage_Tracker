@@ -526,6 +526,18 @@ public class ImportantStuffs {
     }
 
 
+    public static HashMap<String, AppUsageInfo> copyUsageMap(HashMap<String, AppUsageInfo> original)
+    {
+        HashMap<String, AppUsageInfo> copy = new HashMap<String, AppUsageInfo>();
+
+        for (Map.Entry<String, AppUsageInfo> entry : original.entrySet())
+        {
+            copy.put(entry.getKey(), entry.getValue().getClone());
+        }
+        return copy;
+    }
+
+
     public static String getAppVersion(Context context){
         String versionName = "";
         try {

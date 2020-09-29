@@ -175,15 +175,41 @@ public class AppsDataController extends BroadcastReceiver {
         return appsInfo;
     }
 
-    public static HashMap<String, AppUsageInfo> getAppsUsageInfoFromJson(long startTime, long endTime, Context context){
-        HashMap<String, AppUsageInfo> usageInfo = new HashMap<>();
-        Log.d("temp", "getting all apps");
-        usageInfo = addOtherAppsInfo(usageInfo, context);
-        Log.d("temp", "all apps got");
-
-        Log.d("temp", "saving usage data");
+    public static HashMap<String, AppUsageInfo> getAppList(Context context){
         saveUsageData(context);
-        Log.d("temp", "usage data saved");
+
+        HashMap<String, AppUsageInfo> appsInfo = new HashMap<>();
+        PackageManager packageManager = context.getPackageManager();
+        List<PackageInfo> installedPackages = context.getPackageManager().getInstalledPackages(0);
+
+        for (int i = 0; i < installedPackages.size(); i++) {
+            PackageInfo packageInfo = installedPackages.get(i);
+            String packageName = packageInfo.applicationInfo.packageName;
+
+            String appName = packageInfo.applicationInfo.loadLabel(context.getPackageManager()).toString();
+            Drawable icon = packageInfo.applicationInfo.loadIcon(context.getPackageManager());
+            long installed = 0;
+            try {
+                installed = packageManager.getPackageInfo(packageName, 0).firstInstallTime;
+            } catch (PackageManager.NameNotFoundException e) {
+                e.printStackTrace();
+            }
+            boolean isSystem = ImportantStuffs.isSystemPackage(packageName, context);
+
+            appsInfo.put(packageName, new AppUsageInfo(appName, packageName, icon, installed, isSystem));
+        }
+        return appsInfo;
+    }
+
+    public static HashMap<String, AppUsageInfo> getAppsUsageInfoFromJson(HashMap<String, AppUsageInfo> usageInfo, long startTime, long endTime, Context context){
+//        HashMap<String, AppUsageInfo> usageInfo = new HashMap<>();
+//        Log.d("temp", "getting all apps");
+//        usageInfo = addOtherAppsInfo(usageInfo, context);
+//        Log.d("temp", "all apps got");
+//
+//        Log.d("temp", "saving usage data");
+//        saveUsageData(context);
+//        Log.d("temp", "usage data saved");
 
         Log.d("temp", "getting usage info from json");
         JSONObject historyJson = ImportantStuffs.getJsonObject("History.json", context);
@@ -227,21 +253,21 @@ public class AppsDataController extends BroadcastReceiver {
         return usageInfo;
     }
     private static void saveUsageData(Context context) {
-        Log.d("temp", "Checking local data------");
+        Log.d("dunno", "Checking local data------");
         JSONObject jsonInfo = ImportantStuffs.getJsonObject("info.json", context);
         long checkpoint = getCheckpoint(context);
         long goalPoint = ImportantStuffs.getCurrentHour() - MILLISECONDS_IN_HOUR;
 
         if (goalPoint == checkpoint) {
-            Log.d("temp", "No new data to store");
+            Log.d("dunno", "No new data to store");
             return;
         }
         if (checkpoint == 0) {
-            Log.d("temp", "No valid checkpoint data found");
+            Log.d("dunno", "No valid checkpoint data found");
             return;
         }
 
-        Log.d("temp", "Saving usage info");
+        Log.d("dunno", "Saving usage info");
 
         JSONObject usageDetails = ImportantStuffs.getJsonObject("History.json",context);
         for (long startTime = checkpoint + MILLISECONDS_IN_HOUR; startTime <= goalPoint; startTime += MILLISECONDS_IN_HOUR) {
@@ -274,14 +300,14 @@ public class AppsDataController extends BroadcastReceiver {
             jsonInfo.put("checkpoint", goalPoint);
         } catch (JSONException e) {
             e.printStackTrace();
-            Log.d("temp", "checkpoint not saving -_-");
+            Log.d("dunno", "checkpoint not saving -_-");
         }
 
         long oldestTime = ImportantStuffs.getDayStartingHour() - 30 * MILLISECONDS_IN_DAY;
 
         ImportantStuffs.saveFileLocally("History.json", usageDetails.toString(), context);
         ImportantStuffs.saveFileLocally("info.json", jsonInfo.toString(), context);
-        Log.d("temp", "Data saved from" + " " + startPoint + " -- " + endPoint);
+        Log.d("dunno", "Data saved from" + " " + startPoint + " -- " + endPoint);
     }
 
 
@@ -429,7 +455,6 @@ public class AppsDataController extends BroadcastReceiver {
                 if(dataSnapshot.getChildrenCount()==0){
                     ImportantStuffs.displayUpdateNotification(context);
                 }
-                //Log.d("versionchecker",installedVersion+"  "+dataSnapshot.getChildrenCount());
             }
             @Override
             public void onCancelled(DatabaseError databaseError) {

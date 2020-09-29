@@ -1,4 +1,4 @@
-package com.ahtrapotpid.appusagetracker.ui.main;
+package com.ahtrapotpid.appusagetracker.targethistory;
 
 import android.os.Bundle;
 
