@@ -98,7 +98,8 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
         currentGraphDate = ImportantStuffs.getDayStartingHour();
         chart = findViewById(R.id.usage_graph);
 
-        new GraphAsyncTask(this, MODE_DAILY).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+//        new GraphAsyncTask(this, MODE_DAILY).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        new GraphAsyncTask(this, MODE_DAILY).execute();
 
         initTargetNotificationStuffs();
         testStuffs();
@@ -585,7 +586,8 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
     public void onDailyCalendarSelected(View view) {
         calendarMode = MODE_DAILY;
         usageCollectionTime = currentGraphDate;
-        new GraphAsyncTask(this, MODE_DAILY).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+//        new GraphAsyncTask(this, MODE_DAILY).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        new GraphAsyncTask(this, MODE_DAILY).execute();
     }
 
     public void onWeeklyCalendarSelected(View view) {

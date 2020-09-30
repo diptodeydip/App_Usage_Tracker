@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">App Usage Tracker</string>
+    <string name="today">Today</string>
+    <string name="this_week">This Week</string>
+    <string name="past_7_days">Past 7 Days</string>
     <string name="demo">demo</string>
     <string name="set">Set</string>
     <string name="cancel">Cancel</string>

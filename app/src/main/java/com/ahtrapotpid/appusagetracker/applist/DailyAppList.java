@@ -1,10 +1,12 @@
 package com.ahtrapotpid.appusagetracker.applist;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,49 +20,97 @@ import com.ahtrapotpid.appusagetracker.AppsDataController;
 import com.ahtrapotpid.appusagetracker.ImportantStuffs;
 import com.ahtrapotpid.appusagetracker.R;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class DailyAppList extends Fragment {
+public class DailyAppList extends Fragment implements AppList{
     public static final String TAG = "temp";
     public AppListTabbed appListTabbed;
     public HashMap<String, AppUsageInfo> appsUsageInfo;
     AppListAdapter adapter;
+    View currentView;
+    SectionsPagerAdapter sectionsPagerAdapter;
+    SwipeRefreshLayout refreshLayout;
+    RecyclerView recyclerView;
 
     public DailyAppList() {
         // Required empty public constructor
     }
 
-    public DailyAppList(AppListTabbed appListTabbed){
+    public DailyAppList(AppListTabbed appListTabbed, SectionsPagerAdapter sectionsPagerAdapter){
+        Log.d(TAG, "DailyAppList: ");
         this.appListTabbed = appListTabbed;
+        this.sectionsPagerAdapter = sectionsPagerAdapter;
     }
 
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View currentView = inflater.inflate(R.layout.fragment_daily_app_list, container, false);
+        currentView = inflater.inflate(R.layout.fragment_daily_app_list, container, false);
         Log.d(TAG, "onCreateView: dailyAppList");
-        createHistoryList(currentView);
+        refreshLayout = currentView.findViewById(R.id.refresh_layout);
+        recyclerView = currentView.findViewById(R.id.weekly_app_list_recycler_view);
+        refreshLayout.setOnRefreshListener(() -> {
+            refreshLayout.setRefreshing(true);
+            startAppListAsync();
+        });
+        startAppListAsync();
         return currentView;
     }
 
-    private void createHistoryList(View view){
-        appsUsageInfo = ImportantStuffs.copyUsageMap(appListTabbed.appsListInfo);
 
-        long startTime = ImportantStuffs.getDayStartingHour(), endTime = ImportantStuffs.getCurrentTime();
-        appsUsageInfo = AppsDataController.getAppsUsageInfoFromJson(appsUsageInfo, startTime, endTime, getContext());
+    @Override
+    public void startAppListAsync(){
+        new DailyAppListAsyncTask().execute();
+    }
 
-        RecyclerView recyclerView = view.findViewById(R.id.weekly_app_list_recycler_view);
+    @Override
+    public void createAppList(){
         ArrayList<AppUsageInfo> appsInfoList = new ArrayList<>(appsUsageInfo.values());
         adapter = new AppListAdapter(getContext(), appsInfoList);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        adapter.filterApps(false, true);
-        adapter.sort(-2, false);
+        // always filter first then sort
+        filter(appListTabbed.systemAppFilter, appListTabbed.unusedAppFilter);
+        sort(appListTabbed.sortBy, appListTabbed.sortOrderAscending);
+    }
+
+    @Override
+    public void sort(int sortBy, boolean sortOrderAscending) {
+        adapter.sort(sortBy, sortOrderAscending);
+    }
+
+    @Override
+    public void filter(boolean systemAppFilter, boolean unusedAppFilter) {
+        adapter.filterApps(systemAppFilter, unusedAppFilter);
+    }
+
+
+    private class DailyAppListAsyncTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected void onPreExecute() {
+            refreshLayout.setRefreshing(true);
+            recyclerView.setVisibility(View.INVISIBLE);
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            Log.d("flag", "DailyAppListAsyncTask: started");
+            appsUsageInfo = ImportantStuffs.copyUsageMap(appListTabbed.appsListInfo);
+            long startTime = ImportantStuffs.getDayStartingHour(), endTime = ImportantStuffs.getCurrentTime();
+            appsUsageInfo = AppsDataController.getAppsUsageInfoFromJson(appsUsageInfo, startTime, endTime, getContext());
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            createAppList();
+            refreshLayout.setRefreshing(false);
+            recyclerView.setVisibility(View.VISIBLE);
+            Log.d("flag", "DailyAppListAsyncTask: ended");
+            sectionsPagerAdapter.startWeeklyAppList();
+        }
     }
 }

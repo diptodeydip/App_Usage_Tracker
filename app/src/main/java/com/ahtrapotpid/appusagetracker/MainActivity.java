@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
         testThings();
 
         sharedPreference = getSharedPreferences(SHARED_PREFERENCE, MODE_PRIVATE);
-        editor = sharedPreference.edit();
+        editor = sharedPreference.edit(); 
 
         if(checkIfUserRegistered() == true){
 
@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
 //                AppsDataController.startAlarm(this, 6000);
 //            }
 
-            Intent intent = new Intent(this, AppList.class);
+            Intent intent = new Intent(this, AppListTabbed.class);
             startActivity(intent);
             finish();
             return;
@@ -125,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
         if (!regiLayout.isErrorEnabled() && !cgpaLayout.isErrorEnabled()) {
             RadioButton genderButton = findViewById(genderRadioGroup.getCheckedRadioButtonId());
             saveUserDataForTheFirstTime(registrationNumber, cgpa, genderButton.getText().toString());
-            Intent intent = new Intent(this, AppList.class);
+            Intent intent = new Intent(this, AppListTabbed.class);
             startActivity(intent);
             finish();
         }
