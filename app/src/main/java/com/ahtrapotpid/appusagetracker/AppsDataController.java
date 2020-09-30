@@ -651,7 +651,7 @@ public class AppsDataController extends BroadcastReceiver {
 
     public void checkNotification(String infoName, int percentage, JSONArray notifications, String packageName) {
 
-        boolean flag = false;
+        boolean flag = false,repeatAlarm = false;
         int tempPercentage = 0;
 
         JSONObject notificationInfo = new JSONObject();
@@ -677,12 +677,18 @@ public class AppsDataController extends BroadcastReceiver {
         for (int i = 0; i < notifications.length(); i++) {
             //Log.d("trycatch",notifications.length()+"");
             try {
-                if (percentage >= notificationTypes.getInt(notifications.getInt(i)) && notificationTypes.getInt(notifications.getInt(i)) >= tempPercentage) {
+                if( notifications.getInt(i) == 6){
+                    repeatAlarm = true;
+                }
+                else if (percentage >= notificationTypes.getInt(notifications.getInt(i)) && notificationTypes.getInt(notifications.getInt(i)) >= tempPercentage) {
                     flag = true;
                     tempPercentage = notificationTypes.getInt(notifications.getInt(i));
                 }
             } catch (Exception e) {
             }
+        }
+        if(repeatAlarm && tempPercentage == 100){
+            tempPercentage = getPercentageRoundedToMultipleOfThirty(percentage);
         }
 
         if (flag) {
@@ -707,7 +713,7 @@ public class AppsDataController extends BroadcastReceiver {
                     notificationInfo.put(ImportantStuffs.removeDot(packageName), appData);
                     ImportantStuffs.saveFileLocally("notificationInfo.json", notificationInfo.toString(), context);
                     int mode = (infoName.equals("DailyInfo")) ? 1 : 0;
-
+                    tempPercentage = Math.min(tempPercentage, 100);
                     try {
                         ImportantStuffs.showLog("Notification incoming...");
                         ImportantStuffs.displayUsageNotification(ImportantStuffs.addDot(packageName), tempPercentage, mode, context);
@@ -721,6 +727,14 @@ public class AppsDataController extends BroadcastReceiver {
                 }
             }
         }
+    }
+
+    public int getPercentageRoundedToMultipleOfThirty(int percentage){
+
+        int temp = percentage - 100;
+        int dividend = temp/30;
+
+        return  (dividend*30)+100;
     }
 
     public JSONObject setRecentHistoryToNull(String infoName, JSONObject individualApp, Long startTime, String packageName) throws JSONException {
