@@ -123,9 +123,9 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
                 JSONObject thisAppInfoJson = new JSONObject();
                 thisAppInfoJson.put("targetTypes", new JSONArray());
                 thisAppInfoJson.put("weeklyTarget", 14*MILLISECONDS_IN_HOUR);
-                thisAppInfoJson.put("weeklyNotifications", new JSONArray("[0, 2, 5]"));
+                thisAppInfoJson.put("weeklyNotifications", new JSONArray("[0, 2, 5, 6]"));
                 thisAppInfoJson.put("dailyTarget", 3*MILLISECONDS_IN_HOUR);
-                thisAppInfoJson.put("dailyNotifications", new JSONArray("[0, 2, 5]"));
+                thisAppInfoJson.put("dailyNotifications", new JSONArray("[0, 2, 5, 6]"));
                 jsonInfo.getJSONObject("appsInfo").put(currentPackageNoDot, thisAppInfoJson);
                 ImportantStuffs.saveFileLocally("info.json", jsonInfo.toString(), this);
                 ImportantStuffs.showLog("App info has been created successfully");
@@ -244,7 +244,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
     }
 
     public void onSetWeeklyNotificationsClicked(View view) {
-        boolean[] selectedItems = {false, false, false, false, false, false};
+        boolean[] selectedItems = new boolean[notificationTypes.size()];
         for (int i : weeklySelectedNotificationIndexes)
             selectedItems[i] = true;
 
@@ -267,7 +267,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
     }
 
     public void onSetDailyNotificationsClicked(View view) {
-        boolean[] selectedItems = {false, false, false, false, false, false};
+        boolean[] selectedItems = new boolean[notificationTypes.size()];
         for (int i : dailySelectedNotificationIndexes)
             selectedItems[i] = true;
 

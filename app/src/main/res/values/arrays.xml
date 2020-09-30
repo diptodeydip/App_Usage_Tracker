@@ -12,6 +12,8 @@
         <item>At 70%</item>
         <item>At 60%</item>
         <item>At 50%</item>
+        <item>Repeat after target exceeds</item>
+
     </string-array>
 
     <string-array name="planets_array">
