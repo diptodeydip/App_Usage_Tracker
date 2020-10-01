@@ -18,8 +18,8 @@
     <color name="cardBackground">#1D2129</color>
     <color name="cardBackgroundDifferent">#271F33</color>
 
-    <color name="tabSelected">#1B394C</color>
-    <color name="tabNotSelected">#1d3e53</color>
+    <color name="tabNotSelected">#23455A</color>
+    <color name="tabSelected">#1D3A4C</color>
     <color name="tabIndicator">#4B3259</color>
 
     <color name="itemBackground">#222831</color>

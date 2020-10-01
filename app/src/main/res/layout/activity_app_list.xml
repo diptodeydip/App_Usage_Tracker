@@ -65,6 +65,7 @@
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/weekly_app_list_recycler_view"
+            android:paddingTop="5dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 

@@ -17,20 +17,13 @@
         android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:layout_conversion_absoluteHeight="603dp"
-        tools:layout_conversion_absoluteWidth="411dp"
-        tools:layout_editor_absoluteX="0dp"
-        tools:layout_editor_absoluteY="0dp">
+        app:layout_constraintTop_toTopOf="parent">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/weekly_app_list_recycler_view"
+            android:paddingTop="5dp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            tools:layout_conversion_absoluteHeight="603dp"
-            tools:layout_conversion_absoluteWidth="411dp"
-            tools:layout_editor_absoluteX="0dp"
-            tools:layout_editor_absoluteY="0dp" />
+            android:layout_height="wrap_content"/>
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 

@@ -7,8 +7,6 @@ import android.widget.CompoundButton;
 import androidx.appcompat.widget.AppCompatRadioButton;
 
 public class MyRadioButton extends AppCompatRadioButton {
-
-
     private OnCheckedChangeListener onCheckedChangeListener;
 
 
@@ -33,7 +31,6 @@ public class MyRadioButton extends AppCompatRadioButton {
         setButtonDrawable(null);//lets remove the default drawable to create our own
 
     }
-
 
 
     public void setOwnOnCheckedChangeListener(OnCheckedChangeListener onCheckedChangeListener) {
