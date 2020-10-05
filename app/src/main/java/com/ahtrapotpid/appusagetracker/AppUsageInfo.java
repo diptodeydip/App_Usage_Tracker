@@ -4,16 +4,16 @@ import android.graphics.drawable.Drawable;
 
 public class AppUsageInfo {
     Drawable appIcon;
-    String appName, packageName;
-    long timeInForeground = 0, lastTimeUsed = 0, installationTime;
+    String appName = "", packageName = "";
+    long timeInForeground = 0, lastTimeUsed = 0, installationTime = 0;
     int launchCount = 0;
-    boolean isSystemApp;
+    boolean isSystemApp = false;
 
     @Override
     public String toString() {
         String usedTime = ImportantStuffs.getTimeFromMillisecond(timeInForeground);
         String lastOpened = "Not opened today";
-        if(lastTimeUsed != 0)
+        if (lastTimeUsed != 0)
             lastOpened = ImportantStuffs.getTimeInAgoFromMillisecond(lastTimeUsed);
         String installationDate = ImportantStuffs.getDateFromMilliseconds(installationTime);
         String result = String.format("Name: %s, Installation date: %s, Used time: %s, Last opened: %s, Launches: %d", appName, installationDate, usedTime, lastOpened, launchCount);
@@ -28,7 +28,11 @@ public class AppUsageInfo {
         this.installationTime = installationDate;
     }
 
-    public AppUsageInfo getClone(){
+    AppUsageInfo(String packageName) {
+        this.packageName = packageName;
+    }
+
+    public AppUsageInfo getClone() {
         AppUsageInfo clone = new AppUsageInfo(appName, packageName, appIcon, installationTime, isSystemApp);
         clone.setTimeInForeground(timeInForeground);
         clone.setLastTimeUsed(lastTimeUsed);

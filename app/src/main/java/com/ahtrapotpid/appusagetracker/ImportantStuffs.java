@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -21,18 +20,14 @@ import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
 import android.util.Log;
-import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
+import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
+
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
-import androidx.annotation.NonNull;
-import androidx.core.app.NotificationCompat;
-import androidx.core.content.ContextCompat;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -46,7 +41,6 @@ import java.io.FileWriter;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -58,7 +52,7 @@ public class ImportantStuffs {
     public static final String TAG = "ahtrap";
     public static final String LAUNCHER_PACKAGE = "com.example.ui", THIS_APP_PACKAGE = "com.ahtrapotpid.appusagetracker";
     public static final String SETTINGS_PACKAGE = "com.android.settings", FILE_MANAGER_PACKAGE = "com.amaze.filemanager";
-    public static final String USAGE_CHANNEL_ID = "1", UPDATE_CHANNEL_ID = "22";
+    public static final String USAGE_CHANNEL_ID = "1", UPDATE_CHANNEL_ID = "2", GENERAL_CHANNEL_ID = "3";
     private static final Random random = new Random();
 
 
@@ -265,7 +259,7 @@ public class ImportantStuffs {
     }
 
 
-    public static String getStringFromJsonObjectPath(String jsonFilePath, Context context) {
+    public static synchronized String getStringFromJsonObjectPath(String jsonFilePath, Context context) {
         try {
             String path = context.getExternalFilesDir("").getAbsolutePath();
             File file = new File(path + "/" + jsonFilePath);
@@ -287,7 +281,7 @@ public class ImportantStuffs {
         }
     }
 
-    public static JSONObject getJsonObject(String jsonFilePath, Context context) {
+    public static synchronized JSONObject getJsonObject(String jsonFilePath, Context context) {
         String jsonString = getStringFromJsonObjectPath(jsonFilePath, context);
         JSONObject jsonObject = new JSONObject();
         try {
@@ -299,7 +293,7 @@ public class ImportantStuffs {
         return jsonObject;
     }
 
-    public static JSONArray getJsonArray(String jsonFilePath, Context context) {
+    public static synchronized JSONArray getJsonArray(String jsonFilePath, Context context) {
         String jsonString = getStringFromJsonObjectPath(jsonFilePath, context);
         JSONArray jsonArray = null;
         try {
@@ -310,7 +304,7 @@ public class ImportantStuffs {
         return jsonArray;
     }
 
-    public static boolean saveFileLocally(String fileName, String fileContent, Context context) {
+    public static synchronized boolean saveFileLocally(String fileName, String fileContent, Context context) {
         try {
             String path = context.getExternalFilesDir("").getAbsolutePath();
             File file = new File(path, fileName);
@@ -370,11 +364,11 @@ public class ImportantStuffs {
     }
 
 
-    public static void displayUsageNotification(String packageName, int percentage, int mode, Context context) {
+    public static void displayUsageNotification(String packageName, int percentage, long usageTime, int mode, Context context) {
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(USAGE_CHANNEL_ID, "Target", NotificationManager.IMPORTANCE_HIGH);
-             channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+            channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
             assert manager != null;
             manager.createNotificationChannel(channel);
         }
@@ -383,11 +377,12 @@ public class ImportantStuffs {
         notificationIntent.putExtra("packageName", packageName);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 1, notificationIntent, 0);
 
+        String usageTimeString = getTimeFromMillisecond(usageTime);
         String appName = getAppName(packageName, context);
         Drawable appIcon = getAppIcon(packageName, context);
         Bitmap icon = getBitmapFromDrawable(appIcon);
         String modeString = (mode == MODE_DAILY) ? "daily" : "weekly";
-        String description = percentage + "% of " + modeString + " target is used.";
+        String description = "More than " + percentage + "%(" + usageTimeString + ") of " + modeString + " target is used.";
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, USAGE_CHANNEL_ID)
                 .setDefaults(Notification.DEFAULT_ALL)
@@ -430,12 +425,12 @@ public class ImportantStuffs {
                 .setDefaults(Notification.DEFAULT_ALL)
                 .setContentTitle("Click to update")
                 .setStyle(new NotificationCompat.BigTextStyle()
-                .bigText(description))
+                        .bigText(description))
                 .setPriority(NotificationCompat.PRIORITY_MIN)
                 .setAutoCancel(true)
                 .setCategory(NotificationCompat.CATEGORY_REMINDER)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setOngoing(true)
+                .setOngoing(false)
                 .setLargeIcon(icon)
                 .setBadgeIconType(NotificationCompat.BADGE_ICON_SMALL)
                 .setContentIntent(pendingIntent)
@@ -445,9 +440,40 @@ public class ImportantStuffs {
         manager.notify(Integer.valueOf(UPDATE_CHANNEL_ID), builder.build());
     }
 
+    public static void displayNotification(Context context, String description) {
+        NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(GENERAL_CHANNEL_ID, "General", NotificationManager.IMPORTANCE_HIGH);
+            channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+            assert manager != null;
+            manager.createNotificationChannel(channel);
+        }
+
+        Intent notificationIntent = new Intent(context, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 1, notificationIntent, 0);
+
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, GENERAL_CHANNEL_ID)
+                .setDefaults(Notification.DEFAULT_ALL)
+                .setContentTitle("Important Notice")
+                .setStyle(new NotificationCompat.BigTextStyle()
+                        .bigText(description))
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent)
+                .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setBadgeIconType(NotificationCompat.BADGE_ICON_SMALL)
+                .setSmallIcon(R.drawable.aut_notification_icon)
+                .setColor(ContextCompat.getColor(context, R.color.notificationColor));
+
+        manager.notify(Integer.valueOf(GENERAL_CHANNEL_ID), builder.build());
+    }
+
 
     public static void saveToFirebase(String jsonString, String path) {
-        if(jsonString.equals(""))return;
+        if (jsonString.equals("")) return;
 
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference myRef = database.getReference(path);
@@ -525,18 +551,14 @@ public class ImportantStuffs {
         }.getType());
     }
 
-
-    public static HashMap<String, AppUsageInfo> copyUsageMap(HashMap<String, AppUsageInfo> original)
-    {
+    public static HashMap<String, AppUsageInfo> copyUsageMap(HashMap<String, AppUsageInfo> original) {
         HashMap<String, AppUsageInfo> copy = new HashMap<String, AppUsageInfo>();
 
-        for (Map.Entry<String, AppUsageInfo> entry : original.entrySet())
-        {
+        for (Map.Entry<String, AppUsageInfo> entry : original.entrySet()) {
             copy.put(entry.getKey(), entry.getValue().getClone());
         }
         return copy;
     }
-
 
     public static String getAppVersion(Context context){
         String versionName = "";

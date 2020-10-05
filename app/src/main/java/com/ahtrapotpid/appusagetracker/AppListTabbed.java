@@ -19,16 +19,12 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.viewpager.widget.ViewPager;
-
 
 import com.ahtrapotpid.appusagetracker.applist.SectionsPagerAdapter;
 import com.google.android.material.appbar.AppBarLayout;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 
-import java.lang.ref.WeakReference;
 import java.util.HashMap;
 
 public class AppListTabbed extends AppCompatActivity {
@@ -247,14 +243,14 @@ public class AppListTabbed extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(Void... voids) {
-            Log.d("flag", "AppListAsyncTask: started");
+            Log.d("a_flag", "AppListAsyncTask: started");
             appsListInfo = AppsDataController.getAppList(AppListTabbed.this);
             return null;
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            Log.d("flag", "AppListAsyncTask: ended");
+            Log.d("a_flag", "AppListAsyncTask: ended");
             appListLoaded = true;
             startFragments();
             progressDialog.cancel();

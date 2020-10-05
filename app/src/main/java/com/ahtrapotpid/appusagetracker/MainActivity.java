@@ -1,23 +1,18 @@
 package com.ahtrapotpid.appusagetracker;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -26,16 +21,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Calendar;
-import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity {
-    public static final String TAG = "extra";
+    public static final String TAG = "temp";
     TextInputEditText regiNumInput, cgpaInput;
     TextInputLayout regiLayout, cgpaLayout;
     RadioGroup genderRadioGroup;
 
-    SharedPreferences sharedPreference;
-    SharedPreferences.Editor editor;
+    static SharedPreferences sharedPreference;
+    static SharedPreferences.Editor editor;
     public static final String SHARED_PREFERENCE = "UserInfo";
 
     @Override
@@ -87,6 +81,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void testThings() {
+//        long startTime = ImportantStuffs.getDayStartingHour();
+//        long endTime = ImportantStuffs.getCurrentTime();
+//        JSONObject infoJson = ImportantStuffs.getJsonObject("info.json", this);
+//        AppsDataController.testSetAutoTargetForAllApps(startTime, endTime, infoJson, this);
+//        AppsDataController.testResetAutoTargetForAllApps(infoJson, this);
+
 //        ImportantStuffs.displayUpdateNotification(this);
 //        ImportantStuffs.displayUpdateNotification(this);
 //        ImportantStuffs.displayUpdateNotification(this);
@@ -172,13 +172,10 @@ public class MainActivity extends AppCompatActivity {
         editor.putString("regNo", registrationNumber);
         editor.putString("cg", cgpa);
         editor.putString("gender", gender);
-
         editor.commit();
+
         if(initializeJsonIfNot() == false)
             Toast.makeText(this, "Json initialization failed. App won't work properly.", Toast.LENGTH_SHORT).show();
-//        else {
-//            AppsDataController.startAlarm(this, 3000);
-//        }
     }
 
     private boolean checkIfUserRegistered() {
@@ -191,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean initializeJsonIfNot(){
         String info = ImportantStuffs.getStringFromJsonObjectPath("info.json", this);
         if(info == ""){
-            Log.d(TAG, "Initializing info.json");
+            Log.d("flag", "Initializing info.json");
             ImportantStuffs.showLog("No checkpoint data found. Creating new checkpoint---");
             Calendar calendar = Calendar.getInstance();
             JSONObject jsonInfo = new JSONObject();
@@ -209,6 +206,9 @@ public class MainActivity extends AppCompatActivity {
                 jsonInfo.put("checkpoint", time);
                 jsonInfo.put("appsInfo", new JSONObject());
                 jsonInfo.put("appsInstallationInfo", new JSONObject());
+                jsonInfo.put("weekNumber", 1);
+                // change to get day starting hour
+                jsonInfo.put("weekTime", ImportantStuffs.getDayStartingHour());
             } catch (JSONException e) {
                 e.printStackTrace();
                 ImportantStuffs.showErrorLog("Checkpoint can't be initialized");
@@ -218,8 +218,9 @@ public class MainActivity extends AppCompatActivity {
                 ImportantStuffs.showErrorLog("Checkpoint can't be initialized");
                 return false;
             }
+            ImportantStuffs.displayNotification(this, getResources().getString(R.string.week_1_notice));
             ImportantStuffs.showLog("info.json initialized.");
-            Log.d(TAG, "info.json initialized");
+            Log.d("flag", "info.json initialized");
         }
         return true;
     }

@@ -2,16 +2,15 @@ package com.ahtrapotpid.appusagetracker.applist;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 
 import com.ahtrapotpid.appusagetracker.AppListAdapter;
 import com.ahtrapotpid.appusagetracker.AppListTabbed;
@@ -39,7 +38,6 @@ public class WeeklyAppList extends Fragment implements AppList{
     }
 
     public WeeklyAppList(AppListTabbed appListTabbed, SectionsPagerAdapter sectionsPagerAdapter){
-        Log.d(TAG, "WeeklyAppList: ");
         this.appListTabbed = appListTabbed;
         this.sectionsPagerAdapter = sectionsPagerAdapter;
     }
@@ -48,7 +46,6 @@ public class WeeklyAppList extends Fragment implements AppList{
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         currentView = inflater.inflate(R.layout.fragment_weekly_app_list, container, false);
-        Log.d(TAG, "onCreateView: weeklyAppList");
         refreshLayout = currentView.findViewById(R.id.refresh_layout);
         recyclerView = currentView.findViewById(R.id.weekly_app_list_recycler_view);
         refreshLayout.setOnRefreshListener(() -> {
@@ -96,7 +93,7 @@ public class WeeklyAppList extends Fragment implements AppList{
 
         @Override
         protected Void doInBackground(Void... voids) {
-            Log.d("flag", "WeeklyAppListAsyncTask: started");
+            Log.d("a_flag", "WeeklyAppListAsyncTask: started");
             appsUsageInfo = ImportantStuffs.copyUsageMap(appListTabbed.appsListInfo);
             long endTime = ImportantStuffs.getCurrentTime(), startTime = ImportantStuffs.getWeekStartTimeFromTime(endTime);
             appsUsageInfo = AppsDataController.getAppsUsageInfoFromJson(appsUsageInfo, startTime, endTime, getContext());
@@ -108,7 +105,7 @@ public class WeeklyAppList extends Fragment implements AppList{
             createAppList();
             refreshLayout.setRefreshing(false);
             recyclerView.setVisibility(View.VISIBLE);
-            Log.d("flag", "WeeklyAppListAsyncTask: ended");
+            Log.d("a_flag", "WeeklyAppListAsyncTask: ended");
             AppsDataController.startAlarm(getContext(), 500);
         }
     }

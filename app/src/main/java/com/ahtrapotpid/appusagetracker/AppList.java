@@ -1,12 +1,5 @@
 package com.ahtrapotpid.appusagetracker;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-
 import android.app.ProgressDialog;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -21,6 +14,13 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -238,7 +238,7 @@ public class AppList extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(Void... voids) {
-            Log.d("flag", "AppListAsyncTask: started");
+            Log.d("a_flag", "AppListAsyncTask: started");
             AppList activity = activityWeakReference.get();
             if (activity == null || activity.isFinishing()) {
                 return null;
@@ -267,7 +267,7 @@ public class AppList extends AppCompatActivity {
             activity.createAppList();
             activity.progressDialog.cancel();
             AppsDataController.startAlarm(activity, 500);
-            Log.d("flag", "AppListAsyncTask: ended");
+            Log.d("a_flag", "AppListAsyncTask: ended");
         }
     }
 }

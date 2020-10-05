@@ -2,16 +2,15 @@ package com.ahtrapotpid.appusagetracker.applist;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 
 import com.ahtrapotpid.appusagetracker.AppListAdapter;
 import com.ahtrapotpid.appusagetracker.AppListTabbed;
@@ -38,7 +37,6 @@ public class DailyAppList extends Fragment implements AppList{
     }
 
     public DailyAppList(AppListTabbed appListTabbed, SectionsPagerAdapter sectionsPagerAdapter){
-        Log.d(TAG, "DailyAppList: ");
         this.appListTabbed = appListTabbed;
         this.sectionsPagerAdapter = sectionsPagerAdapter;
     }
@@ -47,7 +45,6 @@ public class DailyAppList extends Fragment implements AppList{
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         currentView = inflater.inflate(R.layout.fragment_daily_app_list, container, false);
-        Log.d(TAG, "onCreateView: dailyAppList");
         refreshLayout = currentView.findViewById(R.id.refresh_layout);
         recyclerView = currentView.findViewById(R.id.weekly_app_list_recycler_view);
         refreshLayout.setOnRefreshListener(() -> {
@@ -97,7 +94,7 @@ public class DailyAppList extends Fragment implements AppList{
 
         @Override
         protected Void doInBackground(Void... voids) {
-            Log.d("flag", "DailyAppListAsyncTask: started");
+            Log.d("a_flag", "DailyAppListAsyncTask: started");
             appsUsageInfo = ImportantStuffs.copyUsageMap(appListTabbed.appsListInfo);
             long startTime = ImportantStuffs.getDayStartingHour(), endTime = ImportantStuffs.getCurrentTime();
             appsUsageInfo = AppsDataController.getAppsUsageInfoFromJson(appsUsageInfo, startTime, endTime, getContext());
@@ -109,7 +106,7 @@ public class DailyAppList extends Fragment implements AppList{
             createAppList();
             refreshLayout.setRefreshing(false);
             recyclerView.setVisibility(View.VISIBLE);
-            Log.d("flag", "DailyAppListAsyncTask: ended");
+            Log.d("a_flag", "DailyAppListAsyncTask: ended");
             sectionsPagerAdapter.startWeeklyAppList();
         }
     }

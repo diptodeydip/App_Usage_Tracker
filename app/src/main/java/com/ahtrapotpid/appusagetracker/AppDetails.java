@@ -1,10 +1,5 @@
 package com.ahtrapotpid.appusagetracker;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.content.ContextCompat;
-
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.Intent;
@@ -18,6 +13,11 @@ import android.widget.DatePicker;
 import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
 
 import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.BarChart;
@@ -43,9 +43,9 @@ import java.util.Collections;
 
 import static com.ahtrapotpid.appusagetracker.ImportantStuffs.MILLISECONDS_IN_HOUR;
 
-public class AppDetails extends AppCompatActivity implements DatePickerDialog.OnDateSetListener{
-
-    public static final String TAG = "extra";
+public class AppDetails extends AppCompatActivity implements DatePickerDialog.OnDateSetListener {
+    public static final String TAG = "temp";
+    int currentWeek = 0;
 
     BarChart chart;
     long currentGraphDate;
@@ -54,7 +54,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
     ArrayList<String> targetTypes;
     ArrayList<Integer> selectedTargetTypeIndexes = new ArrayList<>();
 
-    ConstraintLayout setWeeklyTargetLayout, setDailyTargetLayout;
+    ConstraintLayout setWeeklyTargetLayout, setDailyTargetLayout, setTargetTypesLayout;
     long weeklyTarget = 0, dailyTarget = 0;
     TextView weeklyTargetTextView, dailyTargetTextView;
 
@@ -92,32 +92,43 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
 
         setTitle(appName);
 
-        initJson();
+        checkJson();
 
         usageCollectionTime = ImportantStuffs.getDayStartingHour();
         currentGraphDate = ImportantStuffs.getDayStartingHour();
         chart = findViewById(R.id.usage_graph);
 
-//        new GraphAsyncTask(this, MODE_DAILY).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        new GraphAsyncTask(this, MODE_DAILY).execute();
+//        new GraphAsyncTask(this, MODE_DAILY).execute();
+        new GraphAsyncTask(this, MODE_DAILY).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
         initTargetNotificationStuffs();
         testStuffs();
     }
 
     private void testStuffs() {
-
+//        Log.d(TAG, currentWeek+"");
     }
 
-    private void initJson() {
+    private void checkJson() {
         jsonInfo = ImportantStuffs.getJsonObject("info.json", this);
+        {
+            // check week block
+            try {
+                currentWeek = jsonInfo.getInt("weekNumber");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            if (currentWeek <= 3) {
+                return;
+            }
+        }
         String thisAppInfo = "";
         try {
             thisAppInfo = jsonInfo.getJSONObject("appsInfo").getJSONObject(currentPackageNoDot).toString();
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        if(thisAppInfo.equals("")){
+        if (thisAppInfo.equals("")) {
             ImportantStuffs.showLog("No app info for", ImportantStuffs.getAppName(currentPackage, this));
             try {
                 JSONObject thisAppInfoJson = new JSONObject();
@@ -142,7 +153,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
                 thisAppInfo = "";
                 e.printStackTrace();
             }
-            Log.d(TAG, currentPackage + ": " + thisAppInfo);
+            Log.d("extra", currentPackage + ": " + thisAppInfo);
         }
     }
 
@@ -158,6 +169,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
             e.printStackTrace();
             ImportantStuffs.showErrorLog("Can't initialize target");
         }
+        setTargetTypesLayout = findViewById(R.id.target_type);
         targetTypesTextView = findViewById(R.id.target_types_text);
         targetTypes = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.target_types)));
 
@@ -239,7 +251,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
 
     public void onSetDailyTargetClicked(View view) {
         int hour = (int) ImportantStuffs.getHourFromTime(dailyTarget);
-        int min = (int) ImportantStuffs.getRemainingMinuteFromTime(dailyTarget);
+        int min = ImportantStuffs.getRemainingMinuteFromTime(dailyTarget);
         showTimePickerDialog(MODE_DAILY, hour, min, 23, 59);
     }
 
@@ -383,14 +395,23 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
 
     private void setTargetTypes() {
         int numOfTargets = selectedTargetTypeIndexes.size();
-        if(numOfTargets == 0){
+        if (currentWeek <= 3) {
+            String targetType = (numOfTargets == 2) ? "Weekly and Daily" : "None";
+            targetTypesTextView.setText(targetType);
+            makeConstraintLayoutGrayedOut(setTargetTypesLayout, true);
+            makeConstraintLayoutGrayedOut(setDailyTargetLayout, true);
+            makeConstraintLayoutGrayedOut(setWeeklyTargetLayout, true);
+            makeConstraintLayoutGrayedOut(setDailyNotificationsLayout, true);
+            makeConstraintLayoutGrayedOut(setWeeklyNotificationsLayout, true);
+            return;
+        }
+        if (numOfTargets == 0) {
             targetTypesTextView.setText("None");
             makeConstraintLayoutGrayedOut(setDailyTargetLayout, true);
             makeConstraintLayoutGrayedOut(setWeeklyTargetLayout, true);
             makeConstraintLayoutGrayedOut(setDailyNotificationsLayout, true);
             makeConstraintLayoutGrayedOut(setWeeklyNotificationsLayout, true);
-        }
-        else if(numOfTargets == 1){
+        } else if (numOfTargets == 1) {
             String targetType = targetTypes.get(selectedTargetTypeIndexes.get(0));
             targetTypesTextView.setText(targetType);
             if(targetType.equals("Daily")){
@@ -586,16 +607,15 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
     public void onDailyCalendarSelected(View view) {
         calendarMode = MODE_DAILY;
         usageCollectionTime = currentGraphDate;
-//        new GraphAsyncTask(this, MODE_DAILY).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        new GraphAsyncTask(this, MODE_DAILY).execute();
+//        new GraphAsyncTask(this, MODE_DAILY).execute();
+        new GraphAsyncTask(this, MODE_DAILY).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     public void onWeeklyCalendarSelected(View view) {
         calendarMode = MODE_WEEKLY;
         usageCollectionTime = ImportantStuffs.getWeekStartTimeFromTime(currentGraphDate);
-        new GraphAsyncTask(this, MODE_WEEKLY).execute();
-//        usageData = AppsDataController.getWeeklyUsageDataInDailyList(usageCollectionTime, currentPackage, this);
-//        updateGraphData();
+//        new GraphAsyncTask(this, MODE_WEEKLY).execute();
+        new GraphAsyncTask(this, MODE_WEEKLY).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     public void onPickDateClicked(View view) {
@@ -657,7 +677,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
 
         @Override
         protected Void doInBackground(Void... aVoid) {
-            Log.d("flag", "GraphAsync: started");
+            Log.d("a_flag", "GraphAsync: started");
             AppDetails activity = activityWeakReference.get();
             if (activity == null || activity.isFinishing()) {
                 return null;
@@ -680,7 +700,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
             if (activity == null || activity.isFinishing())
                 return;
             activity.updateGraphData();
-            Log.d("flag", "GraphAsync: ended");
+            Log.d("a_flag", "GraphAsync: ended");
         }
     }
 }
