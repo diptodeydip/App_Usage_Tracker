@@ -259,7 +259,7 @@ public class ImportantStuffs {
     }
 
 
-    public static synchronized String getStringFromJsonObjectPath(String jsonFilePath, Context context) {
+    public static  String getStringFromJsonObjectPath(String jsonFilePath, Context context) {
         try {
             String path = context.getExternalFilesDir("").getAbsolutePath();
             File file = new File(path + "/" + jsonFilePath);
@@ -281,7 +281,7 @@ public class ImportantStuffs {
         }
     }
 
-    public static synchronized JSONObject getJsonObject(String jsonFilePath, Context context) {
+    public static  JSONObject getJsonObject(String jsonFilePath, Context context) {
         String jsonString = getStringFromJsonObjectPath(jsonFilePath, context);
         JSONObject jsonObject = new JSONObject();
         try {
@@ -293,7 +293,7 @@ public class ImportantStuffs {
         return jsonObject;
     }
 
-    public static synchronized JSONArray getJsonArray(String jsonFilePath, Context context) {
+    public static  JSONArray getJsonArray(String jsonFilePath, Context context) {
         String jsonString = getStringFromJsonObjectPath(jsonFilePath, context);
         JSONArray jsonArray = null;
         try {
@@ -304,7 +304,7 @@ public class ImportantStuffs {
         return jsonArray;
     }
 
-    public static synchronized boolean saveFileLocally(String fileName, String fileContent, Context context) {
+    public static  boolean saveFileLocally(String fileName, String fileContent, Context context) {
         try {
             String path = context.getExternalFilesDir("").getAbsolutePath();
             File file = new File(path, fileName);
@@ -400,7 +400,7 @@ public class ImportantStuffs {
 
         assert manager != null;
 
-        manager.notify((int) (System.currentTimeMillis()) % 200, builder.build());
+        manager.notify((int) (System.currentTimeMillis()) % 2000, builder.build());
     }
 
     public static void displayUpdateNotification(Context context){
