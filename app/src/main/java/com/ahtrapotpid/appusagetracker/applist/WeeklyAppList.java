@@ -96,7 +96,7 @@ public class WeeklyAppList extends Fragment implements AppList{
             Log.d("a_flag", "WeeklyAppListAsyncTask: started");
             appsUsageInfo = ImportantStuffs.copyUsageMap(appListTabbed.appsListInfo);
             long endTime = ImportantStuffs.getCurrentTime(), startTime = ImportantStuffs.getWeekStartTimeFromTime(endTime);
-            appsUsageInfo = AppsDataController.getAppsUsageInfoFromJson(appsUsageInfo, startTime, endTime, getContext());
+            appsUsageInfo = AppsDataController.getAppsUsageAndLastOpenedInfoFromJson(appsUsageInfo, startTime, endTime, getContext());
             return null;
         }
 

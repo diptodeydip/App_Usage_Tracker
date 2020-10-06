@@ -97,7 +97,7 @@ public class DailyAppList extends Fragment implements AppList{
             Log.d("a_flag", "DailyAppListAsyncTask: started");
             appsUsageInfo = ImportantStuffs.copyUsageMap(appListTabbed.appsListInfo);
             long startTime = ImportantStuffs.getDayStartingHour(), endTime = ImportantStuffs.getCurrentTime();
-            appsUsageInfo = AppsDataController.getAppsUsageInfoFromJson(appsUsageInfo, startTime, endTime, getContext());
+            appsUsageInfo = AppsDataController.getAppsUsageAndLastOpenedInfoFromJson(appsUsageInfo, startTime, endTime, getContext());
             return null;
         }
 

@@ -444,7 +444,7 @@ public class ImportantStuffs {
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(GENERAL_CHANNEL_ID, "General", NotificationManager.IMPORTANCE_HIGH);
+            NotificationChannel channel = new NotificationChannel(GENERAL_CHANNEL_ID, "General", NotificationManager.IMPORTANCE_LOW);
             channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
             assert manager != null;
             manager.createNotificationChannel(channel);
@@ -459,7 +459,7 @@ public class ImportantStuffs {
                 .setContentTitle("Important Notice")
                 .setStyle(new NotificationCompat.BigTextStyle()
                         .bigText(description))
-                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setPriority(NotificationCompat.PRIORITY_MIN)
                 .setAutoCancel(true)
                 .setContentIntent(pendingIntent)
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)

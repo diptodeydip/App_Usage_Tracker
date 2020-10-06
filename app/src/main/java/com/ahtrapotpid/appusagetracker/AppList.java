@@ -239,34 +239,26 @@ public class AppList extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... voids) {
             Log.d("a_flag", "AppListAsyncTask: started");
-            AppList activity = activityWeakReference.get();
-            if (activity == null || activity.isFinishing()) {
-                return null;
-            }
-            long startTime = ImportantStuffs.getDayStartingHour(), endTime = ImportantStuffs.getCurrentTime();
-
-            activity.appsUsageInfo = AppsDataController.getAllAppsUsageInfo(startTime, endTime, activity);
-
-//            activity.appsUsageInfo = AppsDataController.getAppsUsageInfo(startTime, endTime, activity);
-//            for(AppUsageInfo info:activity.appsUsageInfo.values()){
-//                Log.d("extra", info.toString());
+//            AppList activity = activityWeakReference.get();
+//            if (activity == null || activity.isFinishing()) {
+//                return null;
 //            }
-//            activity.appsUsageInfo = AppsDataController.addOtherAppsInfo(activity.appsUsageInfo, activity);
-
-//            activity.appsUsageInfo = AppsDataController.getAppsUsageInfoFromJson(startTime, endTime, activity);
+//            long startTime = ImportantStuffs.getDayStartingHour(), endTime = ImportantStuffs.getCurrentTime();
+//
+//            activity.appsUsageInfo = AppsDataController.getAllAppsUsageInfo(startTime, endTime, activity);
             return null;
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            AppList activity = activityWeakReference.get();
-            if (activity == null || activity.isFinishing()) {
-                return;
-            }
-            activity.listLoaded = true;
-            activity.createAppList();
-            activity.progressDialog.cancel();
-            AppsDataController.startAlarm(activity, 500);
+//            AppList activity = activityWeakReference.get();
+//            if (activity == null || activity.isFinishing()) {
+//                return;
+//            }
+//            activity.listLoaded = true;
+//            activity.createAppList();
+//            activity.progressDialog.cancel();
+//            AppsDataController.startAlarm(activity, 500);
             Log.d("a_flag", "AppListAsyncTask: ended");
         }
     }

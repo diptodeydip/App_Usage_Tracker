@@ -32,6 +32,17 @@ public class AppUsageInfo {
         this.packageName = packageName;
     }
 
+    public AppUsageInfo(String appName, String packageName, long installationTime) {
+        this.appName = appName;
+        this.packageName = packageName;
+        this.installationTime = installationTime;
+    }
+
+    public AppUsageInfo(String appName, String packageName) {
+        this.appName = appName;
+        this.packageName = packageName;
+    }
+
     public AppUsageInfo getClone() {
         AppUsageInfo clone = new AppUsageInfo(appName, packageName, appIcon, installationTime, isSystemApp);
         clone.setTimeInForeground(timeInForeground);
