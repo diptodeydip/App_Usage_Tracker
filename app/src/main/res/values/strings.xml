@@ -19,6 +19,8 @@
     <string name="update_description">Please update App Usage Tracker. This update is highly essential for our research.</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_app_list_tabbed">AppListTabbed</string>
+    <string name="first_time_loading_message">Please wait a few moments. The first loading takes longer than usual.</string>
+    <string name="normal_loading_message">Wait a few moments</string>
     <string name="week_1_notice">App Usage Tracker has entered stage 1. No app usage notification will be shown for the next 7 days. There will be 2 more stages.</string>
     <string name="week_2_notice">App Usage Tracker has entered stage 2. From now on you will get notified for each app you are using for the next 7 days There will be 1 more stage.</string>
     <string name="week_3_notice">App Usage Tracker has entered stage 3. Once again, you won\'t receive any usage notification for the next 7 days. You are almost there! This is the last stage.</string>

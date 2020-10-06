@@ -123,6 +123,7 @@ public class MainActivity extends AppCompatActivity {
             RadioButton genderButton = findViewById(genderRadioGroup.getCheckedRadioButtonId());
             saveUserDataForTheFirstTime(registrationNumber, cgpa, genderButton.getText().toString());
             Intent intent = new Intent(this, AppListTabbed.class);
+            intent.putExtra("firstTime", true);
             startActivity(intent);
             finish();
         }

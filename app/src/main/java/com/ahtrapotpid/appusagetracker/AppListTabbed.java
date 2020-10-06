@@ -53,7 +53,7 @@ public class AppListTabbed extends AppCompatActivity {
 
     private ImageView logo;
     private TextView titleText, subText;
-    public boolean appListLoaded = false;
+    public boolean appListLoaded = false, firstTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +64,7 @@ public class AppListTabbed extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         setTitle(R.string.app_name);
+        firstTime = getIntent().getBooleanExtra("firstTime", false);
 
         splashScreenLayout = findViewById(R.id.splash_screen);
         logo = findViewById(R.id.app_icon);
@@ -78,7 +79,10 @@ public class AppListTabbed extends AppCompatActivity {
 
         progressDialog = new ProgressDialog(AppListTabbed.this, R.style.DialogTheme);
         progressDialog.setTitle("Loading apps usage info...");
-        progressDialog.setMessage("Wait a few moments");
+        if (firstTime)
+            progressDialog.setMessage(getResources().getString(R.string.first_time_loading_message));
+        else
+            progressDialog.setMessage(getResources().getString(R.string.normal_loading_message));
         progressDialog.setCanceledOnTouchOutside(false);
 
         viewPager = findViewById(R.id.view_pager);
