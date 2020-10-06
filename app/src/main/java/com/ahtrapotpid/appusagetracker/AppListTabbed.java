@@ -30,6 +30,7 @@ import java.util.HashMap;
 public class AppListTabbed extends AppCompatActivity {
     public static final String TAG = "temp";
     public HashMap<String, AppUsageInfo> appsListInfo;
+    public static int currentTabIndex = 0;
 
     SectionsPagerAdapter sectionsPagerAdapter;
 
@@ -73,7 +74,7 @@ public class AppListTabbed extends AppCompatActivity {
         bottomToTopAnim = AnimationUtils.loadAnimation(this, R.anim.bottom_to_top);
 
         showSplashScreen();
-        new Handler().postDelayed( ()-> hideSplashScreen(), 5000);
+        new Handler().postDelayed(() -> hideSplashScreen(), 5000);
 
         progressDialog = new ProgressDialog(AppListTabbed.this, R.style.DialogTheme);
         progressDialog.setTitle("Loading apps usage info...");
@@ -82,6 +83,23 @@ public class AppListTabbed extends AppCompatActivity {
 
         viewPager = findViewById(R.id.view_pager);
         appBarLayout = findViewById(R.id.app_bar_layout);
+
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+//                Log.d(TAG, "onPageScrolled: "+position);
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                currentTabIndex = position;
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
 
         sharedPreference = getSharedPreferences(APP_LIST_SHARED_PREFERENCE, MODE_PRIVATE);
         editor = sharedPreference.edit();

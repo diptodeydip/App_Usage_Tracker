@@ -48,9 +48,6 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "Json initialization failed. App won't work properly.", Toast.LENGTH_SHORT).show();
                 ImportantStuffs.showErrorLog("Json initialization failed. App won't work properly.");
             }
-//            else {
-//                AppsDataController.startAlarm(this, 6000);
-//            }
 
             Intent intent = new Intent(this, AppListTabbed.class);
             startActivity(intent);

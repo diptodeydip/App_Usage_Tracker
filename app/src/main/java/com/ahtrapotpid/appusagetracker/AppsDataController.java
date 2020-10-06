@@ -265,10 +265,6 @@ public class AppsDataController extends BroadcastReceiver {
         if (startTime >= currentTime)
             return usageInfo;
 
-        String a = ImportantStuffs.getDateAndTimeFromMilliseconds(startTime);
-        String b = ImportantStuffs.getDateAndTimeFromMilliseconds(endTime);
-        Log.d(TAG, a + " " + b);
-
         Log.d("flag", "getting usage info from json");
         JSONObject historyJson = ImportantStuffs.getJsonObject("History.json", context);
         for (long time = startTime; time < endTime && time <= checkPoint; time += MILLISECONDS_IN_HOUR) {
@@ -341,7 +337,7 @@ public class AppsDataController extends BroadcastReceiver {
     }
 
     public static long getWeeklyUsageData(long weekStartTime, String packageName, Context context) {
-        long endTime = weekStartTime + 6 * ImportantStuffs.MILLISECONDS_IN_DAY + 23 * MILLISECONDS_IN_HOUR;
+        long endTime = weekStartTime + 7 * ImportantStuffs.MILLISECONDS_IN_DAY;
 
         HashMap<String, AppUsageInfo> usageInfoHashMap = new HashMap<>();
         usageInfoHashMap = getAppsUsageAndLastOpenedInfoFromJson(usageInfoHashMap, weekStartTime, endTime, context);
@@ -434,11 +430,11 @@ public class AppsDataController extends BroadcastReceiver {
         }
         if (weekNumber >= 4)
             return;
-        Log.d(TAG, "current week = " + weekNumber + " time = " + ImportantStuffs.getDateAndTimeFromMilliseconds(weekTime));
+//        Log.d(TAG, "current week = " + weekNumber + " time = " + ImportantStuffs.getDateAndTimeFromMilliseconds(weekTime));
         if (currentTime - weekTime >= timeDifference) {
             try {
                 weekNumber++;
-                Log.d(TAG, "week changed to " + weekNumber);
+                ImportantStuffs.showLog("week changed to " + weekNumber);
                 infoJson.put("weekNumber", weekNumber);
                 infoJson.put("weekTime", currentTime);
                 if (weekNumber == 2) {
@@ -487,7 +483,7 @@ public class AppsDataController extends BroadcastReceiver {
 
             long weeklyTarget = dailyTarget * 7;
 
-            Log.d(TAG, "num of days: " + numOfDays);
+//            Log.d(TAG, "num of days: " + numOfDays);
             try {
                 JSONObject thisAppInfoJson = new JSONObject();
                 thisAppInfoJson.put("targetTypes", new JSONArray("[0, 1]"));

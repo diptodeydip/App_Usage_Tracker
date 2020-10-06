@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.NumberPicker;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -99,7 +100,16 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
         chart = findViewById(R.id.usage_graph);
 
 //        new GraphAsyncTask(this, MODE_DAILY).execute();
-        new GraphAsyncTask(this, MODE_DAILY).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+//        new GraphAsyncTask(this, MODE_DAILY).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        int mode = getIntent().getIntExtra("mode", 1);
+        RadioGroup radioGroup = findViewById(R.id.radio_group);
+        if (mode == MODE_WEEKLY) {
+            radioGroup.check(R.id.weekly_radio_button);
+            onWeeklyCalendarSelected(null);
+        } else {
+            radioGroup.check(R.id.daily_radio_button);
+            onDailyCalendarSelected(null);
+        }
 
         initTargetNotificationStuffs();
         testStuffs();

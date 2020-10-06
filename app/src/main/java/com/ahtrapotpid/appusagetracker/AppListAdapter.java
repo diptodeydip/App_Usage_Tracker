@@ -2,7 +2,6 @@ package com.ahtrapotpid.appusagetracker;
 
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -164,6 +163,7 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.ViewHold
     public void gotoAppDetails(String packageName){
         Intent intent = new Intent(context, AppDetails.class);
         intent.putExtra("packageName", packageName);
+        intent.putExtra("mode", 1 - AppListTabbed.currentTabIndex);
         context.startActivity(intent);
     }
 
