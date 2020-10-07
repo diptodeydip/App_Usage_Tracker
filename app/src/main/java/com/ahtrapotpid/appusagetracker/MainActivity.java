@@ -206,7 +206,8 @@ public class MainActivity extends AppCompatActivity {
                 jsonInfo.put("appsInstallationInfo", new JSONObject());
                 jsonInfo.put("weekNumber", 1);
                 // change to get day starting hour
-                jsonInfo.put("weekTime", ImportantStuffs.getDayStartingHour());
+                jsonInfo.put("weekTime", System.currentTimeMillis());
+                editor.putLong("weekOneStartTime",System.currentTimeMillis()).apply();
             } catch (JSONException e) {
                 e.printStackTrace();
                 ImportantStuffs.showErrorLog("Checkpoint can't be initialized");

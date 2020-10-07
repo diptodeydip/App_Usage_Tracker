@@ -7,6 +7,7 @@ import android.app.usage.UsageStatsManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
@@ -420,6 +421,7 @@ public class AppsDataController extends BroadcastReceiver {
         Log.d("flag", "checking current week");
         long currentTime = ImportantStuffs.getCurrentTime();
         JSONObject infoJson = ImportantStuffs.getJsonObject("info.json", context);
+        SharedPreferences sharedPreference = context.getSharedPreferences(MainActivity.SHARED_PREFERENCE, MainActivity.MODE_PRIVATE);
         int weekNumber = 0;
         long weekTime = currentTime;
         try {
@@ -438,14 +440,19 @@ public class AppsDataController extends BroadcastReceiver {
                 infoJson.put("weekNumber", weekNumber);
                 infoJson.put("weekTime", currentTime);
                 if (weekNumber == 2) {
+                    sharedPreference.edit().putLong("weekTwoStartTime",currentTime).apply();
                     setAutoTargetForAllApps(weekTime, currentTime, infoJson, context);
                     ImportantStuffs.displayNotification(context, context.getResources().getString(R.string.week_2_notice));
                 }
                 if (weekNumber == 3) {
+                    sharedPreference.edit().putLong("weekThreeStartTime",currentTime).apply();
                     resetAutoTargetForAllApps(infoJson);
                     ImportantStuffs.displayNotification(context, context.getResources().getString(R.string.week_3_notice));
-                } else if (weekNumber == 4)
+                } else if (weekNumber == 4){
+                    sharedPreference.edit().putLong("weekFourTwoStartTime",currentTime).apply();
                     ImportantStuffs.displayNotification(context, context.getResources().getString(R.string.week_4_notice));
+                }
+
 
                 ImportantStuffs.saveFileLocally("info.json", infoJson.toString(), context);
             } catch (JSONException e) {
