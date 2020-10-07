@@ -113,14 +113,6 @@ public class AppListTabbed extends AppCompatActivity {
         sortBy = sharedPreference.getInt(SORT_BY, R.id.sort_by_usage_time);
 
         new AppListAsyncTask().execute();
-
-//        appsListInfo = AppsDataController.getAppList(this);
-
-//        sectionsPagerAdapter = new SectionsPagerAdapter(this, getSupportFragmentManager());
-//        ViewPager viewPager = findViewById(R.id.view_pager);
-//        viewPager.setAdapter(sectionsPagerAdapter);
-//        TabLayout tabs = findViewById(R.id.tabs);
-//        tabs.setupWithViewPager(viewPager);
     }
 
     public void startFragments(){

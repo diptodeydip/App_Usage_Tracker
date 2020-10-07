@@ -29,7 +29,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -259,7 +258,7 @@ public class ImportantStuffs {
     }
 
 
-    public static  String getStringFromJsonObjectPath(String jsonFilePath, Context context) {
+    public static synchronized String getStringFromJsonObjectPath(String jsonFilePath, Context context) {
         try {
             String path = context.getExternalFilesDir("").getAbsolutePath();
             File file = new File(path + "/" + jsonFilePath);
@@ -281,7 +280,7 @@ public class ImportantStuffs {
         }
     }
 
-    public static  JSONObject getJsonObject(String jsonFilePath, Context context) {
+    public static synchronized JSONObject getJsonObject(String jsonFilePath, Context context) {
         String jsonString = getStringFromJsonObjectPath(jsonFilePath, context);
         JSONObject jsonObject = new JSONObject();
         try {
@@ -293,18 +292,7 @@ public class ImportantStuffs {
         return jsonObject;
     }
 
-    public static  JSONArray getJsonArray(String jsonFilePath, Context context) {
-        String jsonString = getStringFromJsonObjectPath(jsonFilePath, context);
-        JSONArray jsonArray = null;
-        try {
-            jsonArray = new JSONArray(jsonString);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return jsonArray;
-    }
-
-    public static  boolean saveFileLocally(String fileName, String fileContent, Context context) {
+    public static synchronized boolean saveFileLocally(String fileName, String fileContent, Context context) {
         try {
             String path = context.getExternalFilesDir("").getAbsolutePath();
             File file = new File(path, fileName);
@@ -375,6 +363,7 @@ public class ImportantStuffs {
 
         Intent notificationIntent = new Intent(context, AppDetails.class);
         notificationIntent.putExtra("packageName", packageName);
+        notificationIntent.putExtra("mode", mode);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 1, notificationIntent, 0);
 
         String usageTimeString = getTimeFromMillisecond(usageTime);
@@ -382,14 +371,15 @@ public class ImportantStuffs {
         Drawable appIcon = getAppIcon(packageName, context);
         Bitmap icon = getBitmapFromDrawable(appIcon);
         String modeString = (mode == MODE_DAILY) ? "daily" : "weekly";
-        String description = "More than " + percentage + "%(" + usageTimeString + ") of " + modeString + " target is used.";
+        String title = appName + "(" + usageTimeString + ")";
+        String description = "Over " + percentage + "% of " + modeString + " target is used.";
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, USAGE_CHANNEL_ID)
                 .setDefaults(Notification.DEFAULT_ALL)
-                .setContentTitle(appName)
-                //.setContentText(description)
-                .setStyle(new NotificationCompat.BigTextStyle()
-                        .bigText(description))
+                .setContentTitle(title)
+                .setContentText(description)
+//                .setStyle(new NotificationCompat.BigTextStyle()
+//                        .bigText(description))
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true)
