@@ -55,7 +55,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
     ArrayList<String> targetTypes;
     ArrayList<Integer> selectedTargetTypeIndexes = new ArrayList<>();
 
-    ConstraintLayout setWeeklyTargetLayout, setDailyTargetLayout, setTargetTypesLayout;
+    ConstraintLayout setWeeklyTargetLayout, setDailyTargetLayout, setTargetTypesLayout, targetHistoryLayout;
     long weeklyTarget = 0, dailyTarget = 0;
     TextView weeklyTargetTextView, dailyTargetTextView;
 
@@ -183,6 +183,7 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
         targetTypesTextView = findViewById(R.id.target_types_text);
         targetTypes = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.target_types)));
 
+        targetHistoryLayout = findViewById(R.id.target_history_layout);
         setWeeklyTargetLayout = findViewById(R.id.set_weekly_target_layout);
         weeklyTargetTextView = findViewById(R.id.weekly_target_text);
         setUsageTarget(MODE_WEEKLY, weeklyTarget);
@@ -413,6 +414,8 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
             makeConstraintLayoutGrayedOut(setWeeklyTargetLayout, true);
             makeConstraintLayoutGrayedOut(setDailyNotificationsLayout, true);
             makeConstraintLayoutGrayedOut(setWeeklyNotificationsLayout, true);
+            if (currentWeek != 2)
+                targetHistoryLayout.setVisibility(View.GONE);
             return;
         }
         if (numOfTargets == 0) {

@@ -20,8 +20,6 @@ import com.google.android.material.textfield.TextInputLayout;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Calendar;
-
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = "temp";
     TextInputEditText regiNumInput, cgpaInput;
@@ -188,16 +186,7 @@ public class MainActivity extends AppCompatActivity {
         if(info == ""){
             Log.d("flag", "Initializing info.json");
             ImportantStuffs.showLog("No checkpoint data found. Creating new checkpoint---");
-            //Calendar calendar = Calendar.getInstance();
             JSONObject jsonInfo = new JSONObject();
-
-//            calendar.set(Calendar.MILLISECOND,0);
-//            calendar.set(Calendar.SECOND, 0);
-//            calendar.set(Calendar.MINUTE, 0);
-//            calendar.set(Calendar.HOUR, 0);
-//            calendar.add(Calendar.DAY_OF_WEEK,1);
-//            calendar.add(Calendar.WEEK_OF_MONTH,-1);
-//            calendar.set(Calendar.AM_PM, Calendar.AM);
 
             Long time = ImportantStuffs.getWeekStartTimeFromTime(System.currentTimeMillis());
             try {
@@ -205,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
                 jsonInfo.put("appsInfo", new JSONObject());
                 jsonInfo.put("appsInstallationInfo", new JSONObject());
                 jsonInfo.put("weekNumber", 1);
-                // change to get day starting hour
+                // change to get current hour
                 jsonInfo.put("weekTime", ImportantStuffs.getCurrentHour());
                 editor.putLong("weekOneStartTime", ImportantStuffs.getCurrentHour());
                 editor.apply();

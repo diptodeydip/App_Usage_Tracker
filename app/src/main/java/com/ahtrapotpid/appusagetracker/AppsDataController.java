@@ -377,22 +377,6 @@ public class AppsDataController extends BroadcastReceiver {
         return usage;
     }
 
-
-    private static int getForegroundTime(JSONArray array, String packageName) {
-        for (int i = 0; i < array.length(); i++) {
-            try {
-                JSONObject object = array.getJSONObject(i);
-                String value = object.getString("packageName");
-                if (value.equals(packageName))
-                    return object.getInt("foregroundTime");
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-
-        }
-        return 0;
-    }
-
     private static long getCheckpoint(Context context) {
         JSONObject jsonInfo = ImportantStuffs.getJsonObject("info.json", context);
         long checkpoint = 0;
