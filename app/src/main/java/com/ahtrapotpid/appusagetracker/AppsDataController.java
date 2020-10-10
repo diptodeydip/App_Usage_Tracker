@@ -497,7 +497,7 @@ public class AppsDataController extends BroadcastReceiver {
 
             double numOfDays = (double) (endTime - startTime) / (double) MILLISECONDS_IN_DAY;
             double avgDailyUsage = usageTime / numOfDays;
-            long dailyTarget = (long) (avgDailyUsage * .7);
+            long dailyTarget = (long) (avgDailyUsage);
             if (dailyTarget < DAILY_TARGET_LOW)
                 dailyTarget = MILLISECONDS_IN_HOUR;
             else if (dailyTarget > DAILY_TARGET_HIGH)
