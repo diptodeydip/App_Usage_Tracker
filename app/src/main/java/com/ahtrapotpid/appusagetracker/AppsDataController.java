@@ -415,6 +415,7 @@ public class AppsDataController extends BroadcastReceiver {
         long currentHour = ImportantStuffs.getCurrentHour();
         JSONObject infoJson = ImportantStuffs.getJsonObject("info.json", context);
         SharedPreferences sharedPreference = context.getSharedPreferences(MainActivity.SHARED_PREFERENCE, MainActivity.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreference.edit();
         int weekNumber = 0;
         long weekTime = currentHour;
         try {
@@ -426,6 +427,24 @@ public class AppsDataController extends BroadcastReceiver {
         if (weekNumber >= 4)
             return;
 //        Log.d(TAG, "current week = " + weekNumber + " time = " + ImportantStuffs.getDateAndTimeFromMilliseconds(weekTime));
+        if (weekNumber == 0) {
+            long currentTime = ImportantStuffs.getCurrentTime();
+            long currentWeekTime = ImportantStuffs.getWeekStartTimeFromTime(currentTime);
+            if (currentTime - currentWeekTime < MILLISECONDS_IN_DAY) {
+                editor.putLong("WeekOneStartTime", currentWeekTime);
+                editor.putLong("weekTime", currentWeekTime);
+                editor.putInt("weekNumber", 1);
+                try {
+                    infoJson.put("weekNumber", 1);
+                    infoJson.put("weekTime", currentWeekTime);
+                    ImportantStuffs.saveFileLocally("info.json", infoJson.toString(), context);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+            return;
+        }
+
         if (currentHour - weekTime >= timeDifference) {
             try {
                 weekNumber++;
