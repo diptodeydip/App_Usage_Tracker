@@ -39,16 +39,27 @@ import static com.ahtrapotpid.appusagetracker.ImportantStuffs.MILLISECONDS_IN_MI
 public class AppsDataController extends BroadcastReceiver {
     Context context;
     public static final String TAG = "temp";
+    int weekFlag = 0;
 
     @Override
     public void onReceive(Context context, Intent intent) {
         this.context = context;
 
+        JSONObject infoJson = ImportantStuffs.getJsonObject("info.json", context);
+        try {
+            weekFlag = infoJson.getInt("weekNumber");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
         if ("android.intent.action.BOOT_COMPLETED".equals(intent.getAction())) {
             ImportantStuffs.showLog("Device has been rebooted!");
         }
 
-        startAlarm(context, 20 * ImportantStuffs.MILLISECONDS_IN_MINUTE);
+        if(weekFlag == 2 )
+            startAlarm(context, 5 * ImportantStuffs.MILLISECONDS_IN_MINUTE);
+        else
+            startAlarm(context, 20 * ImportantStuffs.MILLISECONDS_IN_MINUTE);
 
         new DataController().execute();
     }
@@ -412,12 +423,12 @@ public class AppsDataController extends BroadcastReceiver {
 
     public static void checkCurrentWeek(Context context, long timeDifference) {
         Log.d("flag", "checking current week");
-        long currentHour = ImportantStuffs.getCurrentHour();
+        long dayStartingHour = ImportantStuffs.getDayStartingHour();
         JSONObject infoJson = ImportantStuffs.getJsonObject("info.json", context);
         SharedPreferences sharedPreference = context.getSharedPreferences(MainActivity.SHARED_PREFERENCE, MainActivity.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreference.edit();
+        //SharedPreferences.Editor editor = sharedPreference.edit();
         int weekNumber = 0;
-        long weekTime = currentHour;
+        long weekTime = dayStartingHour;
         try {
             weekNumber = infoJson.getInt("weekNumber");
             weekTime = infoJson.getLong("weekTime");
@@ -431,14 +442,14 @@ public class AppsDataController extends BroadcastReceiver {
             long currentTime = ImportantStuffs.getCurrentTime();
             long currentWeekTime = ImportantStuffs.getWeekStartTimeFromTime(currentTime);
             if (currentTime - currentWeekTime < MILLISECONDS_IN_DAY) {
-                editor.putLong("WeekOneStartTime", currentWeekTime);
-                editor.putLong("weekTime", currentWeekTime);
-                editor.putInt("weekNumber", 1);
-                editor.apply();
+                sharedPreference.edit().putLong("weekOneStartTime", currentWeekTime).apply();
+//                editor.putLong("weekTime", currentWeekTime);
+//                editor.putInt("weekNumber", 1);
                 try {
                     infoJson.put("weekNumber", 1);
                     infoJson.put("weekTime", currentWeekTime);
                     ImportantStuffs.saveFileLocally("info.json", infoJson.toString(), context);
+                    ImportantStuffs.displayNotification(context, context.getResources().getString(R.string.week_1_notice));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -446,23 +457,23 @@ public class AppsDataController extends BroadcastReceiver {
             return;
         }
 
-        if (currentHour - weekTime >= timeDifference) {
+        if (dayStartingHour - weekTime >= timeDifference) {
             try {
                 weekNumber++;
                 ImportantStuffs.showLog("week changed to " + weekNumber);
                 infoJson.put("weekNumber", weekNumber);
-                infoJson.put("weekTime", currentHour);
+                infoJson.put("weekTime", dayStartingHour);
                 if (weekNumber == 2) {
-                    sharedPreference.edit().putLong("weekTwoStartTime", currentHour).apply();
-                    setAutoTargetForAllApps(weekTime, currentHour, infoJson, context);
+                    sharedPreference.edit().putLong("weekTwoStartTime", dayStartingHour).apply();
+                    setAutoTargetForAllApps(weekTime, dayStartingHour, infoJson, context);
                     ImportantStuffs.displayNotification(context, context.getResources().getString(R.string.week_2_notice));
                 }
                 if (weekNumber == 3) {
-                    sharedPreference.edit().putLong("weekThreeStartTime", currentHour).apply();
+                    sharedPreference.edit().putLong("weekThreeStartTime", dayStartingHour).apply();
                     resetAutoTargetForAllApps(infoJson);
                     ImportantStuffs.displayNotification(context, context.getResources().getString(R.string.week_3_notice));
                 } else if (weekNumber == 4){
-                    sharedPreference.edit().putLong("weekFourTwoStartTime", currentHour).apply();
+                    sharedPreference.edit().putLong("weekFourTwoStartTime", dayStartingHour).apply();
                     ImportantStuffs.displayNotification(context, context.getResources().getString(R.string.week_4_notice));
                 }
 
@@ -529,7 +540,13 @@ public class AppsDataController extends BroadcastReceiver {
 
     private static void resetAutoTargetForAllApps(JSONObject infoJson) {
         try {
-            infoJson.put("appsInfo", new JSONObject());
+            JSONObject appsInfo = infoJson.getJSONObject("appsInfo");
+            JSONArray blank = new JSONArray();
+            Iterator<String> keys = appsInfo.keys();
+            while(keys.hasNext()){
+                JSONObject ob = appsInfo.getJSONObject(keys.next());
+                ob.put("targetTypes",blank);
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -689,7 +706,7 @@ public class AppsDataController extends BroadcastReceiver {
         Log.d("flag", "saving target info");
         JSONObject info = ImportantStuffs.getJsonObject("info.json",context);
         JSONObject notificationInfo = ImportantStuffs.getJsonObject("notificationInfo.json",context);
-
+        JSONObject historyJson = ImportantStuffs.getJsonObject("History.json", context);
 
         try {
             JSONObject appsInfo = info.getJSONObject("appsInfo");
@@ -702,21 +719,16 @@ public class AppsDataController extends BroadcastReceiver {
 
             weeklyTargetStartTime = ImportantStuffs.getWeekStartTimeFromTime(System.currentTimeMillis());
 
-            ArrayList<String> applist = new ArrayList<>();
-            HashMap<String, AppUsageInfo> usageInfoDaily = new HashMap<>();
+            HashMap<String, AppUsageInfo> usageInfoDaily ;
             HashMap<String, AppUsageInfo> usageInfoWeekly;
-            while (keys.hasNext()) {
-                String key = keys.next();
-                applist.add(key);
-                usageInfoDaily.put(ImportantStuffs.addDot(key), new AppUsageInfo(ImportantStuffs.addDot(key)));
-            }
-            usageInfoWeekly = ImportantStuffs.copyUsageMap(usageInfoDaily);
 
-            usageInfoDaily = getAppsUsageAndLastOpenedInfoFromJson(usageInfoDaily, dailyTargetStartTime, System.currentTimeMillis(), context);
-            usageInfoWeekly = getAppsUsageAndLastOpenedInfoFromJson(usageInfoWeekly, weeklyTargetStartTime, System.currentTimeMillis(), context);
 
-            for (int j = 0; j < applist.size(); j++) {
-                String packageName = applist.get(j);
+
+            usageInfoDaily = getOnlyAppsUsageInfoFromJson(historyJson, dailyTargetStartTime, System.currentTimeMillis(), context);
+            usageInfoWeekly = getOnlyAppsUsageInfoFromJson(historyJson, weeklyTargetStartTime, System.currentTimeMillis(), context);
+
+            while (keys.hasNext())  {
+                String packageName = keys.next();
                 JSONObject individualApp = (JSONObject) appsInfo.get(packageName);
 
                 JSONArray targetTypes = individualApp.getJSONArray("targetTypes");
@@ -728,14 +740,18 @@ public class AppsDataController extends BroadcastReceiver {
                     long usedTime = 0;
                     if (dailyOrWeekly == daily) {
                         try{
-                            usedTime = Objects.requireNonNull(usageInfoDaily.get(ImportantStuffs.addDot(packageName))).getTimeInForeground();
+                            if(usageInfoDaily.containsKey(ImportantStuffs.addDot(packageName)))
+                            usedTime = usageInfoDaily.get(ImportantStuffs.addDot(packageName)).getTimeInForeground();
+
                             JSONArray dailyNotifications = individualApp.getJSONArray("dailyNotifications");
                             individualApp = getSingleHistory("dailyTarget", "DailyInfo",
                                     usedTime, packageName, individualApp, dailyTargetStartTime, dailyNotifications,notificationInfo);
                         }catch (Exception e){Log.d("try1","reached");}
                     } else {
                         try{
-                            usedTime = Objects.requireNonNull(usageInfoWeekly.get(ImportantStuffs.addDot(packageName))).getTimeInForeground();
+                            if(usageInfoWeekly.containsKey(ImportantStuffs.addDot(packageName)))
+                                usedTime = usageInfoWeekly.get(ImportantStuffs.addDot(packageName)).getTimeInForeground();
+
                             JSONArray weeklyNotifications = individualApp.getJSONArray("weeklyNotifications");
                             individualApp = getSingleHistory("weeklyTarget", "WeeklyInfo",
                                     usedTime, packageName, individualApp, weeklyTargetStartTime, weeklyNotifications,notificationInfo);
@@ -966,6 +982,7 @@ public class AppsDataController extends BroadcastReceiver {
 //            Log.d(TAG, "saveInstallationInfo done");
             saveUsageDataLocally(context);
 //            Log.d(TAG, "saveUsageDataLocally done");
+            if(weekFlag==2 || weekFlag>=4)
             checkAndSaveTargetLocally(context);
 //            Log.d(TAG, "checkAndSaveTargetLocally done");
             ImportantStuffs.saveEverything(context);

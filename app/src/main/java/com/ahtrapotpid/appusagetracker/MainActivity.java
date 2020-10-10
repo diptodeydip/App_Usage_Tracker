@@ -196,7 +196,7 @@ public class MainActivity extends AppCompatActivity {
                 jsonInfo.put("weekNumber", 0);
                 // change to get current hour
                 jsonInfo.put("weekTime", ImportantStuffs.getCurrentHour());
-                editor.putLong("WeekZeroStartTime", ImportantStuffs.getCurrentHour());
+                editor.putLong("weekZeroStartTime", ImportantStuffs.getCurrentHour());
                 editor.apply();
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -207,7 +207,7 @@ public class MainActivity extends AppCompatActivity {
                 ImportantStuffs.showErrorLog("Checkpoint can't be initialized");
                 return false;
             }
-            ImportantStuffs.displayNotification(this, getResources().getString(R.string.week_1_notice));
+            //ImportantStuffs.displayNotification(this, getResources().getString(R.string.week_1_notice));
             ImportantStuffs.showLog("info.json initialized.");
             Log.d("flag", "info.json initialized");
         }
