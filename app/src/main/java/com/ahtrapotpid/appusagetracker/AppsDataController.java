@@ -434,6 +434,7 @@ public class AppsDataController extends BroadcastReceiver {
                 editor.putLong("WeekOneStartTime", currentWeekTime);
                 editor.putLong("weekTime", currentWeekTime);
                 editor.putInt("weekNumber", 1);
+                editor.apply();
                 try {
                     infoJson.put("weekNumber", 1);
                     infoJson.put("weekTime", currentWeekTime);
