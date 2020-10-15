@@ -877,11 +877,32 @@ public class AppsDataController extends BroadcastReceiver {
                 data = appData.getJSONObject(infoName);
 
                 today = data.getJSONObject(ImportantStuffs.getDayStartingHour() + "");
-                int p = today.getInt("percentage");
-                if (p != tempPercentage) throw new Exception();
+                int repeatP = 0;
+                int p = 0;
+
+                try {
+                    repeatP = today.getInt("repeatPercentage");
+                }catch (Exception x){}
+                try {
+                    p = today.getInt("percentage");
+                }catch (Exception x){}
+
+                if(repeatAlarm)
+                {
+                    if (p != tempPercentage && repeatP != tempPercentage) throw new Exception();
+                }else {
+                    if (p != tempPercentage) throw new Exception();
+                }
             } catch (Exception e) {
                 try {
-                    today.put("percentage", tempPercentage);
+                    if(tempPercentage>100){
+                        today.put("repeatPercentage", tempPercentage);
+                        today.put("percentage", 100);
+                    }else {
+                        today.put("percentage", tempPercentage);
+                    }
+
+
                     today.put("Time", System.currentTimeMillis());
                     data.put(ImportantStuffs.getDayStartingHour() + "", today);
                     appData.put(infoName, data);
