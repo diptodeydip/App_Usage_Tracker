@@ -30,7 +30,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import static com.ahtrapotpid.appusagetracker.ImportantStuffs.MILLISECONDS_IN_DAY;
 import static com.ahtrapotpid.appusagetracker.ImportantStuffs.MILLISECONDS_IN_HOUR;
@@ -1004,13 +1003,13 @@ public class AppsDataController extends BroadcastReceiver {
             saveUsageDataLocally(context);
 //            Log.d(TAG, "saveUsageDataLocally done");
             if(weekFlag==2 || weekFlag>=4)
-            checkAndSaveTargetLocally(context);
+                checkAndSaveTargetLocally(context);
 //            Log.d(TAG, "checkAndSaveTargetLocally done");
             ImportantStuffs.saveEverything(context);
 //            Log.d(TAG, "ImportantStuffs.saveEverything done");
             checkVersionUpdate(context);
 //            Log.d(TAG, "checkVersionUpdate done");
-            checkCurrentWeek(context, MILLISECONDS_IN_DAY);
+            checkCurrentWeek(context, 7 * MILLISECONDS_IN_DAY);
 //            Log.d(TAG, "checkCurrentWeek done");
             Log.d("a_flag", "DataController: ended");
             return null;

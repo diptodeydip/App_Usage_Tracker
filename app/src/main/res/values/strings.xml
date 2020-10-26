@@ -1,5 +1,6 @@
 <resources>
-    <string name="app_name">App Usage Tracker</string>
+    <string name="app_name">App Usage Monitor</string>
+    <string name="app_description">Monitor your daily and weekly smartphone usage.</string>
     <string name="today">Today</string>
     <string name="this_week">This Week</string>
     <string name="past_7_days">Past 7 Days</string>
@@ -13,18 +14,18 @@
     <string name="weekly">Weekly</string>
     <string name="daily">Daily</string>
     <string name="details_loading">Details hasn\'t been fully loaded yet. Wait a couple of seconds and enter again.</string>
-    <string name="usage_permission_message">Please enable USAGE ACCESS for App Usage Tracker. This app won\'t be able to gather usage statistics without USAGE ACCESS.</string>
-    <string name="auto_start_permission_message">Press SET To enable AUTOSTART. Without autostart enabled, App Usage Tracker will stop gathering usage statistics after each reboot unless you manually open the app. If you don\'t see autostart in the settings or you\'ve already enabled autostart then press ALREADY ENABLED.</string>
+    <string name="usage_permission_message">Please enable USAGE ACCESS for App Usage Monitor. This app won\'t be able to gather usage statistics without USAGE ACCESS.</string>
+    <string name="auto_start_permission_message">Press SET To enable AUTOSTART. Without autostart enabled, App Usage Monitor will stop gathering usage statistics after each reboot unless you manually open the app. If you don\'t see autostart in the settings or you\'ve already enabled autostart then press ALREADY ENABLED.</string>
     <string name="cgpa_message">Your cgpa will only be used for research purpose. Please do not provide wrong information. Your participation will be greatly appreciated.</string>
-    <string name="update_description">Please update App Usage Tracker. This update is highly essential for our research.</string>
+    <string name="update_description">Please update App Usage Monitor. This update is highly essential for our research.</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_app_list_tabbed">AppListTabbed</string>
     <string name="first_time_loading_message">Please wait a few moments. The first loading takes longer than usual.</string>
     <string name="normal_loading_message">Wait a few moments</string>
-    <string name="week_1_notice">App Usage Tracker has entered stage 1. No app usage notification will be shown for the next 7 days. There will be 2 more stages.</string>
-    <string name="week_2_notice">App Usage Tracker has entered stage 2. From now on you will get notified for each app you are using for the next 7 days There will be 1 more stage.</string>
-    <string name="week_3_notice">App Usage Tracker has entered stage 3. Once again, you won\'t receive any usage notification for the next 7 days. You are almost there! This is the last stage.</string>
-    <string name="week_4_notice">All stage has been cleared! Every restriction has been removed. Now you can set targets and notifications as you wish. Thank you very much for keeping App Usage Tracker installed for the past 3 weeks, your participation has benefited us greatly. Now contact us and get your reward!</string>
+    <string name="week_1_notice">App Usage Monitor has entered stage 1. No app usage notification will be shown for the next 7 days. There will be 2 more stages.</string>
+    <string name="week_2_notice">App Usage Monitor has entered stage 2. From now on you will get notified for each app you are using for the next 7 days There will be 1 more stage.</string>
+    <string name="week_3_notice">App Usage Monitor has entered stage 3. Once again, you won\'t receive any usage notification for the next 7 days. You are almost there! This is the last stage.</string>
+    <string name="week_4_notice">All stage has been cleared! Every restriction has been removed. Now you can set targets and notifications as you wish. Thank you very much for keeping App Usage Monitor installed for the past 3 weeks, your participation has benefited us greatly. Now contact us and get your reward!</string>
     <string name="tab_text_1">Tab 1</string>
     <string name="tab_text_2">Tab 2</string>
 </resources>
