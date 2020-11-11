@@ -423,10 +423,11 @@ public class AppsDataController extends BroadcastReceiver {
     public static void checkCurrentWeek(Context context, long timeDifference) {
         Log.d("flag", "checking current week");
         long dayStartingHour = ImportantStuffs.getDayStartingHour();
+        long currentHour = ImportantStuffs.getCurrentHour();
         JSONObject infoJson = ImportantStuffs.getJsonObject("info.json", context);
         SharedPreferences sharedPreference = context.getSharedPreferences(MainActivity.SHARED_PREFERENCE, MainActivity.MODE_PRIVATE);
-        //SharedPreferences.Editor editor = sharedPreference.edit();
-        int weekNumber = 0;
+
+        int weekNumber = -1;
         long weekTime = dayStartingHour;
         try {
             weekNumber = infoJson.getInt("weekNumber");
@@ -434,16 +435,26 @@ public class AppsDataController extends BroadcastReceiver {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+//        Log.d(TAG, "checkCurrentWeek: "+weekNumber);
+        if (weekNumber == -1) {
+            weekNumber = 0;
+            weekTime = currentHour;
+            try {
+                infoJson.put("weekNumber", weekNumber);
+                infoJson.put("weekTime", weekTime);
+                sharedPreference.edit().putLong("weekZeroStartTime", weekTime).apply();
+                ImportantStuffs.saveFileLocally("info.json", infoJson.toString(), context);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
         if (weekNumber >= 4)
             return;
-//        Log.d(TAG, "current week = " + weekNumber + " time = " + ImportantStuffs.getDateAndTimeFromMilliseconds(weekTime));
         if (weekNumber == 0) {
             long currentTime = ImportantStuffs.getCurrentTime();
             long currentWeekTime = ImportantStuffs.getWeekStartTimeFromTime(currentTime);
             if (currentTime - currentWeekTime < MILLISECONDS_IN_DAY) {
                 sharedPreference.edit().putLong("weekOneStartTime", currentWeekTime).apply();
-//                editor.putLong("weekTime", currentWeekTime);
-//                editor.putInt("weekNumber", 1);
                 try {
                     infoJson.put("weekNumber", 1);
                     infoJson.put("weekTime", currentWeekTime);

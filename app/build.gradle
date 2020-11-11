@@ -10,7 +10,7 @@ android {
         targetSdkVersion 29
         versionCode 7
         versionName "1.6"
-        multiDexEnabled true //had to add becasuse of this error "cannot fit requested classes in a single dex file (# methods: 97941 > 65536"
+        multiDexEnabled true //had to add because of this error "cannot fit requested classes in a single dex file (# methods: 97941 > 65536")
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 

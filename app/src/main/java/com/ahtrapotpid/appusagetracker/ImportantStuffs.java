@@ -352,6 +352,18 @@ public class ImportantStuffs {
     }
 
 
+    private static int getCurrentWeekNumber(Context context) {
+        JSONObject infoJson = getJsonObject("info.json", context);
+        int weekNumber = 0;
+        try {
+            weekNumber = infoJson.getInt("weekNumber");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return weekNumber;
+    }
+
+
     public static void displayUsageNotification(String packageName, int percentage, long usageTime, int mode, Context context) {
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -372,7 +384,15 @@ public class ImportantStuffs {
         Bitmap icon = getBitmapFromDrawable(appIcon);
         String modeString = (mode == MODE_DAILY) ? "daily" : "weekly";
         String title = appName + "(" + usageTimeString + ")";
-        String description = "Over " + percentage + "% of " + modeString + " target is used.";
+
+        int weekNumber = getCurrentWeekNumber(context);
+        String description = "";
+        if (weekNumber != 2)
+            description = "Over " + percentage + "% of " + modeString + " target is used.";
+        else {
+            modeString = (mode == MODE_DAILY) ? "today." : "this week.";
+            description = "Over " + usageTimeString + " is used " + modeString;
+        }
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, USAGE_CHANNEL_ID)
                 .setDefaults(Notification.DEFAULT_ALL)
