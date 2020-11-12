@@ -104,9 +104,9 @@ public class MainActivity extends AppCompatActivity {
             cg = Float.valueOf(cgpa);
         } catch (Exception e) {}
 
-        if(registrationNumber.equals(""))
+        if (registrationNumber.equals(""))
             regiLayout.setError("Registration number can't be empty");
-        else if(registrationNumber.length() != 10)
+        else if (registrationNumber.length() < 3)
             regiLayout.setError("Invalid registration number length");
         else
             regiLayout.setErrorEnabled(false);
