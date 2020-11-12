@@ -44,12 +44,7 @@ public class AppsDataController extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         this.context = context;
 
-        JSONObject infoJson = ImportantStuffs.getJsonObject("info.json", context);
-        try {
-            weekFlag = infoJson.getInt("weekNumber");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        weekFlag = ImportantStuffs.getCurrentWeekNumber(context);
 
         if ("android.intent.action.BOOT_COMPLETED".equals(intent.getAction())) {
             ImportantStuffs.showLog("Device has been rebooted!");
@@ -420,7 +415,7 @@ public class AppsDataController extends BroadcastReceiver {
         });
     }
 
-    public static void checkCurrentWeek(Context context, long timeDifference) {
+    public  void checkCurrentWeek(Context context, long timeDifference) {
         Log.d("flag", "checking current week");
         long dayStartingHour = ImportantStuffs.getDayStartingHour();
         long currentHour = ImportantStuffs.getCurrentHour();
@@ -482,6 +477,7 @@ public class AppsDataController extends BroadcastReceiver {
                     sharedPreference.edit().putLong("weekThreeStartTime", dayStartingHour).apply();
                     resetAutoTargetForAllApps(infoJson);
                     ImportantStuffs.displayNotification(context, context.getResources().getString(R.string.week_3_notice));
+                    weekFlag = 3 ;
                 } else if (weekNumber == 4){
                     sharedPreference.edit().putLong("weekFourTwoStartTime", dayStartingHour).apply();
                     ImportantStuffs.displayNotification(context, context.getResources().getString(R.string.week_4_notice));
@@ -1013,6 +1009,8 @@ public class AppsDataController extends BroadcastReceiver {
 //            Log.d(TAG, "saveInstallationInfo done");
             saveUsageDataLocally(context);
 //            Log.d(TAG, "saveUsageDataLocally done");
+            checkCurrentWeek(context, 7 * MILLISECONDS_IN_DAY);
+//            Log.d(TAG, "checkCurrentWeek done");
             if(weekFlag==2 || weekFlag>=4)
                 checkAndSaveTargetLocally(context);
 //            Log.d(TAG, "checkAndSaveTargetLocally done");
@@ -1020,8 +1018,6 @@ public class AppsDataController extends BroadcastReceiver {
 //            Log.d(TAG, "ImportantStuffs.saveEverything done");
             checkVersionUpdate(context);
 //            Log.d(TAG, "checkVersionUpdate done");
-            checkCurrentWeek(context, 7 * MILLISECONDS_IN_DAY);
-//            Log.d(TAG, "checkCurrentWeek done");
             Log.d("a_flag", "DataController: ended");
             return null;
         }

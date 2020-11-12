@@ -352,7 +352,7 @@ public class ImportantStuffs {
     }
 
 
-    private static int getCurrentWeekNumber(Context context) {
+    public static int getCurrentWeekNumber(Context context) {
         JSONObject infoJson = getJsonObject("info.json", context);
         int weekNumber = 0;
         try {
@@ -391,7 +391,7 @@ public class ImportantStuffs {
             description = "Over " + percentage + "% of " + modeString + " target is used.";
         else {
             modeString = (mode == MODE_DAILY) ? "today." : "this week.";
-            description = "Over " + usageTimeString + " is used " + modeString;
+            description = usageTimeString + " is used " + modeString;
         }
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, USAGE_CHANNEL_ID)
