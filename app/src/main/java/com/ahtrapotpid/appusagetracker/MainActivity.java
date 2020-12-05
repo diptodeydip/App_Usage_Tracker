@@ -193,9 +193,9 @@ public class MainActivity extends AppCompatActivity {
                 jsonInfo.put("checkpoint", time);
                 jsonInfo.put("appsInfo", new JSONObject());
                 jsonInfo.put("appsInstallationInfo", new JSONObject());
-//                jsonInfo.put("weekNumber", 0);
-//                jsonInfo.put("weekTime", ImportantStuffs.getCurrentHour());
-//                editor.putLong("weekZeroStartTime", ImportantStuffs.getCurrentHour());
+                jsonInfo.put("weekNumber", 0);
+                jsonInfo.put("weekTime", ImportantStuffs.getCurrentHour());
+                editor.putLong("weekZeroStartTime", ImportantStuffs.getCurrentHour());
                 editor.apply();
             } catch (JSONException e) {
                 e.printStackTrace();

@@ -432,16 +432,18 @@ public class AppsDataController extends BroadcastReceiver {
         }
 //        Log.d(TAG, "checkCurrentWeek: "+weekNumber);
         if (weekNumber == -1) {
-            weekNumber = 0;
-            weekTime = currentHour;
-            try {
-                infoJson.put("weekNumber", weekNumber);
-                infoJson.put("weekTime", weekTime);
-                sharedPreference.edit().putLong("weekZeroStartTime", weekTime).apply();
-                ImportantStuffs.saveFileLocally("info.json", infoJson.toString(), context);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            // week zero time will now be greater than week one time if installed in sunday
+            return;
+//            weekNumber = 0;
+//            weekTime = currentHour;
+//            try {
+//                infoJson.put("weekNumber", weekNumber);
+//                infoJson.put("weekTime", weekTime);
+//                sharedPreference.edit().putLong("weekZeroStartTime", weekTime).apply();
+//                ImportantStuffs.saveFileLocally("info.json", infoJson.toString(), context);
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
         }
         if (weekNumber >= 4)
             return;
