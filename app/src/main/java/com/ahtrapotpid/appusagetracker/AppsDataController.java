@@ -481,7 +481,7 @@ public class AppsDataController extends BroadcastReceiver {
                     ImportantStuffs.displayNotification(context, context.getResources().getString(R.string.week_3_notice));
                     weekFlag = 3 ;
                 } else if (weekNumber == 4){
-                    sharedPreference.edit().putLong("weekFourTwoStartTime", dayStartingHour).apply();
+                    sharedPreference.edit().putLong("weekFourStartTime", dayStartingHour).apply();
                     ImportantStuffs.displayNotification(context, context.getResources().getString(R.string.week_4_notice));
                 }
 
