@@ -121,17 +121,17 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
 
     private void checkJson() {
         jsonInfo = ImportantStuffs.getJsonObject("info.json", this);
-        {
-            // check week block
-            try {
-                currentWeek = jsonInfo.getInt("weekNumber");
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            if (currentWeek <= 3) {
-                return;
-            }
-        }
+//        {
+//            // check week block
+//            try {
+//                currentWeek = jsonInfo.getInt("weekNumber");
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
+//            if (currentWeek <= 3) {
+//                return;
+//            }
+//        }
         String thisAppInfo = "";
         try {
             thisAppInfo = jsonInfo.getJSONObject("appsInfo").getJSONObject(currentPackageNoDot).toString();
@@ -406,18 +406,18 @@ public class AppDetails extends AppCompatActivity implements DatePickerDialog.On
 
     private void setTargetTypes() {
         int numOfTargets = selectedTargetTypeIndexes.size();
-        if (currentWeek <= 3) {
-            String targetType = (numOfTargets == 2) ? "Weekly and Daily" : "None";
-            targetTypesTextView.setText(targetType);
-            makeConstraintLayoutGrayedOut(setTargetTypesLayout, true);
-            makeConstraintLayoutGrayedOut(setDailyTargetLayout, true);
-            makeConstraintLayoutGrayedOut(setWeeklyTargetLayout, true);
-            makeConstraintLayoutGrayedOut(setDailyNotificationsLayout, true);
-            makeConstraintLayoutGrayedOut(setWeeklyNotificationsLayout, true);
-            if (currentWeek != 2)
-                targetHistoryLayout.setVisibility(View.GONE);
-            return;
-        }
+//        if (currentWeek <= 3) {
+//            String targetType = (numOfTargets == 2) ? "Weekly and Daily" : "None";
+//            targetTypesTextView.setText(targetType);
+//            makeConstraintLayoutGrayedOut(setTargetTypesLayout, true);
+//            makeConstraintLayoutGrayedOut(setDailyTargetLayout, true);
+//            makeConstraintLayoutGrayedOut(setWeeklyTargetLayout, true);
+//            makeConstraintLayoutGrayedOut(setDailyNotificationsLayout, true);
+//            makeConstraintLayoutGrayedOut(setWeeklyNotificationsLayout, true);
+//            if (currentWeek != 2)
+//                targetHistoryLayout.setVisibility(View.GONE);
+//            return;
+//        }
         if (numOfTargets == 0) {
             targetTypesTextView.setText("None");
             makeConstraintLayoutGrayedOut(setDailyTargetLayout, true);

@@ -1011,10 +1011,11 @@ public class AppsDataController extends BroadcastReceiver {
 //            Log.d(TAG, "saveInstallationInfo done");
             saveUsageDataLocally(context);
 //            Log.d(TAG, "saveUsageDataLocally done");
-            checkCurrentWeek(context, 7 * MILLISECONDS_IN_DAY);
+//            checkCurrentWeek(context, 7 * MILLISECONDS_IN_DAY);
 //            Log.d(TAG, "checkCurrentWeek done");
-            if(weekFlag==2 || weekFlag>=4)
-                checkAndSaveTargetLocally(context);
+//            if(weekFlag==2 || weekFlag>=4)
+//                checkAndSaveTargetLocally(context);
+            checkAndSaveTargetLocally(context);
 //            Log.d(TAG, "checkAndSaveTargetLocally done");
             ImportantStuffs.saveEverything(context);
 //            Log.d(TAG, "ImportantStuffs.saveEverything done");
