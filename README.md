@@ -1,4 +1,4 @@
-# App Usage Tracker
+# App Usage Monitor
 <p align="center">
   <img width="300" height="300" src="photos/icon.png">
 </p>
