@@ -6,9 +6,7 @@
 # Introduction
 App usage tracker is built for collecting data for our thesis. App usage tracker is a simple app that tracks the usage of all your apps within your smartphone. You can see your daily or weekly usage history for any of your installed apps(up to the past 30 days). You can set daily or weekly targets and choose to get notifications at multiple levels of usage for any app. You can also see your past target history(how much of the target you used).
 
-**Play Store Link**: [https://play.google.com/store/apps/details?id=com.ahtrapotpid.appusagetracker](https://play.google.com/store/apps/details?id=com.ahtrapotpid.appusagetracker). Some features have been purposely restricted as per our thesis requirements.
-
-**Full App Link**: [https://drive.google.com/file/d/13WAgv6ayITOr0LOey5QjbA3zKg9wfLfc/view?usp=sharing](https://drive.google.com/file/d/13WAgv6ayITOr0LOey5QjbA3zKg9wfLfc/view?usp=sharing)
+**App Link**: [https://drive.google.com/file/d/1ArCPhMQ9x4V-bBE1AZaaZXO9OOIQNRT3/view?usp=drive_link](https://drive.google.com/file/d/1ArCPhMQ9x4V-bBE1AZaaZXO9OOIQNRT3/view?usp=drive_link)
 
 ## Notifications
 -  Upon exceeding the specified target for an app.
